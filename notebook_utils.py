@@ -2381,7 +2381,7 @@ class NotebookUtilities(object):
     
     
     @staticmethod
-    def add_staticmethod_decorations(python_folder='../py', verbose=True):
+    def add_staticmethod_decorations(python_folder=osp.join('..', 'py'), verbose=True):
         """
         Scan a Python folder structure and automatically add @staticmethod 
         decorators to non-staticmethod-decorated instance methods.
