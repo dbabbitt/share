@@ -59,10 +59,35 @@ class NotebookUtilities(object):
     also what is common to running Jupyter notebooks.
     
     Example:
-        import sys
+        
+        # Add the path to the shared utilities directory
         import os.path as osp
-        sys.path.insert(1, osp.abspath('../py'))
-        from biblelib import nu
+        
+        # Define the shared folder path using join for better compatibility
+        shared_folder = osp.abspath(osp.join(
+            osp.dirname(__file__), '..', '..', '..', 'share'
+        ))
+        
+        # Add the shared folder to sys.path if it's not already included
+        import sys
+        if shared_folder not in sys.path:
+            sys.path.insert(1, shared_folder)
+        
+        # Attempt to import the Storage object
+        try:
+            from notebook_utils import NotebookUtilities
+        except ImportError as e:
+            print(f"Error importing NotebookUtilities: {e}")
+        
+        # Initialize with data and saves folder paths
+        nu = NotebookUtilities(
+            data_folder_path=osp.abspath(osp.join(
+                osp.dirname(__file__), '..', 'data'
+            )),
+            saves_folder_path=osp.abspath(osp.join(
+                osp.dirname(__file__), '..', 'saves'
+            ))
+        )
     """
     
     def __init__(self, data_folder_path=None, saves_folder_path=None, verbose=False):
