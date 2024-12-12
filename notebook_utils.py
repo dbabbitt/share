@@ -5352,10 +5352,11 @@ class NotebookUtilities(object):
             existing_ids = collection.get()['ids']
         
         # Calculate semantic distances between documents in the collection
+        existing_documents = collection.get()['documents']
         distance_matrix = []
         for i, document_name in enumerate(existing_ids):
             results = collection.query(
-                query_texts=[collection.get()['documents'][i]],
+                query_texts=[existing_documents[i]],
                 n_results=len(existing_ids)
             )
             distance_matrix.append(results['distances'][0])
