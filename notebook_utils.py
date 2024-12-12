@@ -130,7 +130,7 @@ class NotebookUtilities(object):
         self.anaconda_folder = osp.dirname(sys.executable)
         self.scripts_folder = osp.join(self.anaconda_folder, 'Scripts')
         if self.scripts_folder not in sys.path: sys.path.insert(1, self.scripts_folder)
-
+        
         # Handy list of the different types of encodings
         self.encoding_types_list = ['utf-8', 'latin1', 'iso8859-1']
         self.encoding_type = self.encoding_types_list[0]
