@@ -144,12 +144,30 @@ class NotebookUtilities(object):
         self.decoding_errors_list = self.encoding_errors_list.copy()
         self.decoding_error = self.decoding_errors_list[2]
         
-        # Determine URL from file path
+        # Regular expressions to determine URL from file path
         self.url_regex = re.compile(r'\b(https?|file)://[-A-Z0-9+&@#/%?=~_|$!:,.;]*[A-Z0-9+&@#/%=~_|$]', IGNORECASE)
         self.filepath_regex = re.compile(
             r'\b[c-d]:\\(?:[^\\/:*?"<>|\x00-\x1F]{0,254}[^.\\/:*?"<>|\x00-\x1F]\\)*(?:[^\\/:*?"<>|\x00-\x1F]{0,254}[^.\\/:*?"<>|\x00-\x1F])',
             IGNORECASE
         )
+        
+        # Compile the pattern for identifying function definitions
+        self.simple_defs_regex = re.compile(r'\bdef ([a-z0-9_]+)\(')
+        
+        # Create a pattern to match function definitions (def + function_name + opening parenthesis)
+        self.ipynb_defs_regex = re.compile('\\s+"def ([a-z0-9_]+)\\(')
+        
+        # Create a regular expression for finding instance methods and self usage
+        self.instance_defs_regex = re.compile(r'^    def ([a-z]+[a-z_]+)\(\s*self,\s+(?:[^\)]+)\):', MULTILINE)
+        
+        # Create a regular expression to search for 'self' references within function bodies
+        self.self_regex = re.compile(r'\bself\b')
+        
+        # Compile regex to find all unprefixed comments in the source code
+        self.comment_regex = re.compile('^( *)# ([^\r\n]+)', re.MULTILINE)
+        
+        # Compile a regex pattern to match non-alphanumeric characters
+        self.lower_ascii_regex = re.compile('[^a-z0-9]+')
         
         # Various aspect ratios
         self.facebook_aspect_ratio = 1.91
@@ -1271,9 +1289,6 @@ class NotebookUtilities(object):
         # Set the utility path if not provided
         if util_path is None: util_path = '../py/notebook_utils.py'
         
-        # Compile the regular expression pattern for identifying function definitions
-        utils_regex = re.compile(r'def ([a-z0-9_]+)\(')
-        
         # Read the utility file and extract function names
         with open(util_path, 'r', encoding='utf-8') as f:
             
@@ -1287,7 +1302,7 @@ class NotebookUtilities(object):
             for line in lines_list:
                 
                 # Search for function definitions using the regular expression
-                match_obj = utils_regex.search(line)
+                match_obj = self.simple_defs_regex.search(line)
                 
                 # If a function definition is found, extract the function name and add it to the set
                 if match_obj:
@@ -1421,9 +1436,6 @@ class NotebookUtilities(object):
                 occurrences.
         """
         
-        # Create a regular expression pattern to match function definitions (def + function_name + opening parenthesis)
-        fn_regex = re.compile('\\s+"def ([a-z0-9_]+)\\(')
-        
         # Create a list of directories/files to exclude during the search (e.g., checkpoints, recycle bin)
         black_list = ['.ipynb_checkpoints', '$Recycle.Bin']
         
@@ -1459,7 +1471,7 @@ class NotebookUtilities(object):
                             for line in lines_list:
                                 
                                 # Search for function definitions using the regular expression
-                                match_obj = fn_regex.search(line)
+                                match_obj = self.ipynb_defs_regex.search(line)
                                 
                                 # Check if a function definition is found
                                 if match_obj:
@@ -2405,12 +2417,6 @@ class NotebookUtilities(object):
             up the folder structure before running it.
         """
         
-        # Create a regular expression for finding instance methods and self usage
-        instance_defs_regex = re.compile(r'^    def ([a-z]+[a-z_]+)\(\s*self,\s+(?:[^\)]+)\):', MULTILINE)
-        
-        # Create a regular expression to search for 'self' references within function bodies
-        self_regex = re.compile(r'\bself\b')
-        
         # Create a list to store functions that will be refactored
         functions_list = []
         
@@ -2440,13 +2446,13 @@ class NotebookUtilities(object):
                                 file_text = f.read()
                             
                             # Split the file text into function parts
-                            fn_parts_list = instance_defs_regex.split(file_text)
+                            fn_parts_list = self.instance_defs_regex.split(file_text)
                             
                             # Iterate over function names and bodies
                             for fn_name, fn_body in zip(fn_parts_list[1::2], fn_parts_list[2::2]):
                                 
                                 # Check if the function body does not use 'self'
-                                if not self_regex.search(fn_body):
+                                if not self.self_regex.search(fn_body):
                                     
                                     # Create a new regex specific to the method name
                                     instance_def_regex = re.compile(rf'^    def {fn_name}\(\s*self,\s+(?:[^\)]+)\):', MULTILINE)
@@ -2594,9 +2600,6 @@ class NotebookUtilities(object):
             source_code = inspect.getsource(function_obj)
             comments_list = []
             
-            # Compile regex to find all unprefixed comments in the source code
-            comment_regex = re.compile('^( *)# ([^\r\n]+)', re.MULTILINE)
-            
             # Split the source code to separate docstring and function body
             parts_list = re.split('"""', source_code, 0)
             if verbose: print(len(parts_list), parts_list)
@@ -2609,7 +2612,7 @@ class NotebookUtilities(object):
                 comments_list.append(f'{docstring_prefix} {docstring.lower()} is as follows:')
                 
                 # Extract the comments which are not debug statements and add them to the list (prefixed with Roman numerals)
-                for i, comment_tuple in enumerate(comment_regex.findall(source_code)):
+                for i, comment_tuple in enumerate(self.comment_regex.findall(source_code)):
                     if verbose:
                         display(comment_tuple)
                     indent_str, comment_str = comment_tuple
@@ -2912,9 +2915,6 @@ class NotebookUtilities(object):
         # Import necessary modules not already imported in the class
         import wikipedia
         
-        # Compile a regex pattern to match non-alphanumeric characters
-        ascii_regex = re.compile('[^a-z0-9]+')
-        
         # Initialize an empty list to store rows of data
         rows_list = []
         
@@ -2980,7 +2980,7 @@ class NotebookUtilities(object):
                     for infobox_label_soup in label_soups_list:
                         
                         # Clean and format label text, ensuring unique keys
-                        key = ascii_regex.sub('_', clean_text(infobox_label_soup).lower()).strip('_')
+                        key = self.lower_ascii_regex.sub('_', clean_text(infobox_label_soup).lower()).strip('_')
                         if key and (key not in labels_list):
                             
                             # Add the label to the list if it's not a duplicate
@@ -3232,14 +3232,13 @@ class NotebookUtilities(object):
     
     
     @staticmethod
-    def get_regexed_columns(df, search_regex=None, verbose=False):
+    def get_regexed_columns(df, search_regex, verbose=False):
         """
         Identify columns in a DataFrame that contain references based on a specified regex pattern.
         
         Parameters:
             df (pandas.DataFrame): The input DataFrame.
             search_regex (re.Pattern, optional): The compiled regular expression pattern for identifying references.
-                If None, a default regex pattern is used to match names followed by '_Root'.
             verbose (bool, optional):
                 Whether to print debug or status messages. Defaults to False.
         
@@ -3251,12 +3250,6 @@ class NotebookUtilities(object):
         assert (
             isinstance(search_regex, Pattern)
         ), "search_regex must be a compiled regular expression."
-        
-        # If no search_regex is provided, use the default pattern for detecting references
-        if search_regex is None:
-            search_regex = re.compile(
-                '(Mike|Gary|Helga|Bob|Gloria|Lily)(_(0|1|2|3|4|5|6|7|8|9|10))? Root'
-            )
         
         # Print the type of the search_regex if verbose mode is enabled
         if verbose: print(type(search_regex))
@@ -3273,7 +3266,7 @@ class NotebookUtilities(object):
     
     
     @staticmethod
-    def get_regexed_dataframe(filterable_df, columns_list, search_regex=None, verbose=False):
+    def get_regexed_dataframe(filterable_df, columns_list, search_regex, verbose=False):
         """
         Create a DataFrame that displays an example of what search_regex is finding for each column in columns_list.
         
@@ -3293,12 +3286,6 @@ class NotebookUtilities(object):
         assert all(
             map(lambda cn: cn in filterable_df.columns, columns_list)
         ), "Column names in columns_list must be in filterable_df.columns"
-        
-        # Set default pattern for detecting references if not provided
-        if search_regex is None:
-            search_regex = re.compile(
-                '(Mike|Gary|Helga|Bob|Gloria|Lily)(_(0|1|2|3|4|5|6|7|8|9|10))? Root'
-            )
         
         # Print the debug info if verbose is True
         if verbose: print(type(search_regex))
