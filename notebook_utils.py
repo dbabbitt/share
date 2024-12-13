@@ -7,6 +7,11 @@
 
 # Soli Deo gloria
 
+# Run this in a Git Bash terminal if you push anything:
+    # cd ~/OneDrive/Documents/GitHub/notebooks/sh
+    # ./update_share_submodules.sh
+
+
 from bs4 import BeautifulSoup as bs
 from datetime import timedelta
 from numpy import nan, isnan
