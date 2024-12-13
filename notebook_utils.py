@@ -3477,11 +3477,11 @@ class NotebookUtilities(object):
     
     def get_flattened_dictionary(self, value_obj, row_dict={}, key_prefix=''):
         """
-        This function takes a value_obj (either a dictionary, list or scalar value) and creates a flattened
-        dictionary from it, where keys are made up of the keys/indices of nested dictionaries and lists. The
-        keys are constructed with a key_prefix (which is updated as the function traverses the value_obj) to
-        ensure uniqueness. The flattened dictionary is stored in the row_dict argument, which is updated at
-        each step of the function.
+        Take a value_obj (either a dictionary, list or scalar value) and create a flattened
+        dictionary from it, where keys are made up of the keys/indices of nested dictionaries and
+        lists. The keys are constructed with a key_prefix (which is updated as the function
+        traverses the value_obj) to ensure uniqueness. The flattened dictionary is stored in the
+        row_dict argument, which is updated at each step of the function.
         
         Parameters:
             value_obj (dict, list, scalar value): The object to be flattened into a dictionary.
