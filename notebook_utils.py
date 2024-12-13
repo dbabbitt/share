@@ -2446,7 +2446,7 @@ class NotebookUtilities(object):
         
         # Try to get the module object by first importing it
         try:
-            import_call = 'import ' + module_name
+            import_call = 'import ' + module_name.split('.')[0]
             if verbose: print(import_call)
             exec(import_call)
         except (SyntaxError, ImportError, ValueError) as e:
