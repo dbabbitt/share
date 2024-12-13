@@ -21,11 +21,13 @@ from re import IGNORECASE, MULTILINE, Pattern, split, sub
 from typing import List, Optional
 import humanize
 import inspect
+import inspect
 import math
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
+import pkgutil
 import re
 import seaborn as sns
 import subprocess
@@ -182,6 +184,12 @@ class NotebookUtilities(object):
             from pysan.elements import get_alphabet
             self.get_alphabet = get_alphabet
         except: self.get_alphabet = lambda sequence: set(sequence)
+        
+        # Module lists
+        self.object_evaluators = [fn for fn in dir(inspect) if fn.startswith('is')]
+        self.standard_lib_modules = sorted([
+            module_info.name for module_info in pkgutil.iter_modules()
+        ])
 
     
     ### Numeric Functions ###
@@ -1662,6 +1670,41 @@ class NotebookUtilities(object):
                 shutil.rmtree(folder_path)
     
     
+    @staticmethod
+    def get_random_py_file(py_folder, verbose=False):
+        """
+        Walks through the specified folder and collects all .py files.
+        Returns the path of a randomly selected .py file.
+        
+        Args:
+            py_folder (str): Path to the folder to search for .py files.
+
+        Returns:
+            str: The path to a randomly selected .py file, or None if no .py files are found.
+        """
+        import random
+        
+        # List to store paths of .py files
+        py_files = []
+        
+        # Walk through the folder structure
+        black_list = ['.ipynb_checkpoints', '$Recycle.Bin']
+        for parent_directory, _, files in os.walk(py_folder):
+            if all(map(lambda x: x not in parent_directory, black_list)):
+                for file in files:
+                    
+                    # Check if the file has a .py extension
+                    if file.endswith('.py'):
+                        py_files.append(osp.join(parent_directory, file))
+        
+        # If no .py files are found, return None
+        if not py_files:
+            return None
+        
+        # Randomly select and return one .py file
+        return random.choice(py_files)
+    
+    
     ### Path Functions ###
     
     
@@ -1738,7 +1781,7 @@ class NotebookUtilities(object):
                         for starts_with in startswith_list:
                             startswith_bool = startswith_bool or file_name.startswith(starts_with)
                         if endswith_bool and startswith_bool:
-                            file_path = os.path.join(sub_directory, file_name)
+                            file_path = osp.join(sub_directory, file_name)
                             print(file_path)
     
     
@@ -1763,7 +1806,7 @@ class NotebookUtilities(object):
                         for starts_with in startswith_list:
                             startswith_bool = startswith_bool or file_name.startswith(starts_with)
                         if startswith_bool:
-                            file_path = os.path.join(sub_directory, file_name)
+                            file_path = osp.join(sub_directory, file_name)
                             print(file_path)
     
     
@@ -1787,19 +1830,19 @@ class NotebookUtilities(object):
                         for ends_with in endswith_list:
                             endswith_bool = endswith_bool or file_name.endswith(ends_with)
                         if endswith_bool:
-                            file_path = os.path.join(sub_directory, file_name)
+                            file_path = osp.join(sub_directory, file_name)
                             print(file_path)
     
     
     @staticmethod
     def get_git_lfs_track_commands(repository_name, repository_dir=r'D:\Documents\GitHub'):
-        black_list = [os.path.join(repository_dir, repository_name, '.git')]
+        black_list = [osp.join(repository_dir, repository_name, '.git')]
         file_types_set = set()
-        for sub_directory, directories_list, files_list in os.walk(os.path.join(repository_dir, repository_name)):
+        for sub_directory, directories_list, files_list in os.walk(osp.join(repository_dir, repository_name)):
                 if all(map(lambda x: x not in sub_directory, black_list)):
                     for file_name in files_list:
-                        file_path = os.path.join(sub_directory, file_name)
-                        bytes_count = os.path.getsize(file_path)
+                        file_path = osp.join(sub_directory, file_name)
+                        bytes_count = osp.getsize(file_path)
                         if bytes_count > 50_000_000:
                             file_types_set.add(file_name.split('.')[-1])
         print('git lfs install')
@@ -1817,18 +1860,18 @@ class NotebookUtilities(object):
     # Ignore big files (GitHub will warn you when pushing files larger than 50 MB. You will not be allowed to
     # push files larger than 100 MB.) Tip: If you regularly push large files to GitHub, consider introducing
     # Git Large File Storage (Git LFS) as part of your workflow.''')
-        repository_path = os.path.join(repository_dir, repository_name)
-        black_list = [os.path.join(repository_path, '.git')]
+        repository_path = osp.join(repository_dir, repository_name)
+        black_list = [osp.join(repository_path, '.git')]
         for sub_directory, directories_list, files_list in os.walk(repository_path):
                 if all(map(lambda x: x not in sub_directory, black_list)):
                     for file_name in files_list:
-                        file_path = os.path.join(sub_directory, file_name)
-                        bytes_count = os.path.getsize(file_path)
+                        file_path = osp.join(sub_directory, file_name)
+                        bytes_count = osp.getsize(file_path)
                         if bytes_count > 50_000_000:
-                            print('/'.join(os.path.relpath(file_path, repository_path).split(os.sep)))
-        file_path = os.path.join(repository_dir, repository_name, '.gitignore')
+                            print('/'.join(osp.relpath(file_path, repository_path).split(os.sep)))
+        file_path = osp.join(repository_dir, repository_name, '.gitignore')
         print()
-        subprocess.run([text_editor_path, os.path.abspath(file_path)])
+        subprocess.run([text_editor_path, osp.abspath(file_path)])
     
     
     @staticmethod
@@ -1874,7 +1917,7 @@ class NotebookUtilities(object):
     @staticmethod
     def remove_empty_folders(folder_path, remove_root=True):
         '''Function to remove empty folders'''
-        if not os.path.isdir(folder_path):
+        if not osp.isdir(folder_path):
             
             return
         
@@ -1882,8 +1925,8 @@ class NotebookUtilities(object):
         files = os.listdir(folder_path)
         if len(files):
             for f in files:
-                full_path = os.path.join(folder_path, f)
-                if os.path.isdir(full_path):
+                full_path = osp.join(folder_path, f)
+                if osp.isdir(full_path):
                     remove_empty_folders(full_path)
         
         # If folder empty, delete it
@@ -2330,12 +2373,66 @@ class NotebookUtilities(object):
     ### Module Functions ###
     
     
-    @staticmethod
-    def get_dir_tree(module_name, contains_str=None, not_contains_str=None, verbose=False):
+    def get_random_function(self, verbose=True):
+        function_objs_list = []
+        while not function_objs_list:
+            while True:
+                try:
+                    random_py_file = self.get_random_py_file(py_folder)
+                    library_name = osp.relpath(random_py_file, py_folder).replace('.py', '')
+                    import_call = 'import ' + library_name
+                    if verbose: print(import_call)
+                    exec(import_call)
+                    break
+                except (SyntaxError, ImportError, ValueError) as e:
+                    # self.open_path_in_notepad(random_py_file)
+                    pass
+            possible_attributes = [
+                f'{library_name}.{fn}' for fn in dir(eval(library_name)) if not fn.startswith('_')
+            ]
+            if verbose: print(possible_attributes)
+            utils_list = [
+                f'{library_name}.{fn}' for fn in self.get_utility_file_functions(
+                    util_path=random_py_file
+                ) if not fn.startswith('_')
+            ]
+            if verbose: print(utils_list)
+            possible_functions = sorted(set(possible_attributes).intersection(set(utils_list)))
+            if verbose: print(possible_functions)
+            for possible_function in possible_functions:
+                try:
+                    if verbose: print(possible_function)
+                    function_obj = eval(possible_function)
+                    if callable(function_obj):
+                        function_objs_list.append(function_obj)
+                except:
+                    continue
+        import random
+        random_function = random.choice(function_objs_list)
+        
+        return random_py_file, random_function
+    
+    
+    def get_evaluations(self, obj):
+        evaluations_list = []
+        for evaluator in self.object_evaluators:
+            try:
+                evaluation = eval(f'inspect.{evaluator}(obj)')
+                if evaluation:
+                    evaluations_list.append(evaluator[2:])
+            except:
+                continue
+        
+        return evaluations_list
+    
+    
+    def get_dir_tree(
+        self, module_name, function_calls=[], contains_str=None, not_contains_str=None, verbose=False
+    ):
         """
         Get a list of all attributes in a given module.
         
-        Parameters::
+        Parameters:
             module_name (str): The name of the module to get the directory list for.
             contains_str (str, optional): If provided, only print attributes containing this substring (case-insensitive).
             not_contains_str (str, optional): If provided, exclude printing attributes containing this
@@ -2346,55 +2443,39 @@ class NotebookUtilities(object):
         Returns:
             list[str]: A list of attributes in the module that match the filtering criteria.
         """
-        
-        # Initialize sets for processed attributes and their suffixes
-        dirred_set = set([module_name])
-        suffix_set = set([module_name])
-        
-        # Initialize an unprocessed set of all attributes in the module_name module that don't start with an underscore
-        import importlib
-        module_obj = importlib.import_module(module_name)
-        undirred_set = set([f'module_obj.{fn}' for fn in dir(module_obj) if not fn.startswith('_')])
-        
-        # Continue processing until the unprocessed set is empty
-        while undirred_set:
-    
-            # Pop the next function or submodule
-            fn = undirred_set.pop()
-    
-            # Extract the suffix of the function or submodule
-            fn_suffix = fn.split('.')[-1]
-    
-            # Check if the suffix has not been processed yet
-            if fn_suffix not in suffix_set:
-                
-                # Add it to processed and suffix sets
-                dirred_set.add(fn)
-                suffix_set.add(fn_suffix)
-                
-                try:
-                    
-                    # Evaluate the 'dir()' function for the attribute and update the unprocessed set with its function or submodule
-                    dir_list = eval(f'dir({fn})')
-                    
-                    # Add all of the submodules of the function or submodule to undirred_set if they haven't been processed yet
-                    undirred_set.update([f'{fn}.{fn1}' for fn1 in dir_list if not fn1.startswith('_')])
-                
-                # If there is an error getting the dir() of the function or submodule, just continue to the next iteration
-                except: continue
+        module_obj = eval(module_name)
+        for library_name in sorted(
+            set(dir(module_obj)).difference(set(self.standard_lib_modules)).difference(
+                set(sys.builtin_module_names)
+            )
+        ):
+            if library_name.startswith('__'):
+                continue
+            function_call = f'{module_name}.{library_name}'
+            try:
+                function_obj = eval(function_call)
+            except:
+                function_obj = None
+            evaluations_list = self.get_evaluations(function_obj)
+            if evaluations_list:
+                function_calls.append(function_call)
+            if verbose:
+                print(function_call, evaluations_list)
+            if 'class' in evaluations_list:
+                function_calls = self.get_dir_tree(
+                    module_name=function_call, function_calls=function_calls, verbose=verbose
+                )
+                continue
                 
         # Apply filtering criteria if provided
         if (not bool(contains_str)) and bool(not_contains_str):
-            dirred_set = [fn for fn in dirred_set if (not_contains_str not in fn.lower())]
+            function_calls = [fn for fn in function_calls if (not_contains_str not in fn.lower())]
         elif bool(contains_str) and (not bool(not_contains_str)):
-            dirred_set = [fn for fn in dirred_set if (contains_str in fn.lower())]
+            function_calls = [fn for fn in function_calls if (contains_str in fn.lower())]
         elif bool(contains_str) and bool(not_contains_str):
-            dirred_set = [fn for fn in dirred_set if (contains_str in fn.lower()) and (not_contains_str not in fn.lower())]
+            function_calls = [fn for fn in function_calls if (contains_str in fn.lower()) and (not_contains_str not in fn.lower())]
         
-        # Remove the importlib object variable name
-        dirred_set = set([fn.replace('module_obj', module_name) for fn in dirred_set])
-        
-        return sorted(dirred_set)
+        return function_calls
     
     
     @staticmethod
