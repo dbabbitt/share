@@ -2443,7 +2443,16 @@ class NotebookUtilities(object):
         Returns:
             list[str]: A list of attributes in the module that match the filtering criteria.
         """
+        
+        # Try to get the module object by first importing it
+        try:
+            import_call = 'import ' + module_name
+            if verbose: print(import_call)
+            exec(import_call)
+        except (SyntaxError, ImportError, ValueError) as e:
+            pass
         module_obj = eval(module_name)
+        
         for library_name in sorted(
             set(dir(module_obj)).difference(set(self.standard_lib_modules)).difference(
                 set(sys.builtin_module_names)
