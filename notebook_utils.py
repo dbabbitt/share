@@ -97,13 +97,13 @@ class NotebookUtilities(object):
         self.github_folder = osp.dirname(osp.abspath(osp.curdir))
         
         # Create the data folder if it doesn't exist
-        if data_folder_path is None: self.data_folder = '../data'
+        if data_folder_path is None: self.data_folder = osp.join(os.pardir, 'data')
         else: self.data_folder = data_folder_path
         makedirs(self.data_folder, exist_ok=True)
         if verbose: print('data_folder: {}'.format(osp.abspath(self.data_folder)), flush=True)
         
         # Create the saves folder if it doesn't exist
-        if saves_folder_path is None: self.saves_folder = '../saves'
+        if saves_folder_path is None: self.saves_folder = osp.join(os.pardir, 'saves')
         else: self.saves_folder = saves_folder_path
         makedirs(self.saves_folder, exist_ok=True)
         if verbose: print('saves_folder: {}'.format(osp.abspath(self.saves_folder)), flush=True)
@@ -1286,7 +1286,7 @@ class NotebookUtilities(object):
         """
         
         # Set the utility path if not provided
-        if util_path is None: util_path = '../py/notebook_utils.py'
+        if util_path is None: util_path = osp.join(os.pardir, 'py', 'notebook_utils.py')
         
         # Read the utility file and extract function names
         with open(util_path, 'r', encoding='utf-8') as f:
@@ -1605,7 +1605,7 @@ class NotebookUtilities(object):
         """
         
         # Set the utility path if not provided
-        if util_path is None: util_path = '../py/notebook_utils.py'
+        if util_path is None: util_path = osp.join(os.pardir, 'py', 'notebook_utils.py')
         
         # Set the GitHub folder path if not provided
         if github_folder is None: github_folder = self.github_folder
@@ -2424,7 +2424,7 @@ class NotebookUtilities(object):
         
         # Print starting message if verbose
         if verbose:
-            print("Scanning Python folder structure to add staticmethod decorations...")
+            print("Scanning Python folder structure to add staticmethod decorations")
         
         # Walk through the directory tree
         for sub_directory, directories_list, files_list in walk(python_folder):
@@ -3712,7 +3712,7 @@ class NotebookUtilities(object):
         """
         
         # Create the random under-sampler
-        if verbose: print("Creating the random under-sampler...")
+        if verbose: print("Creating the random under-sampler")
         
         counts_dict = unbalanced_df.groupby(value_column).count()[name_column].to_dict()
         sampling_strategy = {k: min(sampling_strategy_limit, v) for k, v in counts_dict.items()}
@@ -3721,7 +3721,7 @@ class NotebookUtilities(object):
         rus = RandomUnderSampler(sampling_strategy=sampling_strategy)
         
         # Define the tuple of arrays
-        if verbose: print("Resampling the data...")
+        if verbose: print("Resampling the data")
         
         X_res, y_res = rus.fit_resample(
             unbalanced_df[name_column].values.reshape(-1, 1),
@@ -3729,7 +3729,7 @@ class NotebookUtilities(object):
         )
         
         # Recreate the Pandas DataFrame
-        if verbose: print("Converting data to Pandas DataFrame...")
+        if verbose: print("Converting data to Pandas DataFrame")
         
         rebalanced_df = DataFrame(X_res, columns=[name_column])
         rebalanced_df[value_column] = y_res
