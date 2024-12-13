@@ -61,11 +61,11 @@ class NotebookUtilities(object):
     Example:
         
         # Add the path to the shared utilities directory
-        import os.path as osp
+        import os.path as osp, os as os
         
         # Define the shared folder path using join for better compatibility
         shared_folder = osp.abspath(osp.join(
-            osp.dirname(__file__), '..', '..', '..', 'share'
+            osp.dirname(__file__), os.pardir, os.pardir, os.pardir, 'share'
         ))
         
         # Add the shared folder to sys.path if it's not already included
@@ -82,10 +82,10 @@ class NotebookUtilities(object):
         # Initialize with data and saves folder paths
         nu = NotebookUtilities(
             data_folder_path=osp.abspath(osp.join(
-                osp.dirname(__file__), '..', 'data'
+                osp.dirname(__file__), os.pardir, 'data'
             )),
             saves_folder_path=osp.abspath(osp.join(
-                osp.dirname(__file__), '..', 'saves'
+                osp.dirname(__file__), os.pardir, 'saves'
             ))
         )
     """
@@ -1274,8 +1274,7 @@ class NotebookUtilities(object):
         else: return osp.relpath(file_path)
     
     
-    @staticmethod
-    def get_utility_file_functions(util_path=None):
+    def get_utility_file_functions(self, util_path=None):
         """
         Extract a set of function names already defined in the utility file.
         
@@ -2393,7 +2392,7 @@ class NotebookUtilities(object):
     
     
     @staticmethod
-    def add_staticmethod_decorations(python_folder=osp.join('..', 'py'), verbose=True):
+    def add_staticmethod_decorations(python_folder=osp.join(os.pardir, 'py'), verbose=True):
         """
         Scan a Python folder structure and automatically add @staticmethod 
         decorators to non-staticmethod-decorated instance methods.
@@ -3684,6 +3683,58 @@ class NotebookUtilities(object):
             result_df.loc[row_index, element_column] = f'{element_value} x{count}'
         
         return result_df
+    
+    
+    def rebalance_data(
+        self,
+        unbalanced_df,
+        name_column,
+        value_column,
+        sampling_strategy_limit,
+        verbose=False
+    ):
+        """
+        Rebalances the given unbalanced DataFrame by under-sampling the majority
+        class(es) to the specified sampling_strategy_limit.
+        
+        Parameters:
+            unbalanced_df (pandas.DataFrame): The unbalanced DataFrame to rebalance.
+            name_column (str): The name of the column containing the class labels.
+            value_column (str): The name of the column containing the values associated
+                with each class label.
+            sampling_strategy_limit (int): The maximum number of samples to keep for
+                each class label.
+            verbose (bool, optional): Whether to print debug output during the
+                rebalancing process. Defaults to False.
+        
+        Returns:
+            pandas.DataFrame: A rebalanced DataFrame with an undersampled majority class.
+        """
+        
+        # Create the random under-sampler
+        if verbose: print("Creating the random under-sampler...")
+        
+        counts_dict = unbalanced_df.groupby(value_column).count()[name_column].to_dict()
+        sampling_strategy = {k: min(sampling_strategy_limit, v) for k, v in counts_dict.items()}
+        
+        from imblearn.under_sampling import RandomUnderSampler
+        rus = RandomUnderSampler(sampling_strategy=sampling_strategy)
+        
+        # Define the tuple of arrays
+        if verbose: print("Resampling the data...")
+        
+        X_res, y_res = rus.fit_resample(
+            unbalanced_df[name_column].values.reshape(-1, 1),
+            unbalanced_df[value_column].values.reshape(-1, 1),
+        )
+        
+        # Recreate the Pandas DataFrame
+        if verbose: print("Converting data to Pandas DataFrame...")
+        
+        rebalanced_df = DataFrame(X_res, columns=[name_column])
+        rebalanced_df[value_column] = y_res
+        
+        return rebalanced_df
     
     
     ### 3D Point Functions ###
