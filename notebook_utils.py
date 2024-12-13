@@ -1279,7 +1279,7 @@ class NotebookUtilities(object):
         else: return osp.relpath(file_path)
     
     
-    def get_utility_file_functions(self, util_path=None):
+    def get_utility_file_functions(self, util_path=None, verbose=False):
         """
         Extract a set of function names already defined in the utility file.
         
@@ -1303,6 +1303,7 @@ class NotebookUtilities(object):
             utils_set = set()
             
             # Iterate over each line in the file
+            if verbose: print(f'Iterating over each line in {util_path}')
             for line in lines_list:
                 
                 # Search for function definitions using the regular expression
