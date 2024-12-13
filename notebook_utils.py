@@ -2427,7 +2427,8 @@ class NotebookUtilities(object):
     
     
     def get_dir_tree(
-        self, module_name, function_calls=[], contains_str=None, not_contains_str=None, verbose=False
+        self, module_name, function_calls=[], contains_str=None, not_contains_str=None,
+        recurse_classes=True, recurse_modules=False, verbose=False
     ):
         """
         Get a list of all attributes in a given module.
@@ -2449,7 +2450,7 @@ class NotebookUtilities(object):
             import_call = 'import ' + module_name.split('.')[0]
             if verbose: print(import_call)
             exec(import_call)
-        except (SyntaxError, ImportError, ValueError) as e:
+        except (ImportError) as e:
             pass
         module_obj = eval(module_name)
         
@@ -2470,7 +2471,12 @@ class NotebookUtilities(object):
                 function_calls.append(function_call)
             if verbose:
                 print(function_call, evaluations_list)
-            if 'class' in evaluations_list:
+            if recurse_classes and ('class' in evaluations_list):
+                function_calls = self.get_dir_tree(
+                    module_name=function_call, function_calls=function_calls, verbose=verbose
+                )
+                continue
+            if recurse_modules and ('module' in evaluations_list):
                 function_calls = self.get_dir_tree(
                     module_name=function_call, function_calls=function_calls, verbose=verbose
                 )
@@ -2484,7 +2490,7 @@ class NotebookUtilities(object):
         elif bool(contains_str) and bool(not_contains_str):
             function_calls = [fn for fn in function_calls if (contains_str in fn.lower()) and (not_contains_str not in fn.lower())]
         
-        return function_calls
+        return sorted(set(function_calls))
     
     
     @staticmethod
