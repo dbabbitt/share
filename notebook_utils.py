@@ -2428,7 +2428,7 @@ class NotebookUtilities(object):
     
     def get_dir_tree(
         self, module_name, function_calls=[], contains_str=None, not_contains_str=None,
-        recurse_classes=True, recurse_modules=False, verbose=False
+        recurse_classes=True, recurse_modules=False, import_call=None, verbose=False
     ):
         """
         Get a list of all attributes in a given module.
@@ -2446,9 +2446,10 @@ class NotebookUtilities(object):
         """
         
         # Try to get the module object by first importing it
-        try:
+        if import_call is None:
             import_call = 'import ' + module_name.split('.')[0]
-            if verbose: print(import_call)
+        if verbose: print(import_call)
+        try:
             exec(import_call)
         except (ImportError) as e:
             pass
