@@ -2373,7 +2373,7 @@ class NotebookUtilities(object):
     ### Module Functions ###
     
     
-    def get_random_function(self, verbose=True):
+    def get_random_function(self, py_folder, verbose=True):
         function_objs_list = []
         while not function_objs_list:
             while True:
