@@ -1272,7 +1272,7 @@ class NotebookUtilities(object):
             A string representing the relative or absolute file path where the function is stored.
         
         Example:
-            def my_function(): pass
+            my_function = lambda: None
             file_path = nu.get_function_file_path(my_function)
             print(osp.abspath(file_path))
         """
