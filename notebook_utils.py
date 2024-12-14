@@ -210,10 +210,10 @@ class NotebookUtilities(object):
             tuple: A tuple of two integers (numerator, denominator) representing 
                    the ratio that approximates the float.
         """
+        
+        # Use helper function to check if the fraction is within tolerance
         from fractions import Fraction
-        def is_within_tolerance(numerator, denominator, value, tolerance):
-            """Helper function to check if the fraction is within tolerance."""
-            return abs((numerator / denominator) - value) <= tolerance
+        is_within_tolerance = lambda numerator, denominator, value, tolerance: abs((numerator / denominator) - value) <= tolerance
         
         # Validate input
         if not isinstance(value, (float, int)):
