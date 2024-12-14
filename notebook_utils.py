@@ -2431,18 +2431,34 @@ class NotebookUtilities(object):
         recurse_classes=True, recurse_modules=False, import_call=None, verbose=False
     ):
         """
-        Get a list of all attributes in a given module.
+        Introspect a Python module to discover available functions and classes programmatically.
         
         Parameters:
-            module_name (str): The name of the module to get the directory list for.
-            contains_str (str, optional): If provided, only print attributes containing this substring (case-insensitive).
-            not_contains_str (str, optional): If provided, exclude printing attributes containing this
-                substring (case-insensitive).
-            verbose (bool, optional):
-                Whether to print debug or status messages. Defaults to False.
+            module_name : str
+                The name of the module to inspect.
+            function_calls : list, optional
+                A list to accumulate found attributes (default is an empty list).
+            contains_str : str, optional
+                If provided, only include attributes containing this substring (case-insensitive).
+            not_contains_str : str, optional
+                If provided, exclude attributes containing this substring (case-insensitive).
+            recurse_classes : bool, optional
+                Whether to recursively inspect classes (default is True).
+            recurse_modules : bool, optional
+                Whether to recursively inspect modules (default is False).
+            import_call : str, optional
+                The import statement to execute for the module (default is None).
+            verbose : bool, optional
+                If True, print debug or status messages (default is False).
         
         Returns:
-            list[str]: A list of attributes in the module that match the filtering criteria.
+            list[str]
+                A sorted list of attributes in the module that match the filtering criteria.
+        
+        Notes:
+            This function dynamically imports the specified module and retrieves its attributes,
+            filtering them based on the provided criteria. It can also recursively explore classes
+            and modules if specified.
         """
         
         # Try to get the module object by first importing it
@@ -2450,47 +2466,62 @@ class NotebookUtilities(object):
             import_call = 'import ' + module_name.split('.')[0]
         if verbose: print(import_call)
         try:
-            exec(import_call)
-        except (ImportError) as e:
-            pass
+            exec(import_call)  # Execute the import statement
+        except ImportError as e:
+            pass  # Ignore import errors and continue
         module_obj = eval(module_name)
         
+        # Iterate over the attributes of the module, excluding standard and built-in modules
         for library_name in sorted(
             set(dir(module_obj)).difference(set(self.standard_lib_modules)).difference(
                 set(sys.builtin_module_names)
             )
         ):
             if library_name.startswith('__'):
-                continue
+                continue  # Skip special attributes
+            
+            # Construct the full attribute name
             function_call = f'{module_name}.{library_name}'
+            
+            # Evaluate the function or class
             try:
                 function_obj = eval(function_call)
             except:
                 function_obj = None
+            
+            # Get evaluations of the object from the inspect library
             evaluations_list = self.get_evaluations(function_obj)
             if evaluations_list:
                 function_calls.append(function_call)
+            
             if verbose:
                 print(function_call, evaluations_list)
+            
+            # Recursively explore classes if specified
             if recurse_classes and ('class' in evaluations_list):
                 function_calls = self.get_dir_tree(
                     module_name=function_call, function_calls=function_calls, verbose=verbose
                 )
                 continue
+            
+            # Recursively explore modules if specified
             if recurse_modules and ('module' in evaluations_list):
                 function_calls = self.get_dir_tree(
                     module_name=function_call, function_calls=function_calls, verbose=verbose
                 )
                 continue
-                
+                    
         # Apply filtering criteria if provided
         if (not bool(contains_str)) and bool(not_contains_str):
             function_calls = [fn for fn in function_calls if (not_contains_str not in fn.lower())]
         elif bool(contains_str) and (not bool(not_contains_str)):
             function_calls = [fn for fn in function_calls if (contains_str in fn.lower())]
         elif bool(contains_str) and bool(not_contains_str):
-            function_calls = [fn for fn in function_calls if (contains_str in fn.lower()) and (not_contains_str not in fn.lower())]
+            function_calls = [fn for fn in function_calls if (
+                contains_str in fn.lower()
+            ) and (not_contains_str not in fn.lower())]
         
+        # Return a sorted list of unique function calls
         return sorted(set(function_calls))
     
     
