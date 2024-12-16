@@ -12,6 +12,7 @@ Run this in a Git Bash terminal if you push anything:
     ./update_share_submodules.sh
 """
 
+from base_config import BaseConfig
 from bs4 import BeautifulSoup as bs
 from datetime import timedelta
 from os import (
@@ -54,48 +55,27 @@ except NameError:
         print(message)
 
 
-class Uncategorized:
+class Uncategorized(BaseConfig):
     def __init__(
         self, data_folder_path=None, saves_folder_path=None, verbose=False
     ):
-        self.pip_command_str = f'{sys.executable} -m pip'
 
-        # Assume this is instantiated in a subfolder one below the main
-        self.github_folder = osp.dirname(osp.abspath(osp.curdir))
-
-        # Create the data folder if it doesn't exist
+        # Assume the data folder exists
         if data_folder_path is None:
             self.data_folder = osp.join(os.pardir, 'data')
         else:
             self.data_folder = data_folder_path
-        makedirs(self.data_folder, exist_ok=True)
-        if verbose:
-            print(
-                'data_folder: {}'.format(osp.abspath(self.data_folder)),
-                flush=True
-            )
 
-        # Create the saves folder if it doesn't exist
+        # Assume the saves folder exists
         if saves_folder_path is None:
             self.saves_folder = osp.join(os.pardir, 'saves')
         else:
             self.saves_folder = saves_folder_path
-        makedirs(self.saves_folder, exist_ok=True)
-        if verbose:
-            print(
-                'saves_folder: {}'.format(osp.abspath(self.saves_folder)),
-                flush=True
-            )
+
+        super().__init__()  # Inherit shared attributes
+        self.pip_command_str = f'{sys.executable} -m pip'
 
         # Create the assumed directories
-        self.data_csv_folder = osp.join(self.data_folder, 'csv')
-        makedirs(name=self.data_csv_folder, exist_ok=True)
-        self.saves_csv_folder = osp.join(self.saves_folder, 'csv')
-        makedirs(name=self.saves_csv_folder, exist_ok=True)
-        self.saves_mp3_folder = osp.join(self.saves_folder, 'mp3')
-        makedirs(name=self.saves_mp3_folder, exist_ok=True)
-        self.saves_pickle_folder = osp.join(self.saves_folder, 'pkl')
-        makedirs(name=self.saves_pickle_folder, exist_ok=True)
         self.saves_text_folder = osp.join(self.saves_folder, 'txt')
         makedirs(name=self.saves_text_folder, exist_ok=True)
         self.saves_wav_folder = osp.join(self.saves_folder, 'wav')
@@ -126,8 +106,6 @@ class Uncategorized:
             sys.path.insert(1, self.scripts_folder)
 
         # Handy list of the different types of encodings
-        self.encoding_types_list = ['utf-8', 'latin1', 'iso8859-1']
-        self.encoding_type = self.encoding_types_list[0]
         self.encoding_errors_list = ['ignore', 'replace', 'xmlcharrefreplace']
         self.encoding_error = self.encoding_errors_list[2]
         self.decoding_types_list = [
@@ -279,53 +257,6 @@ class Uncategorized:
     # -------------------
     # List Functions
     # -------------------
-
-    @staticmethod
-    def split_list_by_gap(ages_list, value_difference=1, verbose=False):
-        """
-        Divide a list of ages into sublists based on gaps in the age sequence.
-
-        Parameters:
-            ages_list (list of int or float): A list of ages to be split into
-            sublists.
-
-        Returns:
-            list of lists of int or float
-                A list of sublists, each containing consecutive ages.
-        """
-
-        # List to store sublists of consecutive ages
-        splits_list = []
-
-        # Temporary list to store the current consecutive ages
-        current_list = []
-
-        # Initialize with a value lower than the first age
-        previous_age = ages_list[0] - value_difference
-
-        # Iterate over the list of ages
-        for age in ages_list:
-
-            # Check if there is a gap between current age and previous age
-            if age - previous_age > value_difference:
-
-                # Append the current_list to splits_list
-                splits_list.append(current_list)
-
-                # Reset the current_list
-                current_list = []
-
-            # Add the current age to the current_list
-            current_list.append(age)
-
-            # Update the previous_age
-            previous_age = age
-
-        # Append the last current_list to splits_list
-        splits_list.append(current_list)
-
-        # Return the list of sublists of ages
-        return splits_list
 
     @staticmethod
     def count_ngrams(actions_list, highlighted_ngrams):
@@ -1626,6 +1557,10 @@ class Uncategorized:
     # URL and Soup Functions
     # -------------------
 
+    # -------------------
+    # Pandas Functions
+    # -------------------
+
     @staticmethod
     def get_statistics(describable_df, columns_list, verbose=False):
         """
@@ -2129,6 +2064,14 @@ class Uncategorized:
         # Return the coordinates of the two points
         return x1, x2, y1, y2, z1, z2
 
+    # -------------------
+    # Sub-sampling Functions
+    # -------------------
+
+    # -------------------
+    # Plotting Functions
+    # -------------------
+
     @staticmethod
     def color_distance_from(from_color, to_rgb_tuple):
         """
@@ -2275,58 +2218,6 @@ class Uncategorized:
 
         # Return the selected or default text color
         return text_color
-
-    @staticmethod
-    def get_color_cycler(n):
-        """
-        Generate a color cycler for plotting with a specified number of colors.
-
-        This static method creates a color cycler object (`cycler.Cycler`)
-        suitable for Matplotlib plotting. The color cycler provides a
-        sequence of colors to be used for lines, markers, or other plot
-        elements. The function selects a colormap based on the requested
-        number of colors (`n`).
-
-        Parameters:
-            n (int):
-                The number of colors to include in the cycler.
-
-        Returns:
-            cycler.Cycler
-                A color cycler object containing the specified number of
-                colors.
-
-        Example:
-            color_cycler = nu.get_color_cycler(len(possible_cause_list))
-            for possible_cause, face_color_dict in zip(
-                possible_cause_list, color_cycler()
-            ):
-                face_color = face_color_dict['color']
-        """
-
-        # Initialize an empty color cycler object
-        color_cycler = None
-
-        # Import the `cycler` module from matplotlib
-        from cycler import cycler
-
-        # Use the Accent color map for less than 9 colors
-        if n < 9:
-            color_cycler = cycler('color', plt.cm.Accent(np.linspace(0, 1, n)))
-
-        # Use tab10 colormap for 9 or 10 colors
-        elif n < 11:
-            color_cycler = cycler('color', plt.cm.tab10(np.linspace(0, 1, n)))
-
-        # Use Paired colormap for 11 or 12 colors
-        elif n < 13:
-            color_cycler = cycler('color', plt.cm.Paired(np.linspace(0, 1, n)))
-
-        # Use the tab20 color map for 13 or more colors
-        else:
-            color_cycler = cycler('color', plt.cm.tab20(np.linspace(0, 1, n)))
-
-        return color_cycler
 
     @staticmethod
     def plot_grouped_box_and_whiskers(

@@ -12,6 +12,7 @@ Run this in a Git Bash terminal if you push anything:
     ./update_share_submodules.sh
 """
 
+from base_config import BaseConfig
 from bs4 import BeautifulSoup as bs
 from numpy import nan
 from os import (
@@ -30,7 +31,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
-import re
 import seaborn as sns
 import subprocess
 
@@ -96,14 +96,32 @@ except Exception:
         ), srs.tolist()))
 
 
-class DataAnalysis:
-    def __init__(self):
+class DataAnalysis(BaseConfig):
+    def __init__(
+        self, data_folder_path=None, saves_folder_path=None
+    ):
 
-        # Compile a regex pattern to match non-alphanumeric characters
-        self.lower_ascii_regex = re.compile('[^a-z0-9]+')
+        # Assume the data folder exists
+        if data_folder_path is None:
+            self.data_folder = osp.join(os.pardir, 'data')
+        else:
+            self.data_folder = data_folder_path
 
-        # Various aspect ratios
-        self.facebook_aspect_ratio = 1.91
+        # Assume the saves folder exists
+        if saves_folder_path is None:
+            self.saves_folder = osp.join(os.pardir, 'saves')
+        else:
+            self.saves_folder = saves_folder_path
+
+        super().__init__()  # Inherit shared attributes
+
+    # -------------------
+    # Numeric Functions
+    # -------------------
+
+    # -------------------
+    # String Functions
+    # -------------------
 
     # -------------------
     # List Functions
@@ -150,62 +168,52 @@ class DataAnalysis:
         # Return the list of jitter values
         return jitter_list
 
-    def convert_strings_to_integers(sequence, alphabet_list=None):
+    @staticmethod
+    def split_list_by_gap(ages_list, value_difference=1, verbose=False):
         """
-        Convert a sequence of strings into a sequence of integers and a
-        mapping dictionary.
-
-        This method converts each string in the input sequence to an
-        integer based on its position in an alphabet list. If the alphabet
-        list is not provided, it is generated from the unique elements of
-        the sequence. The method returns a new sequence where each string
-        is replaced by its corresponding integer, and a dictionary mapping
-        strings to integers.
+        Divide a list of ages into sublists based on gaps in the age sequence.
 
         Parameters:
-            sequence (iterable):
-                A sequence of strings to be converted.
-            alphabet_list (list, optional):
-                A list of the unique elements of sequence, passed in to
-                stabilize the order. If None (default), the alphabet is
-                derived from the `sequence`.
+            ages_list (list of int or float): A list of ages to be split into
+            sublists.
 
         Returns:
-            tuple:
-                A tuple containing two elements:
-                - new_sequence (numpy.ndarray): An array of integers
-                  representing the converted sequence.
-                - string_to_integer_map (dict): A dictionary mapping the
-                  original strings to their corresponding integer codes.
-
-        Note:
-            Strings not present in the alphabet are mapped to -1 in the
-            dictionary.
-
-        Examples:
-            sequence = ['apple', 'banana', 'apple', 'cherry']
-            new_sequence, mapping = nu.convert_strings_to_integers(sequence)
-            new_sequence # array([0, 1, 0, 2])
-            mapping # {'apple': 0, 'banana': 1, 'cherry': 2}
+            list of lists of int or float
+                A list of sublists, each containing consecutive ages.
         """
 
-        # Create an alphabet from the sequence if not provided
-        if alphabet_list is None:
-            alphabet_list = sorted(set(sequence))
+        # List to store sublists of consecutive ages
+        splits_list = []
 
-        # Initialize the string to integer map with an enumeration of the
-        # alphabet
-        string_to_integer_map = {
-            string: index for index, string in enumerate(alphabet_list)
-        }
+        # Temporary list to store the current consecutive ages
+        current_list = []
 
-        # Convert the sequence of strings to a sequence of integers,
-        # assigning -1 for unknown strings
-        new_sequence = np.array(
-            [string_to_integer_map.get(string, -1) for string in sequence]
-        )
+        # Initialize with a value lower than the first age
+        previous_age = ages_list[0] - value_difference
 
-        return (new_sequence, string_to_integer_map)
+        # Iterate over the list of ages
+        for age in ages_list:
+
+            # Check if there is a gap between current age and previous age
+            if age - previous_age > value_difference:
+
+                # Append the current_list to splits_list
+                splits_list.append(current_list)
+
+                # Reset the current_list
+                current_list = []
+
+            # Add the current age to the current_list
+            current_list.append(age)
+
+            # Update the previous_age
+            previous_age = age
+
+        # Append the last current_list to splits_list
+        splits_list.append(current_list)
+
+        # Return the list of sublists of ages
+        return splits_list
 
     @staticmethod
     def count_swaps_to_perfect_order(
@@ -256,6 +264,10 @@ class DataAnalysis:
                 swaps += 1
 
         return swaps
+
+    # -------------------
+    # File Functions
+    # -------------------
 
     @staticmethod
     def open_path_in_notepad(
@@ -328,6 +340,22 @@ class DataAnalysis:
                 if verbose:
                     print('Open attempt failed: ' + err.decode('utf8'))
                 subprocess.run(['explorer.exe', osp.dirname(absolute_path)])
+
+    # -------------------
+    # Path Functions
+    # -------------------
+
+    # -------------------
+    # Storage Functions
+    # -------------------
+
+    # -------------------
+    # Module Functions
+    # -------------------
+
+    # -------------------
+    # URL and Soup Functions
+    # -------------------
 
     def get_wiki_infobox_data_frame(self, page_titles_list, verbose=True):
         """
@@ -1096,6 +1124,10 @@ class DataAnalysis:
         # Return the data frame with the four sample rows
         return df
 
+    # -------------------
+    # Plotting Functions
+    # -------------------
+
     @staticmethod
     def plot_line_with_error_bars(
         df, xname, xlabel, xtick_text_fn, yname, ylabel, ytick_text_fn, title
@@ -1571,3 +1603,5 @@ class DataAnalysis:
         )
 
         return (fig, ax)
+
+# print('\\b(' + '|'.join(dir()) + ')\\b')

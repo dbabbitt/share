@@ -12,15 +12,15 @@ Run this in a Git Bash terminal if you push anything:
     ./update_share_submodules.sh
 """
 
+from base_config import BaseConfig
 from os import (
-    listdir as listdir, makedirs as makedirs, path as osp, remove as remove,
+    listdir as listdir, path as osp, remove as remove,
     walk as walk
 )
 from pandas import (
     DataFrame, read_csv, read_pickle,
 )
 import os
-import re
 import sys
 try:
     import dill as pickle
@@ -31,57 +31,36 @@ except Exception:
         import pickle
 
 
-class FileOperations:
+class FileOperations(BaseConfig):
     def __init__(
         self, data_folder_path=None, saves_folder_path=None, verbose=False
     ):
 
-        # Assume this is instantiated in a subfolder one below the main
-        self.github_folder = osp.dirname(osp.abspath(osp.curdir))
-
-        # Create the data folder if it doesn't exist
+        # Assume the data folder exists
         if data_folder_path is None:
             self.data_folder = osp.join(os.pardir, 'data')
         else:
             self.data_folder = data_folder_path
-        makedirs(self.data_folder, exist_ok=True)
-        if verbose:
-            print(
-                'data_folder: {}'.format(osp.abspath(self.data_folder)),
-                flush=True
-            )
 
-        # Create the saves folder if it doesn't exist
+        # Assume the saves folder exists
         if saves_folder_path is None:
             self.saves_folder = osp.join(os.pardir, 'saves')
         else:
             self.saves_folder = saves_folder_path
-        makedirs(self.saves_folder, exist_ok=True)
-        if verbose:
-            print(
-                'saves_folder: {}'.format(osp.abspath(self.saves_folder)),
-                flush=True
-            )
 
-        # Create the assumed directories
-        self.data_csv_folder = osp.join(self.data_folder, 'csv')
-        makedirs(name=self.data_csv_folder, exist_ok=True)
-        self.saves_csv_folder = osp.join(self.saves_folder, 'csv')
-        makedirs(name=self.saves_csv_folder, exist_ok=True)
-        self.saves_mp3_folder = osp.join(self.saves_folder, 'mp3')
-        makedirs(name=self.saves_mp3_folder, exist_ok=True)
-        self.saves_pickle_folder = osp.join(self.saves_folder, 'pkl')
-        makedirs(name=self.saves_pickle_folder, exist_ok=True)
+        super().__init__()  # Inherit shared attributes
 
-        # Handy list of the different types of encodings
-        self.encoding_types_list = ['utf-8', 'latin1', 'iso8859-1']
-        self.encoding_type = self.encoding_types_list[0]
+    # -------------------
+    # Numeric Functions
+    # -------------------
 
-        # Compile the pattern for identifying function definitions
-        self.simple_defs_regex = re.compile(r'\bdef ([a-z0-9_]+)\(')
+    # -------------------
+    # String Functions
+    # -------------------
 
-        # Create a pattern to match function definitions
-        self.ipynb_defs_regex = re.compile('\\s+"def ([a-z0-9_]+)\\(')
+    # -------------------
+    # List Functions
+    # -------------------
 
     # -------------------
     # File Functions
@@ -1020,3 +999,25 @@ class FileOperations:
         random_function = random.choice(function_objs_list)
 
         return (random_py_file, random_function)
+
+    # -------------------
+    # URL and Soup Functions
+    # -------------------
+
+    # -------------------
+    # Pandas Functions
+    # -------------------
+
+    # -------------------
+    # 3D Point Functions
+    # -------------------
+
+    # -------------------
+    # Sub-sampling Functions
+    # -------------------
+
+    # -------------------
+    # Plotting Functions
+    # -------------------
+
+# print('\\b(' + '|'.join(dir()) + ')\\b')

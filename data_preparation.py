@@ -12,6 +12,7 @@ Run this in a Git Bash terminal if you push anything:
     ./update_share_submodules.sh
 """
 
+from base_config import BaseConfig
 from bs4 import BeautifulSoup as bs
 from os import (
     makedirs as makedirs, path as osp
@@ -20,13 +21,10 @@ from pandas import (
     read_html
 )
 from re import (
-    IGNORECASE, split, sub
+    split, sub
 )
-import inspect
 import numpy as np
 import os
-import pkgutil
-import re
 import sys
 import urllib
 
@@ -47,45 +45,28 @@ except NameError:
         print(message)
 
 
-class DataPreparation:
+class DataPreparation(BaseConfig):
     def __init__(
         self, data_folder_path=None, saves_folder_path=None, verbose=False
     ):
 
-        # Assume this is instantiated in a subfolder one below the main
-        self.github_folder = osp.dirname(osp.abspath(osp.curdir))
-
-        # Create the data folder if it doesn't exist
+        # Assume the data folder exists
         if data_folder_path is None:
             self.data_folder = osp.join(os.pardir, 'data')
         else:
             self.data_folder = data_folder_path
-        makedirs(self.data_folder, exist_ok=True)
-        if verbose:
-            print(
-                'data_folder: {}'.format(osp.abspath(self.data_folder)),
-                flush=True
-            )
 
-        # Handy list of the different types of encodings
-        self.encoding_types_list = ['utf-8', 'latin1', 'iso8859-1']
-        self.encoding_type = self.encoding_types_list[0]
+        # Assume the saves folder exists
+        if saves_folder_path is None:
+            self.saves_folder = osp.join(os.pardir, 'saves')
+        else:
+            self.saves_folder = saves_folder_path
 
-        # Regular expressions to determine URL from file path
-        s = r'\b(https?|file)://[-A-Z0-9+&@#/%?=~_|$!:,.;]*[A-Z0-9+&@#/%=~_|$]'
-        self.url_regex = re.compile(s, IGNORECASE)
-        s = r'\b[c-d]:\\(?:[^\\/:*?"<>|\x00-\x1F]{0,254}'
-        s += r'[^.\\/:*?"<>|\x00-\x1F]\\)*(?:[^\\/:*?"<>'
-        s += r'|\x00-\x1F]{0,254}[^.\\/:*?"<>|\x00-\x1F])'
-        self.filepath_regex = re.compile(s, IGNORECASE)
+        super().__init__()  # Inherit shared attributes
 
-        # Module lists
-        self.object_evaluators = [
-            fn for fn in dir(inspect) if fn.startswith('is')
-        ]
-        self.standard_lib_modules = sorted([
-            module_info.name for module_info in pkgutil.iter_modules()
-        ])
+    # -------------------
+    # Numeric Functions
+    # -------------------
 
     # -------------------
     # String Functions
@@ -143,6 +124,22 @@ class DataPreparation:
                 first_numeric = np.nan
 
         return first_numeric
+
+    # -------------------
+    # List Functions
+    # -------------------
+
+    # -------------------
+    # File Functions
+    # -------------------
+
+    # -------------------
+    # Path Functions
+    # -------------------
+
+    # -------------------
+    # Storage Functions
+    # -------------------
 
     # -------------------
     # Module Functions
@@ -277,6 +274,10 @@ class DataPreparation:
 
         # Return a sorted list of unique function calls
         return sorted(set(function_calls))
+
+    # -------------------
+    # URL and Soup Functions
+    # -------------------
 
     @staticmethod
     def get_filename_from_url(url, verbose=False):
@@ -589,3 +590,21 @@ class DataPreparation:
 
         # Return the list of DataFrames
         return table_dfs_list
+
+    # -------------------
+    # Pandas Functions
+    # -------------------
+
+    # -------------------
+    # 3D Point Functions
+    # -------------------
+
+    # -------------------
+    # Sub-sampling Functions
+    # -------------------
+
+    # -------------------
+    # Plotting Functions
+    # -------------------
+
+# print('\\b(' + '|'.join(dir()) + ')\\b')
