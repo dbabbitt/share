@@ -784,8 +784,7 @@ class DataAnalysis(BaseConfig):
                 columns_list that matches the regex pattern.
         """
 
-        # Ensure that all column names in columns_list are in the
-        # filterable_df.columns
+        # Ensure that all names in columns_list are in there
         assert all(
             map(lambda cn: cn in filterable_df.columns, columns_list)
         ), "Column names in columns_list must be in filterable_df.columns"
@@ -797,18 +796,15 @@ class DataAnalysis(BaseConfig):
         # Create an empty DataFrame to store the filtered rows
         filtered_df = DataFrame([])
 
-        # For each column in columns_list, filter the filterable df and
-        # extract the first row that matches the search_regex
+        # For each column, filter df and extract first row that matches
         for cn in columns_list:
 
-            # Create a mask to filter rows where the column matches the regex
-            # pattern
+            # Create a mask to filter rows where column matches pattern
             mask_series = filterable_df[cn].map(
                 lambda x: bool(search_regex.search(str(x)))
             )
 
             # Concatenate the first matching row not already in the result
-            # data frame
             df = filterable_df[mask_series]
             mask_series = ~df.index.isin(filtered_df.index)
             if mask_series.any():
