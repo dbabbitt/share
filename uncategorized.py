@@ -789,13 +789,21 @@ class Uncategorized(BaseConfig):
             indentation.
 
         Example:
-            text_list = [' ' * (i*4) + f'This is level {i}' for i in range(5)]
+            level_count = 8
+            text_list = [
+                ' ' * (i*4) + f'This is level {i}'
+                for i in range(level_count+1)
+            ]
             text_list += [
                 ' ' * (i*4) + f'This is level {i} again'
-                for i in range(4, -1, -1)
+                for i in range(level_count, -1, -1)
             ]
             numbered_list = nu.apply_multilevel_numbering(
-                text_list, add_indent_back_in=True
+                text_list,
+                level_map={
+                    0: "", 4: "I. ", 8: "A. ", 12: "1. ", 16: "a. ",
+                    20: "I) ", 24: "A) ", 28: "1) ", 32: "a) "
+                }, add_indent_back_in=True
             )
             for line in numbered_list:
                 print(line)
