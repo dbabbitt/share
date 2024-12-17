@@ -2147,8 +2147,8 @@ class Uncategorized(BaseConfig):
         verbose=False
     ):
         """
-        Rebalance the given unbalanced DataFrame by under-sampling the majority
-        class(es) to the specified sampling_strategy_limit.
+        Rebalance the given unbalanced DataFrame by under-sampling the 
+        majority class(es) to the specified sampling_strategy_limit.
 
         Parameters:
             unbalanced_df (pandas.DataFrame):
@@ -2168,37 +2168,32 @@ class Uncategorized(BaseConfig):
                 A rebalanced DataFrame with an undersampled majority class.
         """
 
-        # Create the random under-sampler
-        if verbose:
-            print('Creating the random under-sampler')
-
+        # Count name_column occurrences for each unique value in value_column
         counts_dict = unbalanced_df.groupby(value_column).count()[
             name_column
         ].to_dict()
+        
+        # Limit each class count to sampling_strategy_limit in counts_dict
         sampling_strategy = {
             k: min(sampling_strategy_limit, v)
             for k, v in counts_dict.items()
         }
 
+        # Initialize RandomUnderSampler with the defined sampling strategy
         from imblearn.under_sampling import RandomUnderSampler
         rus = RandomUnderSampler(sampling_strategy=sampling_strategy)
 
-        # Define the tuple of arrays
-        if verbose:
-            print('Resampling the data')
-
+        # Apply under-sampling to rebalance based on the sampling strategy
         X_res, y_res = rus.fit_resample(
             unbalanced_df[name_column].values.reshape(-1, 1),
             unbalanced_df[value_column].values.reshape(-1, 1),
         )
 
-        # Recreate the Pandas DataFrame
-        if verbose:
-            print('Converting data to Pandas DataFrame')
-
+        # Create a rebalanced df with the resampled name and value columns
         rebalanced_df = DataFrame(X_res, columns=[name_column])
         rebalanced_df[value_column] = y_res
 
+        # Return the rebalanced data frame
         return rebalanced_df
 
     # -------------------
