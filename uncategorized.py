@@ -1695,7 +1695,7 @@ class Uncategorized(BaseConfig):
 
         # Format the standard deviation (SD) column to include the plus-minus
         # symbol
-        # df.SD = df.SD.map(lambda x: '±' + str(x))
+        # df.SD = df.SD.map(lambda x: 'Â±' + str(x))
         df.SD = df.SD.map(lambda x: '\xB1' + str(x))
 
         # Display the resulting DataFrame
