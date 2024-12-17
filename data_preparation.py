@@ -23,6 +23,7 @@ from pandas import (
 from re import (
     split, sub
 )
+import importlib
 import inspect
 import numpy as np
 import os
@@ -191,6 +192,7 @@ class DataPreparation(BaseConfig):
     def get_library_names(
         self, module_obj, import_call, verbose=False
     ):
+        library_names_list = []
         try:
             exec(import_call)  # Execute the import statement
         except ImportError:
@@ -199,17 +201,20 @@ class DataPreparation(BaseConfig):
             pass
 
         # Is the module obj just a string?
+        dir_list = []
         if isinstance(module_obj, str):
 
-            # Create the dir list be eval
-            dir_list = eval(f'dir({module_obj})')
+            # Create the dir list using eval
+            try:
+                dir_list = eval(f'dir({module_obj})')
+            except AttributeError:
+                pass  # Ignore attribute errors and continue
 
         # Otherwise, create the dir list from the object
         else:
             dir_list = dir(module_obj)
 
         # Iterate over the attributes of the module
-        library_names_list = []
         for library_name in dir_list:
             if verbose:
                 print(f'library_name: {library_name}')
@@ -241,7 +246,7 @@ class DataPreparation(BaseConfig):
     def get_dir_tree(
         self, module_name, function_calls=[], contains_str=None,
         not_contains_str=None, recurse_classes=True, recurse_modules=False,
-        import_call=None, verbose=False
+        import_call=None, level=4, verbose=False
     ):
         """
         Introspect a Python module to discover available functions and
@@ -284,9 +289,10 @@ class DataPreparation(BaseConfig):
             )'''
             nu_functions = nu.get_dir_tree(
                 module_name, function_calls=[], contains_str='_regex',
-                import_call=import_call, recurse_modules=True, verbose=False
+                import_call=import_call, recurse_modules=True, level=3,
+                verbose=False
             )
-            sorted(nu_functions, key=lambda x: x[::-1])
+            sorted(nu_functions, key=lambda x: x[::-1])[:6]
 
         Notes:
             This function dynamically imports the specified module and
@@ -295,11 +301,17 @@ class DataPreparation(BaseConfig):
             specified.
         """
 
+        # Base case: Stop recursion when level reaches 0
+        if level == 0:
+            return []
+
         # Try to get the module object by first importing it
         if import_call is None:
             import_call = 'import ' + module_name.split('.')[0]
         if verbose:
             print(f'import_call: {import_call}')
+
+        # Dynamically import the module
         try:
             exec(import_call)  # Execute the import statement
         except ImportError:
@@ -314,12 +326,15 @@ class DataPreparation(BaseConfig):
         if not library_names_list:
 
             # Get a better representation of the module and try again
-            module_obj = inspect.getmodule(eval(module_name))
-            if verbose:
-                print(f'module_obj: {module_obj}')
-            library_names_list = self.get_library_names(
-                module_obj, import_call, verbose=verbose
-            )
+            try:
+                module_obj = inspect.getmodule(eval(module_name))
+                if verbose:
+                    print(f'module_obj: {module_obj}')
+                library_names_list = self.get_library_names(
+                    module_obj, import_call, verbose=verbose
+                )
+            except AttributeError:
+                pass  # Ignore attribute errors and continue
 
         # Iterate over the library names list
         for library_name in library_names_list:
@@ -358,35 +373,33 @@ class DataPreparation(BaseConfig):
             if recurse_classes and 'class' in evaluations_list:
                 function_calls = self.get_dir_tree(
                     module_name=function_call, function_calls=function_calls,
-                    import_call=import_call, verbose=verbose
+                    recurse_classes=recurse_classes,
+                    recurse_modules=recurse_modules,
+                    import_call=import_call, level=level - 1, verbose=verbose
                 )
                 continue
 
             # Recursively explore modules if specified
-            if recurse_modules and 'module' in evaluations_list:
+            elif recurse_modules and 'module' in evaluations_list:
                 function_calls = self.get_dir_tree(
                     module_name=function_call, function_calls=function_calls,
-                    import_call=import_call, verbose=verbose
+                    recurse_classes=recurse_classes,
+                    recurse_modules=recurse_modules,
+                    import_call=import_call, level=level - 1, verbose=verbose
                 )
                 continue
 
         # Apply filtering criteria if provided
-        if not bool(contains_str) and bool(not_contains_str):
+        if contains_str:
+            function_calls = [
+                fn for fn in function_calls if contains_str in fn.lower()
+            ]
+        if not_contains_str:
             function_calls = [
                 fn
                 for fn in function_calls
                 if not_contains_str not in fn.lower()
             ]
-        elif bool(contains_str) and (not bool(not_contains_str)):
-            function_calls = [
-                fn
-                for fn in function_calls
-                if contains_str in fn.lower()
-            ]
-        elif bool(contains_str) and bool(not_contains_str):
-            function_calls = [fn for fn in function_calls if (
-                contains_str in fn.lower()
-            ) and (not_contains_str not in fn.lower())]
 
         # Return a sorted list of unique function calls
         return sorted(set(function_calls))
