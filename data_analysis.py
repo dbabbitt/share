@@ -749,8 +749,7 @@ class DataAnalysis(BaseConfig):
         if verbose:
             print(type(search_regex))
 
-        # Apply the search_regex to each element in the DataFrame and count
-        # occurrences for each column
+        # Apply the regex to each element and count occurrences per column
         srs = df.applymap(
             lambda x: bool(search_regex.search(str(x))), na_action='ignore'
         ).sum()

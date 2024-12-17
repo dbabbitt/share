@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pkgutil
 import re
+import sys
 
 
 class BaseConfig:
@@ -70,8 +71,14 @@ class BaseConfig:
         self.object_evaluators = [
             fn for fn in dir(inspect) if fn.startswith('is')
         ]
+        module_paths = sorted([
+            path
+            for path in sys.path
+            if path and not path.startswith(osp.dirname(__file__))
+        ])
         self.standard_lib_modules = sorted([
-            module_info.name for module_info in pkgutil.iter_modules()
+            module_info.name
+            for module_info in pkgutil.iter_modules(path=module_paths)
         ])
 
     # -------------------

@@ -23,6 +23,7 @@ from pandas import (
 from re import (
     split, sub
 )
+import inspect
 import numpy as np
 import os
 import sys
@@ -146,16 +147,96 @@ class DataPreparation(BaseConfig):
     # -------------------
 
     def get_evaluations(self, obj):
+        """
+        Evaluate an object using a list of evaluator functions and return a
+        list of matching evaluations.
+
+        Args:
+            obj: The object to be evaluated.
+
+        Returns:
+            list:
+                A list of evaluator names (without the 'is' prefix) that
+                return True for the given object.
+        """
+
+        # Initialize a list of evaluations
         evaluations_list = []
+
+        # Loop through each of inspect's evaluators
         for evaluator in self.object_evaluators:
+
+            # Attempt to evaluate a specific evaluator
             try:
-                evaluation = eval(f'inspect.{evaluator}(obj)')
+
+                # Pass 'inspect' explicitly into eval's context
+                evaluation = eval(
+                    f'inspect.{evaluator}(obj)',
+                    {'inspect': inspect, 'obj': obj}
+                )
+
+                # Does it evaluate?
                 if evaluation:
+
+                    # Remove the 'is' prefix and add it to the list
                     evaluations_list.append(evaluator[2:])
+
+            # Ignore evaluations that don't work
             except Exception:
                 continue
 
+        # Return the list of evaluations
         return evaluations_list
+
+    def get_library_names(
+        self, module_obj, import_call, verbose=False
+    ):
+        try:
+            exec(import_call)  # Execute the import statement
+        except ImportError:
+            pass  # Ignore import errors and continue
+        if verbose:
+            pass
+
+        # Is the module obj just a string?
+        if isinstance(module_obj, str):
+
+            # Create the dir list be eval
+            dir_list = eval(f'dir({module_obj})')
+
+        # Otherwise, create the dir list from the object
+        else:
+            dir_list = dir(module_obj)
+
+        # Iterate over the attributes of the module
+        library_names_list = []
+        for library_name in dir_list:
+            if verbose:
+                print(f'library_name: {library_name}')
+
+            # Skip standard modules
+            if library_name in self.standard_lib_modules:
+                if verbose:
+                    print(f'{library_name} is in the standard modules')
+                continue
+
+            # Skip built-in modules
+            if library_name in sys.builtin_module_names:
+                if verbose:
+                    print(f'{library_name} is in the built-in modules')
+                continue
+
+            # Skip double underscore-prefixed attributes
+            if library_name.startswith('__'):
+                if verbose:
+                    print(f'{library_name} has a double underscore-prefix')
+                continue
+
+            # Add what's left to the library names list
+            library_names_list.append(library_name)
+
+        # Return the list of libraries
+        return library_names_list
 
     def get_dir_tree(
         self, module_name, function_calls=[], contains_str=None,
@@ -193,6 +274,20 @@ class DataPreparation(BaseConfig):
                 A sorted list of attributes in the module that match the
                 filtering criteria.
 
+        Example:
+            module_name = 'nu'
+            import_call = '''
+            from notebook_utils import NotebookUtilities
+            nu = NotebookUtilities(
+                data_folder_path=osp.abspath(osp.join(os.pardir, 'data')),
+                saves_folder_path=osp.abspath(osp.join(os.pardir, 'saves'))
+            )'''
+            nu_functions = nu.get_dir_tree(
+                module_name, function_calls=[], contains_str='_regex',
+                import_call=import_call, recurse_modules=True, verbose=False
+            )
+            sorted(nu_functions, key=lambda x: x[::-1])
+
         Notes:
             This function dynamically imports the specified module and
             retrieves its attributes, filtering them based on the provided
@@ -204,23 +299,30 @@ class DataPreparation(BaseConfig):
         if import_call is None:
             import_call = 'import ' + module_name.split('.')[0]
         if verbose:
-            print(import_call)
+            print(f'import_call: {import_call}')
         try:
             exec(import_call)  # Execute the import statement
         except ImportError:
             pass  # Ignore import errors and continue
-        module_obj = eval(module_name)
 
-        # Iterate over the attributes of the module
-        for library_name in sorted(set(dir(module_obj)).difference(
-            set(self.standard_lib_modules)
-        ).difference(
-            set(sys.builtin_module_names)
-        )):
+        # Filter out skippable attributes of the module
+        library_names_list = self.get_library_names(
+            module_name, import_call, verbose=False
+        )
 
-            # Exclude standard and built-in modules
-            if library_name.startswith('__'):
-                continue  # Skip double underscore-prefixed attributes
+        # Are there no library names left?
+        if not library_names_list:
+
+            # Get a better representation of the module and try again
+            module_obj = inspect.getmodule(eval(module_name))
+            if verbose:
+                print(f'module_obj: {module_obj}')
+            library_names_list = self.get_library_names(
+                module_obj, import_call, verbose=verbose
+            )
+
+        # Iterate over the library names list
+        for library_name in library_names_list:
 
             # Construct the full attribute name
             function_call = f'{module_name}.{library_name}'
@@ -233,17 +335,30 @@ class DataPreparation(BaseConfig):
 
             # Get evaluations of the object from the inspect library
             evaluations_list = self.get_evaluations(function_obj)
+
+            # Are there no evaluations?
+            if not evaluations_list:
+
+                # Get a better representation of the function and try again
+                module_obj = inspect.getmodule(function_obj)
+                if verbose:
+                    print(f'module_obj: {module_obj}')
+                evaluations_list = self.get_evaluations(module_obj)
+
             if evaluations_list:
                 function_calls.append(function_call)
 
             if verbose:
-                print(function_call, evaluations_list)
+                print(
+                    f'function_call: {function_call},'
+                    f' evaluations_list: {evaluations_list}'
+                )
 
             # Recursively explore classes if specified
             if recurse_classes and 'class' in evaluations_list:
                 function_calls = self.get_dir_tree(
                     module_name=function_call, function_calls=function_calls,
-                    verbose=verbose
+                    import_call=import_call, verbose=verbose
                 )
                 continue
 
@@ -251,7 +366,7 @@ class DataPreparation(BaseConfig):
             if recurse_modules and 'module' in evaluations_list:
                 function_calls = self.get_dir_tree(
                     module_name=function_call, function_calls=function_calls,
-                    verbose=verbose
+                    import_call=import_call, verbose=verbose
                 )
                 continue
 
