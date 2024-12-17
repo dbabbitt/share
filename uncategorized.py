@@ -15,6 +15,7 @@ Run this in a Git Bash terminal if you push anything:
 from base_config import BaseConfig
 from bs4 import BeautifulSoup as bs
 from datetime import timedelta
+from io import StringIO
 from os import (
     listdir as listdir, makedirs as makedirs, path as osp,
     walk as walk
@@ -37,6 +38,7 @@ import re
 import seaborn as sns
 import subprocess
 import sys
+import tokenize
 
 # Check for presence of 'get_ipython' function (exists in Jupyter)
 try:
@@ -773,7 +775,9 @@ class Uncategorized(BaseConfig):
         Parameters:
             text_list:
                 A list of strings, where each string may be prepended with 0,
-                4, 8, 12, or 16 spaces representing indentation levels.
+                4, 8, 12, or 16 spaces representing indentation levels, or
+                a list of tuples (int, str), where the int is the number of
+                spaces and the str is the left-stripped text.
             level_map:
                 A dictionary that maps indentation to numbering format.
                 Defaults to {0: "", 4: "A. ", 8: "1. ", 12: "a) ", 16: "i) "}.
@@ -790,7 +794,9 @@ class Uncategorized(BaseConfig):
                 ' ' * (i*4) + f'This is level {i} again'
                 for i in range(4, -1, -1)
             ]
-            numbered_list = nu.apply_multilevel_numbering(text_list)
+            numbered_list = nu.apply_multilevel_numbering(
+                text_list, add_indent_back_in=True
+            )
             for line in numbered_list:
                 print(line)
         """
@@ -807,7 +813,11 @@ class Uncategorized(BaseConfig):
         for text in text_list:
 
             # Get the level by the indent
-            indent = len(text) - len(text.lstrip())
+            if isinstance(text, tuple):
+                indent = text[0]
+                text = text[1]
+            else:
+                indent = len(text) - len(text.lstrip())
             if verbose:
                 print(f'indent = {indent}')
             new_level = indent // 4
@@ -1468,8 +1478,176 @@ class Uncategorized(BaseConfig):
                 for line_str in output_str.splitlines():
                     print(line_str.decode(), flush=True)
 
-            # Update the internal list of installed modules after installation
+            # Update the internal list of installed modules after
+            # installation
             self.update_modules_list(verbose=False)
+
+    def extract_comments(self, function_obj, verbose=False):
+        """
+        Extract all comments from the source code of a given function along
+        with their correct indentation.
+
+        Parameters:
+            function_obj (callable):
+                The function whose comments need to be extracted.
+            verbose (bool, optional):
+                Whether to print debug or status messages. Defaults to False.
+
+        Returns:
+            list:
+                A list of tuples containing (indentation, comment) for each
+                comment.
+        """
+
+        # Get the source code of the function
+        try:
+            source_code = inspect.getsource(function_obj)
+        except OSError:
+            raise ValueError(
+                'Cannot retrieve source code for function:'
+                f" {function_obj.__name__}"
+            )
+
+        # Initialize the comment tuples list
+        comment_tuples = []
+
+        # Split code into lines to retrieve the indentation
+        code_lines = source_code.splitlines()
+        code_io = StringIO(source_code)
+
+        # Tokenize the source code
+        for token in tokenize.generate_tokens(code_io.readline):
+
+            # Is the token a comment?
+            if token.type == tokenize.COMMENT:
+
+                # Extract comment text without the pound sign
+                comment = token.string.lstrip('#').strip()
+
+                # Get the line number of the comment
+                line_number = token.start[0] - 1
+
+                # Get the column number where the comment starts
+                column_number = token.start[1]
+
+                # Is the indentation a standalone comment?
+                if (
+                    column_number == 0
+                    or code_lines[line_number].lstrip().startswith('#')
+                ):
+
+                    # Indentation is the column number of the comment
+                    indentation = column_number
+
+                # Is the indentation an inline comment?
+                else:
+
+                    # Indentation matches the code before the comment
+                    indentation = (
+                        len(code_lines[line_number])
+                        - len(code_lines[line_number].lstrip())
+                    )
+
+                comment_tuple = (indentation, comment)
+                comment_tuples.append(comment_tuple)
+
+        return comment_tuples
+
+    def get_function_in_its_class(
+        self, function_obj, verbose=False
+    ):
+        """
+        Retrieve the source code and docstring of a function defined in a
+        class.
+
+        Parameters
+        ----------
+        function_obj : function
+            The function object for which the source code and docstring
+            are to be retrieved.
+        verbose : bool, optional, default=False
+            If True, prints additional debug information.
+
+        Returns
+        -------
+        tuple
+            A tuple containing the source code of the function (str) and
+            the docstring of the function (str).
+
+        Raises
+        ------
+        ValueError
+            If the function's source code or module cannot be found.
+
+        Notes
+        -----
+        - This method works by inspecting the module where the function is
+          defined.
+        - It searches for the function inside all classes within the module.
+        - If the function is a static or class method, it extracts the
+          underlying function object before retrieving its source code and
+          docstring.
+        """
+
+        # Initialize the function's source code and docstring variables
+        function_source = None
+        docstring = None
+
+        # Get the name of the function
+        function_name = function_obj.__name__
+
+        # Get the module where the function is defined
+        module = inspect.getmodule(function_obj)
+
+        # Retrieve the source code for the entire module
+        if module is not None:
+
+            # Loop through the module's classes, methods, objects, et al
+            for obj in module.__dict__.values():
+
+                # Is this object a class?
+                if inspect.isclass(obj):
+
+                    # Check if the class has the function
+                    if hasattr(obj, function_name):
+                        func = getattr(obj, function_name)
+
+                        # Handle static methods and class methods
+                        if isinstance(func, (staticmethod, classmethod)):
+
+                            # Extract the actual function
+                            func = func.__func__
+
+                        # Ensure the object is a function or method
+                        if (
+                            inspect.isfunction(func)
+                            or inspect.ismethod(func)
+                        ):
+
+                            # Get the source code for the method
+                            function_source = inspect.getsource(func)
+
+                            # Get the docstring for the method
+                            docstring = inspect.getdoc(func)
+
+                            # Exit the loop once the function is found
+                            break
+
+            # Raise an error if the function's source could not be found
+            if function_source is None:
+                raise ValueError(
+                    'Could not find source for function'
+                    f" '{function_name}'."
+                )
+
+        # Raise an error if the module could not be retrieved
+        else:
+            raise ValueError(
+                f"Could not retrieve the module for '{function_name}'."
+            )
+
+        # Return the source code and docstring as a tuple
+        return function_source, docstring
 
     def describe_procedure(
         self, function_obj, docstring_prefix='The procedure to', verbose=False
@@ -1504,54 +1682,58 @@ class Uncategorized(BaseConfig):
             'verbose'.
         """
 
-        # Check if the function object is any kind of function or method
-        if inspect.isroutine(function_obj):
+        # Ensure the function object is some kind of function or method
+        assert inspect.isroutine(function_obj), (
+            "The function object must be some kind of function or method"
+        )
 
-            # Extract the source code and initialize the comments list
-            source_code = inspect.getsource(function_obj)
-            comments_list = []
+        # Attempt to retrieve the source code directly
+        try:
 
-            # Split the source code to separate docstring and function body
-            parts_list = re.split('"""', source_code, 0)
-            if verbose:
-                print(len(parts_list), parts_list)
-            if len(parts_list) > 1:
+            # Get the source code for the function or method
+            function_source = inspect.getsource(function_obj)
 
-                # Clean the docstring part so that only the top one-sentence
-                # paragraph is included
-                docstring = re.sub(
-                    '\\s+', ' ', parts_list[1].strip().split('.')[0]
-                )
+            # Get the docstring for the function or method
+            docstring = inspect.getdoc(function_obj)
 
-                # Add this description header (with prefix) to the list
-                comments_list.append((
-                    f'{docstring_prefix} {docstring.lower()}'
-                    ' is as follows:'  # noqa E231
-                ))
+        # Or, fall back to finding the function in its class or module
+        except OSError:
+            function_source, docstring = self.get_function_in_its_class(
+                function_obj, verbose=verbose
+            )
 
-                # Extract the comments which are not debug statements and add
-                # them to the list (prefixed with Roman numerals)
-                for i, comment_tuple in enumerate(
-                    self.comment_regex.findall(source_code)
-                ):
-                    if verbose:
-                        display(comment_tuple)
-                    indent_str, comment_str = comment_tuple
-                    if 'verbose' in comment_str:
-                        continue
-                    comments_list.append(indent_str + comment_str + '.')
+        # Start with a description header (including prefix)
+        docstring = re.sub(
+            '\\s+', ' ', docstring.strip().split('.')[0]
+        )
+        docstring_suffix = 'is as follows:'  # noqa E231
+        comments_list = [(
+            0, f'{docstring_prefix} {docstring.lower()} {docstring_suffix}'
+        )]
 
-                # If there are any comments in the list, print its procedure
-                # description and comments on their own lines
-                if len(comments_list) > 1:
-                    comments_list = self.apply_multilevel_numbering(
-                        comments_list,
-                        level_map={
-                            0: "", 4: "I. ", 8: "A. ", 12: "1. ", 16: "i) ",
-                            20: "a) ", 24: "1) "
-                        }, add_indent_back_in=True
-                    )
-                    print('\n'.join(comments_list))
+        # Extract the comments
+        for comment_tuple in self.extract_comments(
+            function_obj, verbose=verbose
+        ):
+
+            # Ignore any debug or QA statements
+            if any(map(lambda x: x in comment_tuple[1], ['verbose', 'noqa'])):
+                continue
+
+            comments_list.append(comment_tuple)
+
+        # If there are any comments in the list
+        if len(comments_list) > 1:
+            comments_list = self.apply_multilevel_numbering(
+                comments_list,
+                level_map={
+                    0: "", 4: "I. ", 8: "A. ", 12: "1. ", 16: "a. ",
+                    20: "I) ", 24: "A) ", 28: "1) ", 32: "a) "
+                }, add_indent_back_in=True, verbose=verbose
+            )
+
+            # Print its procedure description and comments on their own lines
+            print('\n'.join(comments_list))
 
     # -------------------
     # URL and Soup Functions
