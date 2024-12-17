@@ -242,8 +242,7 @@ class DataAnalysis(BaseConfig):
             raise ValueError('Lists must be of equal length')
         swaps = 0
 
-        # Create a dictionary to store the indices of elements in the
-        # ideal_list
+        # Initialize a dictionary for the indices of ideal_list
         ideal_indices = {element: i for i, element in enumerate(ideal_list)}
 
         # Iterate through the compared list
@@ -328,8 +327,7 @@ class DataAnalysis(BaseConfig):
         if verbose:
             print(f'Attempting to open {absolute_path}')
 
-        # Open the absolute path to the file in Notepad or the specified text
-        # editor
+        # Open the file in Notepad++ or the specified text editor
         cmd = [text_editor_path, absolute_path]
         proc = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
@@ -407,8 +405,7 @@ class DataAnalysis(BaseConfig):
             # Join the list of texts into a single string
             parent_text = ' '.join(texts_list)
 
-            # Replace various enclosing parentheses/brackets with standardized
-            # versions
+            # Trim various enclosing parentheses/brackets of space
             for this, with_that in zip(
                 [' )', ' ]', '( ', '[ '], [')', ']', '(', '[']
             ):
@@ -466,8 +463,7 @@ class DataAnalysis(BaseConfig):
                         ).strip('_')
                         if key and (key not in labels_list):
 
-                            # Add the label to the list if it's not a
-                            # duplicate
+                            # Add the label if it's not a duplicate
                             labels_list.append(key)
 
                             # Find the corresponding value cell
@@ -525,14 +521,12 @@ class DataAnalysis(BaseConfig):
         if X_train.shape[0] == 0 or y_train.shape[0] == 0:
             return np.array([], dtype=bool)
 
-        # Create a mask across the X_train and y_train columns (notnull
-        # checking for both inf and NaN values)
+        # Create a notnull mask across the X_train and y_train columns 
         mask_series = concat(
             [DataFrame(y_train), DataFrame(X_train)], axis='columns'
         ).applymap(notnull).all(axis='columns')
 
-        # Return the mask indicating which elements of both X_train and
-        # y_train are not inf or nan
+        # Return the mask indicating not inf or nan
         return mask_series
 
     @staticmethod
@@ -556,13 +550,11 @@ class DataAnalysis(BaseConfig):
                 analyzed columns.
         """
 
-        # If the analysis_columns is not provided, use all columns in the data
-        # frame
+        # If analysis_columns not provided, use all columns in the df
         if analysis_columns is None:
             analysis_columns = df.columns
 
-        # Convert the CategoricalDtype instances to strings, then group the
-        # columns by them
+        # Convert the CategoricalDtype instances to strings, then group
         grouped_columns = df.columns.to_series().groupby(
             df.dtypes.astype(str)
         ).groups
@@ -679,13 +671,11 @@ class DataAnalysis(BaseConfig):
         columns_list = sorted(set(df.columns).intersection(set(columns_list)))
 
         # Create a mask series indicating rows with one unique value across
-        # the specified columns
         singular_series = df[columns_list].apply(
             Series.nunique, axis='columns'
         ) == 1
 
-        # Check that there is less than two unique column value for all our
-        # columns
+        # Check that there is less than two unique column values for all
         mask_series = singular_series | (df[columns_list].apply(
             Series.nunique, axis='columns'
         ) < 1)
@@ -711,8 +701,7 @@ class DataAnalysis(BaseConfig):
             """
             return srs[srs.first_valid_index()]
 
-        # For rows with identical values in specified columns, set the new
-        # column to the modal value
+        # For identical columns-values rows, set new column to modal value
         singular_values = df[singular_series][columns_list]
         df.loc[singular_series, new_column_name] = singular_values.apply(
             extract_first_valid_value, axis='columns'
@@ -839,12 +828,10 @@ class DataAnalysis(BaseConfig):
                 columns.
         """
 
-        # Create one-hot encoded representation of the specified columns using
-        # pandas.get_dummies
+        # Create one-hot encoded representation of the specified columns
         dummies = get_dummies(df[columns], dummy_na=dummy_na)
 
-        # Create a list of the dummy variable column names that are not
-        # already in the data frame
+        # Create a list of extra dummy variable column names
         columns_list = sorted(set(dummies.columns).difference(set(df.columns)))
 
         # Concatenate the data frame with the dummy variables
@@ -885,8 +872,7 @@ class DataAnalysis(BaseConfig):
             # Iterate through the dictionary
             for k, v, in value_obj.items():
 
-                # Recursively call get row dictionary with the dictionary key
-                # as part of the prefix
+                # Recursively call function with dictionary key in prefix
                 row_dict = self.get_flattened_dictionary(
                     v, row_dict=row_dict,
                     key_prefix=f'{key_prefix}{"_" if key_prefix else ""}{k}'
@@ -895,8 +881,7 @@ class DataAnalysis(BaseConfig):
         # Check if the value is a list
         elif isinstance(value_obj, list):
 
-            # Get the minimum number of digits in the list length for
-            # prefixing zeroes
+            # Get the minimum number of digits in the list length
             list_length = len(value_obj)
             digits_count = min(len(str(list_length)), 2)
 
@@ -909,14 +894,12 @@ class DataAnalysis(BaseConfig):
                 else:
                     i = str(i).zfill(digits_count)
 
-                # Recursively call get row dictionary with the list index as
-                # part of the prefix
+                # Recursively call function with the list index in prefix
                 row_dict = self.get_flattened_dictionary(
                     v, row_dict=row_dict, key_prefix=f'{key_prefix}{i}'
                 )
 
-        # If value is neither a dictionary nor a list, add the value to the
-        # row dictionary
+        # If neither a dictionary nor a list, add value to row dictionary
         else:
             if key_prefix.startswith('_') and key_prefix[1:] not in row_dict:
                 key_prefix = key_prefix[1:]
