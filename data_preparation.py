@@ -211,15 +211,16 @@ class DataPreparation(BaseConfig):
             pass  # Ignore import errors and continue
         module_obj = eval(module_name)
 
-        # Iterate over the attributes of the module, excluding standard and
-        # built-in modules
+        # Iterate over the attributes of the module
         for library_name in sorted(set(dir(module_obj)).difference(
             set(self.standard_lib_modules)
         ).difference(
             set(sys.builtin_module_names)
         )):
+
+            # Exclude standard and built-in modules
             if library_name.startswith('__'):
-                continue  # Skip special attributes
+                continue  # Skip double underscore-prefixed attributes
 
             # Construct the full attribute name
             function_call = f'{module_name}.{library_name}'
