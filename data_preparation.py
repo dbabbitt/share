@@ -573,8 +573,7 @@ class DataPreparation(BaseConfig):
             else:
                 page_html = driver.page_source
 
-        # If the page URL or filepath is not a URL, ensure it exists and open
-        # it using open() and get the page HTML that way
+        # If it's a file path, ensure it exists and get the page HTML that way
         elif self.filepath_regex.fullmatch(page_url_or_filepath):
             assert osp.isfile(
                 page_url_or_filepath
