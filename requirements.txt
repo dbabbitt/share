@@ -1,7 +1,14 @@
+beautifulsoup4
 chromadb
 humanize
+inspect
+matplotlib
+numpy
+pandas
 pickle5
+pkgutil
 pysan
 roman
+seaborn
 webcolors
 wikipedia
