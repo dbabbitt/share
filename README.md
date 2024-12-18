@@ -118,6 +118,7 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter Notebook:
    import os
    import sys
    
+   # Assuming here you're running this in a Jupyter notebook cell in a subfolder
    shared_folder = osp.abspath(osp.join(os.pardir, 'share'))
    assert osp.exists(shared_folder), "The share submodule needs to be added"
    if shared_folder not in sys.path: sys.path.insert(1, shared_folder)
