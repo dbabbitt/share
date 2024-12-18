@@ -121,4 +121,21 @@ class NotebookUtilities(object):
             f"'{self.__class__.__name__}' object has no attribute '{name}'"
         )
 
+    def __dir__(self):
+        """
+        Override the __dir__ method to include attributes and methods
+        from the smaller classes.
+        """
+
+        # Start with the default attributes and methods of this class
+        attributes = set(super().__dir__())
+
+        # Add attributes and methods from the smaller classes
+        for attr_name in self.__dict__:
+            attr = getattr(self, attr_name)
+            if hasattr(attr, '__dir__'):
+                attributes.update(attr.__dir__())
+
+        return sorted(attributes)
+
 # print('\\b(' + '|'.join(dir()) + ')\\b')
