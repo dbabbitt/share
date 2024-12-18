@@ -10,11 +10,11 @@ The core functionality is implemented in the `NotebookUtilities` class, which ac
 
 The project is structured into modular components. Each component focuses on a specific aspect of notebook utilities. 
 
-I performed a market basket analysis of all the instantiated functions in the notebooks containing them. I then used this to make a a directed graph, the edges representing the maximum confidence in each direction between pairs of functions. I applied three generations of the Girvan-Newman algorithm to this graph. This analysis helped detect communities, which I used to organize the modules. (You can see some of this work in the [Breaking Up notebook_utils](https://github.com/dbabbitt/notebooks/blob/master/visualizations/Breaking%20Up%20notebook_utils.ipynb) notebook.)
+To discover a natural structure, I performed a market basket analysis of all the instantiated functions in the notebooks containing them. I then used this to make a a directed graph, the edges representing the maximum confidence in each direction between pairs of functions. I applied three generations of the Girvan-Newman algorithm to this graph. This analysis helped detect communities, which I used to organize the modules. (You can see some of this work in the [Breaking Up notebook_utils](https://github.com/dbabbitt/notebooks/blob/master/visualizations/Breaking%20Up%20notebook_utils.ipynb) notebook.)
 
 Below is an overview of the structure:
 
-- **`notebook_utils.py`**: The original `NotebookUtilities` class, now a **facade** that delegates calls to the smaller, focused classes.
+- **`notebook_utils.py`**: The original `NotebookUtilities` class, now a facade that delegates calls to the smaller, focused classes.
 - **`base_config.py`**: Contains the `BaseConfig` class, which provides common attributes and functions inherited by other modules.
 
 ### Modules
