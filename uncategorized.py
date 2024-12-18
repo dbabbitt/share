@@ -2244,11 +2244,10 @@ class Uncategorized(BaseConfig):
                 hexadecimal color string.
 
         Examples:
-            >>> nu.color_distance_from('white', (255, 0, 0))
-            360.62445840513925
-
-            >>> nu.color_distance_from('#0000FF', (255, 0, 0))
-            360.62445840513925
+            nu.color_distance_from('white', (255, 0, 0))  # 360.62445840513925
+            nu.color_distance_from(
+                '#0000FF', (255, 0, 0)
+            )  # 360.62445840513925
         """
         from math import sqrt
 
@@ -3223,13 +3222,13 @@ class Uncategorized(BaseConfig):
               differently.
 
         Examples:
-            >>> import networkx as nx
-            >>> sub_graph = nx.erdos_renyi_graph(10, 0.3)
-            >>> show_subgraph(sub_graph)
-            >>> nodes_list_list = [['node1', 'node2'], ['node3', 'node4']]
-            >>> show_subgraph(
-                    sub_graph, nodes_list_list=nodes_list_list, verbose=True
-                )
+            import networkx as nx
+            sub_graph = nx.erdos_renyi_graph(10, 0.3)
+            show_subgraph(sub_graph)
+            nodes_list_list = [['node1', 'node2'], ['node3', 'node4']]
+            show_subgraph(
+                sub_graph, nodes_list_list=nodes_list_list, verbose=True
+            )
         """
 
         # Vertically separate the labels for easier readability

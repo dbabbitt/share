@@ -643,9 +643,9 @@ class NotebookUtilities(object):
                 `actions_list`.
 
         Examples:
-            >>> actions = ['jump', 'run', 'jump', 'run', 'jump']
-            >>> ngrams = ['jump', 'run']
-            >>> SomeClass.count_ngrams(actions, ngrams)
+            actions = ['jump', 'run', 'jump', 'run', 'jump']
+            ngrams = ['jump', 'run']
+            SomeClass.count_ngrams(actions, ngrams)
             2
         """
 
@@ -894,8 +894,8 @@ class NotebookUtilities(object):
         verbose=False
     ):
         """
-        Check the closest names for typos by comparing items from left_list
-        with items from right_list and computing their similarities.
+        Check the closest names for typos by comparing items from two different
+        lists.
 
         Parameters:
             left_list (list): List containing items to be compared (left side).
@@ -3543,7 +3543,7 @@ class NotebookUtilities(object):
         Example:
             tables_url = 'https://en.wikipedia.org/wiki/'
             tables_url += 'Provinces_of_Afghanistan'
-            page_tables_list = nu.get_page_tables(tables_url)
+            page_tables_list = nu.get_page_tables(tables_url, verbose=True)
 
         """
 
@@ -4383,8 +4383,7 @@ class NotebookUtilities(object):
             df = pd.DataFrame({
                 'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3], 'C': ['a', 'b', 'c']
             })
-            nu.get_numeric_columns(df)
-            ['A', 'B']
+            nu.get_numeric_columns(df)  # ['A', 'B']
         """
 
         # Initialize an empty list to store numeric column names
@@ -5023,11 +5022,10 @@ class NotebookUtilities(object):
                 hexadecimal color string.
 
         Examples:
-            >>> nu.color_distance_from('white', (255, 0, 0))
-            360.62445840513925
-
-            >>> nu.color_distance_from('#0000FF', (255, 0, 0))
-            360.62445840513925
+            nu.color_distance_from('white', (255, 0, 0))  # 360.62445840513925
+            nu.color_distance_from(
+                '#0000FF', (255, 0, 0)
+            )  # 360.62445840513925
         """
         from math import sqrt
 
@@ -6725,11 +6723,11 @@ class NotebookUtilities(object):
               differently.
 
         Examples:
-            >>> import networkx as nx
-            >>> sub_graph = nx.erdos_renyi_graph(10, 0.3)
-            >>> show_subgraph(sub_graph)
-            >>> nodes_list_list = [['node1', 'node2'], ['node3', 'node4']]
-            >>> show_subgraph(
+            import networkx as nx
+            sub_graph = nx.erdos_renyi_graph(10, 0.3)
+            show_subgraph(sub_graph)
+            nodes_list_list = [['node1', 'node2'], ['node3', 'node4']]
+            show_subgraph(
                     sub_graph, nodes_list_list=nodes_list_list, verbose=True
                 )
         """
