@@ -289,7 +289,7 @@ If you encounter any bugs or have feature requests, please open an issue in the 
 
 ## 🛡️ License
 
-This project is licensed under the [MIT License](https://github.com/dbabbitt/share/blob/main/LICENSE). Feel free to use, modify, and distribute it as per the terms of the license.
+This project is licensed under the [MIT License](https://github.com/dbabbitt/share/blob/master/LICENSE). Feel free to use, modify, and distribute it as per the terms of the license.
 
 ---
 
