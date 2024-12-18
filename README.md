@@ -52,7 +52,7 @@ The project is structured into modular components, each focusing on a specific a
 
 ## 📦 Installation
 
-To use the `Share` library, clone the repository and install the required dependencies:
+To use the `share` library, clone the repository and install the required dependencies:
 
 1. Clone the repository and add it as a submodule to your notebooks:
    ```bash
@@ -82,6 +82,28 @@ To use the `Share` library, clone the repository and install the required depend
 3. Install dependencies (TODO: write a requirements.txt file):
    ```bash
    pip install -r requirements.txt
+   ```
+
+To remove the `share` submodule from your repository:
+   ```bash
+   repo="path/to/your/repository"
+   if [ -d "$repo/.git" ]; then
+       cd "$repo"
+       
+       # Check if the submodule exists
+       if [ -d "share" ]; then
+           repo_name=$(basename "$repo")
+           echo "Removing submodule in repository: $repo_name..."
+           git config -f .gitmodules --remove-section submodule.share
+           git rm --cached share
+           
+           # Fully remove the share folder
+           rm -rf share
+           
+           git commit -m "Removed submodule share"
+       fi
+       
+   fi
    ```
 
 ---
