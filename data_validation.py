@@ -174,24 +174,34 @@ class DataValidation(BaseConfig):
         ):
 
             # Check that the current index is in the splitting indices list
-            # and not in the excluded indices list
             if (
                 current_idx in splitting_indices_list
-                and current_idx not in excluded_indices_list
             ):
 
-                # Add it to the current list
-                current_list.append(current_idx)
+                # Check that the current index is not in the excluded list
+                if (
+                    current_idx not in excluded_indices_list
+                ):
 
-            # Otherwise, if the current list is not empty, add it to the split
-            # list and start a new current list
+                    # If so, add it to the current list
+                    current_list.append(current_idx)
+
+            # Otherwise
             else:
+
+                # If the current list is not empty
                 if current_list:
+
+                    # Add it to the split list
                     split_list.append(current_list)
+
+                # And start a new current list
                 current_list = []
 
-        # If the current list is not empty, add it to the split list
+        # If the current list is not empty
         if current_list:
+
+            # Add it to the split list
             split_list.append(current_list)
 
         # Return the split list
