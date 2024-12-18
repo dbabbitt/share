@@ -219,7 +219,7 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter Notebook:
    # and suggest how to consolidate them
    nu.show_dupl_fn_defs_search_string()
    
-   # Retrieve <table>s from a given URL and return a list of DataFrames
+   # Retrieve <table>s from a given URL as a list of DataFrames
    tables_url = 'https://en.wikipedia.org/wiki/'
    tables_url += 'Provinces_of_Afghanistan'
    page_tables_list = nu.get_page_tables(tables_url, verbose=True)
