@@ -283,10 +283,9 @@ class Uncategorized(BaseConfig):
                 `actions_list`.
 
         Examples:
-            >>> actions = ['jump', 'run', 'jump', 'run', 'jump']
-            >>> ngrams = ['jump', 'run']
-            >>> SomeClass.count_ngrams(actions, ngrams)
-            2
+            actions = ['jump', 'run', 'jump', 'run', 'jump']
+            ngrams = ['jump', 'run']
+            nu.count_ngrams(actions, ngrams)
         """
 
         # Initialize the count of n-gram occurrences
@@ -411,8 +410,8 @@ class Uncategorized(BaseConfig):
         Examples:
             sequence = ['apple', 'banana', 'apple', 'cherry']
             new_sequence, mapping = nu.convert_strings_to_integers(sequence)
-            new_sequence # array([0, 1, 0, 2])
-            mapping # {'apple': 0, 'banana': 1, 'cherry': 2}
+            display(new_sequence)  # array([0, 1, 0, 2])
+            display(mapping)  # {'apple': 0, 'banana': 1, 'cherry': 2}
         """
 
         # Create an alphabet from the sequence if not provided
@@ -875,8 +874,7 @@ class Uncategorized(BaseConfig):
     @staticmethod
     def get_function_file_path(func):
         """
-        Return the relative or absolute file path where the function is
-        stored.
+        Get the relative or absolute file path where a function is stored.
 
         Parameters:
             func: A Python function.
@@ -1160,45 +1158,6 @@ class Uncategorized(BaseConfig):
         file_path = osp.join(repository_dir, repository_name, '.gitignore')
         print()
         subprocess.run([text_editor_path, osp.abspath(file_path)])
-
-    @staticmethod
-    def humanize_bytes(bytes_count, precision=1):
-        """
-        Return a humanized string representation of a number of bytes.
-
-        Examples:
-            >>> humanize_bytes(1)
-            '1 byte'
-            >>> humanize_bytes(1024)
-            '1.0 kB'
-            >>> humanize_bytes(1024*123)
-            '123.0 kB'
-            >>> humanize_bytes(1024*12342)
-            '12.1 MB'
-            >>> humanize_bytes(1024*12342,2)
-            '12.05 MB'
-            >>> humanize_bytes(1024*1234,2)
-            '1.21 MB'
-            >>> humanize_bytes(1024*1234*1111,2)
-            '1.31 GB'
-            >>> humanize_bytes(1024*1234*1111,1)
-            '1.3 GB'
-        """
-        abbrevs = (
-            (1 << 50, 'PB'),
-            (1 << 40, 'TB'),
-            (1 << 30, 'GB'),
-            (1 << 20, 'MB'),
-            (1 << 10, 'kB'),
-            (1, 'bytes')
-        )
-        if bytes_count == 1:
-            return '1 byte'
-        for factor, suffix in abbrevs:
-            if bytes_count >= factor:
-                break
-
-        return '{0:.{1}f} {2}'.format(bytes_count / factor, precision, suffix)
 
     def remove_empty_folders(self, folder_path, remove_root=True):
         """

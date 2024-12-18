@@ -2265,45 +2265,6 @@ class NotebookUtilities(object):
         print()
         subprocess.run([text_editor_path, osp.abspath(file_path)])
 
-    @staticmethod
-    def humanize_bytes(bytes_count, precision=1):
-        """
-        Return a humanized string representation of a number of bytes.
-
-        Examples:
-            >>> humanize_bytes(1)
-            '1 byte'
-            >>> humanize_bytes(1024)
-            '1.0 kB'
-            >>> humanize_bytes(1024*123)
-            '123.0 kB'
-            >>> humanize_bytes(1024*12342)
-            '12.1 MB'
-            >>> humanize_bytes(1024*12342,2)
-            '12.05 MB'
-            >>> humanize_bytes(1024*1234,2)
-            '1.21 MB'
-            >>> humanize_bytes(1024*1234*1111,2)
-            '1.31 GB'
-            >>> humanize_bytes(1024*1234*1111,1)
-            '1.3 GB'
-        """
-        abbrevs = (
-            (1 << 50, 'PB'),
-            (1 << 40, 'TB'),
-            (1 << 30, 'GB'),
-            (1 << 20, 'MB'),
-            (1 << 10, 'kB'),
-            (1, 'bytes')
-        )
-        if bytes_count == 1:
-            return '1 byte'
-        for factor, suffix in abbrevs:
-            if bytes_count >= factor:
-                break
-
-        return '{0:.{1}f} {2}'.format(bytes_count / factor, precision, suffix)
-
     def remove_empty_folders(self, folder_path, remove_root=True):
         """
         Function to remove empty folders
