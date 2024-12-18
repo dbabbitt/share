@@ -122,7 +122,8 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter Notebook:
    display(new_sequence)  # array([0, 1, 0, 2])
    display(mapping)  # {'apple': 0, 'banana': 1, 'cherry': 2}
    
-   # Take a list of strings with indentation and prefix them based on a multi-level list style
+   # Take a list of strings with indentation and prefix them based on a
+   # multi-level list style
    level_count = 8
    text_list = [
        ' ' * (i*4) + f'This is level {i}'
@@ -191,7 +192,8 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter Notebook:
    # Open a file in Notepad
    nu.open_path_in_notepad(r'C:\this_example.txt')
    
-   # Identify and report duplicate function definitions in Jupyter notebooks and suggest how to consolidate them
+   # Identify and report duplicate function definitions in Jupyter notebooks
+   # and suggest how to consolidate them
    nu.show_dupl_fn_defs_search_string()
    
    # Retrieve &lt;table&gt;s from a given URL and return a list of DataFrames
