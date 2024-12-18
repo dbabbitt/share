@@ -79,7 +79,7 @@ To use the `share` library, clone the repository and install the required depend
    ```bash
    cd share
    ```
-3. Install dependencies (TODO: write a requirements.txt file):
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```

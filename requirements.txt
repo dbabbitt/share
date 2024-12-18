@@ -1,0 +1,7 @@
+chromadb
+humanize
+pickle5
+pysan
+roman
+webcolors
+wikipedia
