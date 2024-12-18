@@ -931,8 +931,7 @@ class DataAnalysis(BaseConfig):
             df = pd.DataFrame({
                 'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3], 'C': ['a', 'b', 'c']
             })
-            nu.get_numeric_columns(df)
-            ['A', 'B']
+            nu.get_numeric_columns(df)  # ['A', 'B']
         """
 
         # Initialize an empty list to store numeric column names

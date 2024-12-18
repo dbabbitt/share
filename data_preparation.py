@@ -616,7 +616,7 @@ class DataPreparation(BaseConfig):
         Example:
             tables_url = 'https://en.wikipedia.org/wiki/'
             tables_url += 'Provinces_of_Afghanistan'
-            page_tables_list = nu.get_page_tables(tables_url)
+            page_tables_list = nu.get_page_tables(tables_url, verbose=True)
 
         """
 

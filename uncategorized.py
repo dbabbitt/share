@@ -285,7 +285,7 @@ class Uncategorized(BaseConfig):
         Examples:
             actions = ['jump', 'run', 'jump', 'run', 'jump']
             ngrams = ['jump', 'run']
-            nu.count_ngrams(actions, ngrams)
+            nu.count_ngrams(actions, ngrams)  # 2
         """
 
         # Initialize the count of n-gram occurrences

@@ -645,8 +645,7 @@ class NotebookUtilities(object):
         Examples:
             actions = ['jump', 'run', 'jump', 'run', 'jump']
             ngrams = ['jump', 'run']
-            SomeClass.count_ngrams(actions, ngrams)
-            2
+            nu.count_ngrams(actions, ngrams)  # 2
         """
 
         # Initialize the count of n-gram occurrences
@@ -768,24 +767,34 @@ class NotebookUtilities(object):
         ):
 
             # Check that the current index is in the splitting indices list
-            # and not in the excluded indices list
             if (
                 current_idx in splitting_indices_list
-                and current_idx not in excluded_indices_list
             ):
 
-                # Add it to the current list
-                current_list.append(current_idx)
+                # Check that the current index is not in the excluded list
+                if (
+                    current_idx not in excluded_indices_list
+                ):
 
-            # Otherwise, if the current list is not empty, add it to the split
-            # list and start a new current list
+                    # If so, add it to the current list
+                    current_list.append(current_idx)
+
+            # Otherwise
             else:
+
+                # If the current list is not empty
                 if current_list:
+
+                    # Add it to the split list
                     split_list.append(current_list)
+
+                # And start a new current list
                 current_list = []
 
-        # If the current list is not empty, add it to the split list
+        # If the current list is not empty
         if current_list:
+
+            # Add it to the split list
             split_list.append(current_list)
 
         # Return the split list
@@ -894,8 +903,8 @@ class NotebookUtilities(object):
         verbose=False
     ):
         """
-        Check the closest names for typos by comparing items from two different
-        lists.
+        Check the closest names for typos by comparing items from left_list
+        with items from right_list and computing their similarities.
 
         Parameters:
             left_list (list): List containing items to be compared (left side).
@@ -1016,8 +1025,8 @@ class NotebookUtilities(object):
         Examples:
             sequence = ['apple', 'banana', 'apple', 'cherry']
             new_sequence, mapping = nu.convert_strings_to_integers(sequence)
-            new_sequence # array([0, 1, 0, 2])
-            mapping # {'apple': 0, 'banana': 1, 'cherry': 2}
+            display(new_sequence)  # array([0, 1, 0, 2])
+            display(mapping)  # {'apple': 0, 'banana': 1, 'cherry': 2}
         """
 
         # Create an alphabet from the sequence if not provided
@@ -1287,8 +1296,7 @@ class NotebookUtilities(object):
             raise ValueError('Lists must be of equal length')
         swaps = 0
 
-        # Create a dictionary to store the indices of elements in the
-        # ideal_list
+        # Initialize a dictionary for the indices of ideal_list
         ideal_indices = {element: i for i, element in enumerate(ideal_list)}
 
         # Iterate through the compared list
@@ -1430,7 +1438,9 @@ class NotebookUtilities(object):
         Parameters:
             text_list:
                 A list of strings, where each string may be prepended with 0,
-                4, 8, 12, or 16 spaces representing indentation levels.
+                4, 8, 12, or 16 spaces representing indentation levels, or
+                a list of tuples (int, str), where the int is the number of
+                spaces and the str is the left-stripped text.
             level_map:
                 A dictionary that maps indentation to numbering format.
                 Defaults to {0: "", 4: "A. ", 8: "1. ", 12: "a) ", 16: "i) "}.
@@ -1442,12 +1452,22 @@ class NotebookUtilities(object):
             indentation.
 
         Example:
-            text_list = [' ' * (i*4) + f'This is level {i}' for i in range(5)]
+            level_count = 8
+            text_list = [
+                ' ' * (i*4) + f'This is level {i}'
+                for i in range(level_count+1)
+            ]
             text_list += [
                 ' ' * (i*4) + f'This is level {i} again'
-                for i in range(4, -1, -1)
+                for i in range(level_count, -1, -1)
             ]
-            numbered_list = nu.apply_multilevel_numbering(text_list)
+            numbered_list = nu.apply_multilevel_numbering(
+                text_list,
+                level_map={
+                    0: "", 4: "I. ", 8: "A. ", 12: "1. ", 16: "a. ",
+                    20: "I) ", 24: "A) ", 28: "1) ", 32: "a) "
+                }, add_indent_back_in=True
+            )
             for line in numbered_list:
                 print(line)
         """
@@ -1464,7 +1484,11 @@ class NotebookUtilities(object):
         for text in text_list:
 
             # Get the level by the indent
-            indent = len(text) - len(text.lstrip())
+            if isinstance(text, tuple):
+                indent = text[0]
+                text = text[1]
+            else:
+                indent = len(text) - len(text.lstrip())
             if verbose:
                 print(f'indent = {indent}')
             new_level = indent // 4
@@ -1514,8 +1538,7 @@ class NotebookUtilities(object):
     @staticmethod
     def get_function_file_path(func):
         """
-        Return the relative or absolute file path where the function is
-        stored.
+        Get the relative or absolute file path where a function is stored.
 
         Parameters:
             func: A Python function.
@@ -1647,8 +1670,7 @@ class NotebookUtilities(object):
         if verbose:
             print(f'Attempting to open {absolute_path}')
 
-        # Open the absolute path to the file in Notepad or the specified text
-        # editor
+        # Open the file in Notepad++ or the specified text editor
         cmd = [text_editor_path, absolute_path]
         proc = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
@@ -2918,21 +2940,51 @@ class NotebookUtilities(object):
         return (random_py_file, random_function)
 
     def get_evaluations(self, obj):
+        """
+        Evaluate an object using a list of evaluator functions and return a
+        list of matching evaluations.
+
+        Args:
+            obj: The object to be evaluated.
+
+        Returns:
+            list:
+                A list of evaluator names (without the 'is' prefix) that
+                return True for the given object.
+        """
+
+        # Initialize a list of evaluations
         evaluations_list = []
+
+        # Loop through each of inspect's evaluators
         for evaluator in self.object_evaluators:
+
+            # Attempt to evaluate a specific evaluator
             try:
-                evaluation = eval(f'inspect.{evaluator}(obj)')
+
+                # Pass 'inspect' explicitly into eval's context
+                evaluation = eval(
+                    f'inspect.{evaluator}(obj)',
+                    {'inspect': inspect, 'obj': obj}
+                )
+
+                # Does it evaluate?
                 if evaluation:
+
+                    # Remove the 'is' prefix and add it to the list
                     evaluations_list.append(evaluator[2:])
+
+            # Ignore evaluations that don't work
             except Exception:
                 continue
 
+        # Return the list of evaluations
         return evaluations_list
 
     def get_dir_tree(
         self, module_name, function_calls=[], contains_str=None,
         not_contains_str=None, recurse_classes=True, recurse_modules=False,
-        import_call=None, verbose=False
+        import_call=None, level=4, verbose=False
     ):
         """
         Introspect a Python module to discover available functions and
@@ -2965,6 +3017,21 @@ class NotebookUtilities(object):
                 A sorted list of attributes in the module that match the
                 filtering criteria.
 
+        Example:
+            module_name = 'nu'
+            import_call = '''
+            from notebook_utils import NotebookUtilities
+            nu = NotebookUtilities(
+                data_folder_path=osp.abspath(osp.join(os.pardir, 'data')),
+                saves_folder_path=osp.abspath(osp.join(os.pardir, 'saves'))
+            )'''
+            nu_functions = nu.get_dir_tree(
+                module_name, function_calls=[], contains_str='_regex',
+                import_call=import_call, recurse_modules=True, level=3,
+                verbose=False
+            )
+            sorted(nu_functions, key=lambda x: x[::-1])[:6]
+
         Notes:
             This function dynamically imports the specified module and
             retrieves its attributes, filtering them based on the provided
@@ -2972,26 +3039,43 @@ class NotebookUtilities(object):
             specified.
         """
 
+        # Base case: Stop recursion when level reaches 0
+        if level == 0:
+            return []
+
         # Try to get the module object by first importing it
         if import_call is None:
             import_call = 'import ' + module_name.split('.')[0]
         if verbose:
-            print(import_call)
+            print(f'import_call: {import_call}')
+
+        # Dynamically import the module
         try:
             exec(import_call)  # Execute the import statement
         except ImportError:
             pass  # Ignore import errors and continue
-        module_obj = eval(module_name)
 
-        # Iterate over the attributes of the module, excluding standard and
-        # built-in modules
-        for library_name in sorted(set(dir(module_obj)).difference(
-            set(self.standard_lib_modules)
-        ).difference(
-            set(sys.builtin_module_names)
-        )):
-            if library_name.startswith('__'):
-                continue  # Skip special attributes
+        # Filter out skippable attributes of the module
+        library_names_list = self.get_library_names(
+            module_name, import_call, verbose=False
+        )
+
+        # Are there no library names left?
+        if not library_names_list:
+
+            # Get a better representation of the module and try again
+            try:
+                module_obj = inspect.getmodule(eval(module_name))
+                if verbose:
+                    print(f'module_obj: {module_obj}')
+                library_names_list = self.get_library_names(
+                    module_obj, import_call, verbose=verbose
+                )
+            except AttributeError:
+                pass  # Ignore attribute errors and continue
+
+        # Iterate over the library names list
+        for library_name in library_names_list:
 
             # Construct the full attribute name
             function_call = f'{module_name}.{library_name}'
@@ -3004,45 +3088,56 @@ class NotebookUtilities(object):
 
             # Get evaluations of the object from the inspect library
             evaluations_list = self.get_evaluations(function_obj)
+
+            # Are there no evaluations?
+            if not evaluations_list:
+
+                # Get a better representation of the function and try again
+                module_obj = inspect.getmodule(function_obj)
+                if verbose:
+                    print(f'module_obj: {module_obj}')
+                evaluations_list = self.get_evaluations(module_obj)
+
             if evaluations_list:
                 function_calls.append(function_call)
 
             if verbose:
-                print(function_call, evaluations_list)
+                print(
+                    f'function_call: {function_call},'
+                    f' evaluations_list: {evaluations_list}'
+                )
 
             # Recursively explore classes if specified
             if recurse_classes and 'class' in evaluations_list:
                 function_calls = self.get_dir_tree(
                     module_name=function_call, function_calls=function_calls,
-                    verbose=verbose
+                    recurse_classes=recurse_classes,
+                    recurse_modules=recurse_modules,
+                    import_call=import_call, level=level - 1, verbose=verbose
                 )
                 continue
 
             # Recursively explore modules if specified
-            if recurse_modules and 'module' in evaluations_list:
+            elif recurse_modules and 'module' in evaluations_list:
                 function_calls = self.get_dir_tree(
                     module_name=function_call, function_calls=function_calls,
-                    verbose=verbose
+                    recurse_classes=recurse_classes,
+                    recurse_modules=recurse_modules,
+                    import_call=import_call, level=level - 1, verbose=verbose
                 )
                 continue
 
         # Apply filtering criteria if provided
-        if not bool(contains_str) and bool(not_contains_str):
+        if contains_str:
+            function_calls = [
+                fn for fn in function_calls if contains_str in fn.lower()
+            ]
+        if not_contains_str:
             function_calls = [
                 fn
                 for fn in function_calls
                 if not_contains_str not in fn.lower()
             ]
-        elif bool(contains_str) and (not bool(not_contains_str)):
-            function_calls = [
-                fn
-                for fn in function_calls
-                if contains_str in fn.lower()
-            ]
-        elif bool(contains_str) and bool(not_contains_str):
-            function_calls = [fn for fn in function_calls if (
-                contains_str in fn.lower()
-            ) and (not_contains_str not in fn.lower())]
 
         # Return a sorted list of unique function calls
         return sorted(set(function_calls))
@@ -3245,8 +3340,176 @@ class NotebookUtilities(object):
                 for line_str in output_str.splitlines():
                     print(line_str.decode(), flush=True)
 
-            # Update the internal list of installed modules after installation
+            # Update the internal list of installed modules after
+            # installation
             self.update_modules_list(verbose=False)
+
+    def extract_comments(self, function_obj, verbose=False):
+        """
+        Extract all comments from the source code of a given function along
+        with their correct indentation.
+
+        Parameters:
+            function_obj (callable):
+                The function whose comments need to be extracted.
+            verbose (bool, optional):
+                Whether to print debug or status messages. Defaults to False.
+
+        Returns:
+            list:
+                A list of tuples containing (indentation, comment) for each
+                comment.
+        """
+
+        # Get the source code of the function
+        try:
+            source_code = inspect.getsource(function_obj)
+        except OSError:
+            raise ValueError(
+                'Cannot retrieve source code for function:'
+                f" {function_obj.__name__}"
+            )
+
+        # Initialize the comment tuples list
+        comment_tuples = []
+
+        # Split code into lines to retrieve the indentation
+        code_lines = source_code.splitlines()
+        code_io = StringIO(source_code)
+
+        # Tokenize the source code
+        for token in tokenize.generate_tokens(code_io.readline):
+
+            # Is the token a comment?
+            if token.type == tokenize.COMMENT:
+
+                # Extract comment text without the pound sign
+                comment = token.string.lstrip('#').strip()
+
+                # Get the line number of the comment
+                line_number = token.start[0] - 1
+
+                # Get the column number where the comment starts
+                column_number = token.start[1]
+
+                # Is the indentation a standalone comment?
+                if (
+                    column_number == 0
+                    or code_lines[line_number].lstrip().startswith('#')
+                ):
+
+                    # Indentation is the column number of the comment
+                    indentation = column_number
+
+                # Is the indentation an inline comment?
+                else:
+
+                    # Indentation matches the code before the comment
+                    indentation = (
+                        len(code_lines[line_number])
+                        - len(code_lines[line_number].lstrip())
+                    )
+
+                comment_tuple = (indentation, comment)
+                comment_tuples.append(comment_tuple)
+
+        return comment_tuples
+
+    def get_function_in_its_class(
+        self, function_obj, verbose=False
+    ):
+        """
+        Retrieve the source code and docstring of a function defined in a
+        class.
+
+        Parameters
+        ----------
+        function_obj : function
+            The function object for which the source code and docstring
+            are to be retrieved.
+        verbose : bool, optional, default=False
+            If True, prints additional debug information.
+
+        Returns
+        -------
+        tuple
+            A tuple containing the source code of the function (str) and
+            the docstring of the function (str).
+
+        Raises
+        ------
+        ValueError
+            If the function's source code or module cannot be found.
+
+        Notes
+        -----
+        - This method works by inspecting the module where the function is
+          defined.
+        - It searches for the function inside all classes within the module.
+        - If the function is a static or class method, it extracts the
+          underlying function object before retrieving its source code and
+          docstring.
+        """
+
+        # Initialize the function's source code and docstring variables
+        function_source = None
+        docstring = None
+
+        # Get the name of the function
+        function_name = function_obj.__name__
+
+        # Get the module where the function is defined
+        module = inspect.getmodule(function_obj)
+
+        # Retrieve the source code for the entire module
+        if module is not None:
+
+            # Loop through the module's classes, methods, objects, et al
+            for obj in module.__dict__.values():
+
+                # Is this object a class?
+                if inspect.isclass(obj):
+
+                    # Check if the class has the function
+                    if hasattr(obj, function_name):
+                        func = getattr(obj, function_name)
+
+                        # Handle static methods and class methods
+                        if isinstance(func, (staticmethod, classmethod)):
+
+                            # Extract the actual function
+                            func = func.__func__
+
+                        # Ensure the object is a function or method
+                        if (
+                            inspect.isfunction(func)
+                            or inspect.ismethod(func)
+                        ):
+
+                            # Get the source code for the method
+                            function_source = inspect.getsource(func)
+
+                            # Get the docstring for the method
+                            docstring = inspect.getdoc(func)
+
+                            # Exit the loop once the function is found
+                            break
+
+            # Raise an error if the function's source could not be found
+            if function_source is None:
+                raise ValueError(
+                    'Could not find source for function'
+                    f" '{function_name}'."
+                )
+
+        # Raise an error if the module could not be retrieved
+        else:
+            raise ValueError(
+                f"Could not retrieve the module for '{function_name}'."
+            )
+
+        # Return the source code and docstring as a tuple
+        return function_source, docstring
 
     def describe_procedure(
         self, function_obj, docstring_prefix='The procedure to', verbose=False
@@ -3281,54 +3544,58 @@ class NotebookUtilities(object):
             'verbose'.
         """
 
-        # Check if the function object is any kind of function or method
-        if inspect.isroutine(function_obj):
+        # Ensure the function object is some kind of function or method
+        assert inspect.isroutine(function_obj), (
+            "The function object must be some kind of function or method"
+        )
 
-            # Extract the source code and initialize the comments list
-            source_code = inspect.getsource(function_obj)
-            comments_list = []
+        # Attempt to retrieve the source code directly
+        try:
 
-            # Split the source code to separate docstring and function body
-            parts_list = re.split('"""', source_code, 0)
-            if verbose:
-                print(len(parts_list), parts_list)
-            if len(parts_list) > 1:
+            # Get the source code for the function or method
+            function_source = inspect.getsource(function_obj)
 
-                # Clean the docstring part so that only the top one-sentence
-                # paragraph is included
-                docstring = re.sub(
-                    '\\s+', ' ', parts_list[1].strip().split('.')[0]
-                )
+            # Get the docstring for the function or method
+            docstring = inspect.getdoc(function_obj)
 
-                # Add this description header (with prefix) to the list
-                comments_list.append((
-                    f'{docstring_prefix} {docstring.lower()}'
-                    ' is as follows:'  # noqa E231
-                ))
+        # Or, fall back to finding the function in its class or module
+        except OSError:
+            function_source, docstring = self.get_function_in_its_class(
+                function_obj, verbose=verbose
+            )
 
-                # Extract the comments which are not debug statements and add
-                # them to the list (prefixed with Roman numerals)
-                for i, comment_tuple in enumerate(
-                    self.comment_regex.findall(source_code)
-                ):
-                    if verbose:
-                        display(comment_tuple)
-                    indent_str, comment_str = comment_tuple
-                    if 'verbose' in comment_str:
-                        continue
-                    comments_list.append(indent_str + comment_str + '.')
+        # Start with a description header (including prefix)
+        docstring = re.sub(
+            '\\s+', ' ', docstring.strip().split('.')[0]
+        )
+        docstring_suffix = 'is as follows:'  # noqa E231
+        comments_list = [(
+            0, f'{docstring_prefix} {docstring.lower()} {docstring_suffix}'
+        )]
 
-                # If there are any comments in the list, print its procedure
-                # description and comments on their own lines
-                if len(comments_list) > 1:
-                    comments_list = self.apply_multilevel_numbering(
-                        comments_list,
-                        level_map={
-                            0: "", 4: "I. ", 8: "A. ", 12: "1. ", 16: "i) ",
-                            20: "a) ", 24: "1) "
-                        }, add_indent_back_in=True
-                    )
-                    print('\n'.join(comments_list))
+        # Extract the comments
+        for comment_tuple in self.extract_comments(
+            function_obj, verbose=verbose
+        ):
+
+            # Ignore any debug or QA statements
+            if any(map(lambda x: x in comment_tuple[1], ['verbose', 'noqa'])):
+                continue
+
+            comments_list.append(comment_tuple)
+
+        # If there are any comments in the list
+        if len(comments_list) > 1:
+            comments_list = self.apply_multilevel_numbering(
+                comments_list,
+                level_map={
+                    0: "", 4: "I. ", 8: "A. ", 12: "1. ", 16: "a. ",
+                    20: "I) ", 24: "A) ", 28: "1) ", 32: "a) "
+                }, add_indent_back_in=True, verbose=verbose
+            )
+
+            # Print its procedure description and comments on their own lines
+            print('\n'.join(comments_list))
 
     # -------------------
     # URL and Soup Functions
@@ -3499,8 +3766,7 @@ class NotebookUtilities(object):
             else:
                 page_html = driver.page_source
 
-        # If the page URL or filepath is not a URL, ensure it exists and open
-        # it using open() and get the page HTML that way
+        # If it's a file path, ensure it exists and get the page HTML that way
         elif self.filepath_regex.fullmatch(page_url_or_filepath):
             assert osp.isfile(
                 page_url_or_filepath
@@ -3696,8 +3962,7 @@ class NotebookUtilities(object):
             # Join the list of texts into a single string
             parent_text = ' '.join(texts_list)
 
-            # Replace various enclosing parentheses/brackets with standardized
-            # versions
+            # Trim various enclosing parentheses/brackets of space
             for this, with_that in zip(
                 [' )', ' ]', '( ', '[ '], [')', ']', '(', '[']
             ):
@@ -3755,8 +4020,7 @@ class NotebookUtilities(object):
                         ).strip('_')
                         if key and (key not in labels_list):
 
-                            # Add the label to the list if it's not a
-                            # duplicate
+                            # Add the label if it's not a duplicate
                             labels_list.append(key)
 
                             # Find the corresponding value cell
@@ -3814,14 +4078,12 @@ class NotebookUtilities(object):
         if X_train.shape[0] == 0 or y_train.shape[0] == 0:
             return np.array([], dtype=bool)
 
-        # Create a mask across the X_train and y_train columns (notnull
-        # checking for both inf and NaN values)
+        # Create a notnull mask across the X_train and y_train columns 
         mask_series = concat(
             [DataFrame(y_train), DataFrame(X_train)], axis='columns'
         ).applymap(notnull).all(axis='columns')
 
-        # Return the mask indicating which elements of both X_train and
-        # y_train are not inf or nan
+        # Return the mask indicating not inf or nan
         return mask_series
 
     @staticmethod
@@ -3845,13 +4107,11 @@ class NotebookUtilities(object):
                 analyzed columns.
         """
 
-        # If the analysis_columns is not provided, use all columns in the data
-        # frame
+        # If analysis_columns not provided, use all columns in the df
         if analysis_columns is None:
             analysis_columns = df.columns
 
-        # Convert the CategoricalDtype instances to strings, then group the
-        # columns by them
+        # Convert the CategoricalDtype instances to strings, then group
         grouped_columns = df.columns.to_series().groupby(
             df.dtypes.astype(str)
         ).groups
@@ -4044,13 +4304,11 @@ class NotebookUtilities(object):
         columns_list = sorted(set(df.columns).intersection(set(columns_list)))
 
         # Create a mask series indicating rows with one unique value across
-        # the specified columns
         singular_series = df[columns_list].apply(
             Series.nunique, axis='columns'
         ) == 1
 
-        # Check that there is less than two unique column value for all our
-        # columns
+        # Check that there is less than two unique column values for all
         mask_series = singular_series | (df[columns_list].apply(
             Series.nunique, axis='columns'
         ) < 1)
@@ -4076,8 +4334,7 @@ class NotebookUtilities(object):
             """
             return srs[srs.first_valid_index()]
 
-        # For rows with identical values in specified columns, set the new
-        # column to the modal value
+        # For identical columns-values rows, set new column to modal value
         singular_values = df[singular_series][columns_list]
         df.loc[singular_series, new_column_name] = singular_values.apply(
             extract_first_valid_value, axis='columns'
@@ -4114,8 +4371,7 @@ class NotebookUtilities(object):
         if verbose:
             print(type(search_regex))
 
-        # Apply the search_regex to each element in the DataFrame and count
-        # occurrences for each column
+        # Apply the regex to each element and count occurrences per column
         srs = df.applymap(
             lambda x: bool(search_regex.search(str(x))), na_action='ignore'
         ).sum()
@@ -4150,8 +4406,7 @@ class NotebookUtilities(object):
                 columns_list that matches the regex pattern.
         """
 
-        # Ensure that all column names in columns_list are in the
-        # filterable_df.columns
+        # Ensure that all names in columns_list are in there
         assert all(
             map(lambda cn: cn in filterable_df.columns, columns_list)
         ), "Column names in columns_list must be in filterable_df.columns"
@@ -4163,18 +4418,15 @@ class NotebookUtilities(object):
         # Create an empty DataFrame to store the filtered rows
         filtered_df = DataFrame([])
 
-        # For each column in columns_list, filter the filterable df and
-        # extract the first row that matches the search_regex
+        # For each column, filter df and extract first row that matches
         for cn in columns_list:
 
-            # Create a mask to filter rows where the column matches the regex
-            # pattern
+            # Create a mask to filter rows where column matches pattern
             mask_series = filterable_df[cn].map(
                 lambda x: bool(search_regex.search(str(x)))
             )
 
             # Concatenate the first matching row not already in the result
-            # data frame
             df = filterable_df[mask_series]
             mask_series = ~df.index.isin(filtered_df.index)
             if mask_series.any():
@@ -4239,12 +4491,10 @@ class NotebookUtilities(object):
                 columns.
         """
 
-        # Create one-hot encoded representation of the specified columns using
-        # pandas.get_dummies
+        # Create one-hot encoded representation of the specified columns
         dummies = get_dummies(df[columns], dummy_na=dummy_na)
 
-        # Create a list of the dummy variable column names that are not
-        # already in the data frame
+        # Create a list of extra dummy variable column names
         columns_list = sorted(set(dummies.columns).difference(set(df.columns)))
 
         # Concatenate the data frame with the dummy variables
@@ -4285,8 +4535,7 @@ class NotebookUtilities(object):
             # Iterate through the dictionary
             for k, v, in value_obj.items():
 
-                # Recursively call get row dictionary with the dictionary key
-                # as part of the prefix
+                # Recursively call function with dictionary key in prefix
                 row_dict = self.get_flattened_dictionary(
                     v, row_dict=row_dict,
                     key_prefix=f'{key_prefix}{"_" if key_prefix else ""}{k}'
@@ -4295,8 +4544,7 @@ class NotebookUtilities(object):
         # Check if the value is a list
         elif isinstance(value_obj, list):
 
-            # Get the minimum number of digits in the list length for
-            # prefixing zeroes
+            # Get the minimum number of digits in the list length
             list_length = len(value_obj)
             digits_count = min(len(str(list_length)), 2)
 
@@ -4309,14 +4557,12 @@ class NotebookUtilities(object):
                 else:
                     i = str(i).zfill(digits_count)
 
-                # Recursively call get row dictionary with the list index as
-                # part of the prefix
+                # Recursively call function with the list index in prefix
                 row_dict = self.get_flattened_dictionary(
                     v, row_dict=row_dict, key_prefix=f'{key_prefix}{i}'
                 )
 
-        # If value is neither a dictionary nor a list, add the value to the
-        # row dictionary
+        # If neither a dictionary nor a list, add value to row dictionary
         else:
             if key_prefix.startswith('_') and key_prefix[1:] not in row_dict:
                 key_prefix = key_prefix[1:]
@@ -4662,8 +4908,8 @@ class NotebookUtilities(object):
         verbose=False
     ):
         """
-        Rebalance the given unbalanced DataFrame by under-sampling the majority
-        class(es) to the specified sampling_strategy_limit.
+        Rebalance the given unbalanced DataFrame by under-sampling the 
+        majority class(es) to the specified sampling_strategy_limit.
 
         Parameters:
             unbalanced_df (pandas.DataFrame):
@@ -4683,37 +4929,32 @@ class NotebookUtilities(object):
                 A rebalanced DataFrame with an undersampled majority class.
         """
 
-        # Create the random under-sampler
-        if verbose:
-            print('Creating the random under-sampler')
-
+        # Count name_column occurrences for each unique value in value_column
         counts_dict = unbalanced_df.groupby(value_column).count()[
             name_column
         ].to_dict()
+        
+        # Limit each class count to sampling_strategy_limit in counts_dict
         sampling_strategy = {
             k: min(sampling_strategy_limit, v)
             for k, v in counts_dict.items()
         }
 
+        # Initialize RandomUnderSampler with the defined sampling strategy
         from imblearn.under_sampling import RandomUnderSampler
         rus = RandomUnderSampler(sampling_strategy=sampling_strategy)
 
-        # Define the tuple of arrays
-        if verbose:
-            print('Resampling the data')
-
+        # Apply under-sampling to rebalance based on the sampling strategy
         X_res, y_res = rus.fit_resample(
             unbalanced_df[name_column].values.reshape(-1, 1),
             unbalanced_df[value_column].values.reshape(-1, 1),
         )
 
-        # Recreate the Pandas DataFrame
-        if verbose:
-            print('Converting data to Pandas DataFrame')
-
+        # Create a rebalanced df with the resampled name and value columns
         rebalanced_df = DataFrame(X_res, columns=[name_column])
         rebalanced_df[value_column] = y_res
 
+        # Return the rebalanced data frame
         return rebalanced_df
 
     # -------------------
@@ -6728,8 +6969,8 @@ class NotebookUtilities(object):
             show_subgraph(sub_graph)
             nodes_list_list = [['node1', 'node2'], ['node3', 'node4']]
             show_subgraph(
-                    sub_graph, nodes_list_list=nodes_list_list, verbose=True
-                )
+                sub_graph, nodes_list_list=nodes_list_list, verbose=True
+            )
         """
 
         # Vertically separate the labels for easier readability
