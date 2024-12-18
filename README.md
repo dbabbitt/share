@@ -14,7 +14,7 @@ I performed a market basket analysis of all the instantiated functions in the no
 
 Below is an overview of the structure:
 
-- **`notebook_utils.py`**: The original `NotebookUtilities` class, now a facade that delegates calls to the smaller, focused classes.
+- **`notebook_utils.py`**: The original `NotebookUtilities` class, now a **facade** that delegates calls to the smaller, focused classes.
 - **`base_config.py`**: Contains the `BaseConfig` class, which provides common attributes and functions inherited by other modules.
 
 ### Modules
