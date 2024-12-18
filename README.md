@@ -111,18 +111,21 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter Notebook:
    ```
 3. Use the utility functions as needed:
    ```python
-   # Example: Count the occurrences of a sequence of elements (n-grams) in a list
+   # Example: Count the occurrences of a sequence of elements (n-grams) in a
+   # list
    actions = ['jump', 'run', 'jump', 'run', 'jump']
    ngrams = ['jump', 'run']
    nu.count_ngrams(actions, ngrams)
    
-   # Example: Convert a sequence of strings into a sequence of integers and a mapping dictionary
+   # Example: Convert a sequence of strings into a sequence of integers and a
+   # mapping dictionary
    sequence = ['apple', 'banana', 'apple', 'cherry']
    new_sequence, mapping = nu.convert_strings_to_integers(sequence)
    display(new_sequence)  # array([0, 1, 0, 2])
    display(mapping)  # {'apple': 0, 'banana': 1, 'cherry': 2}
    
-   # Example: Take a list of strings with indentation and prefix them based on a multi-level list style
+   # Example: Take a list of strings with indentation and prefix them based on
+   # a multi-level list style
    level_count = 8
    text_list = [
        ' ' * (i*4) + f'This is level {i}'
@@ -170,7 +173,8 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter Notebook:
    ):
        face_color = face_color_dict['color']
    
-   # Example: Check the closest names for typos by comparing items from two different lists
+   # Example: Check the closest names for typos by comparing items from two
+   # different lists
    sd_set = set(some_dict.keys()).symmetric_difference(set(
        df.similar_key
    ))
@@ -191,15 +195,18 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter Notebook:
    # Example: Open a file in Notepad
    nu.open_path_in_notepad(r'C:\this_example.txt')
    
-   # Example: Identify and report duplicate function definitions in Jupyter notebooks and suggest how to consolidate them
+   # Example: Identify and report duplicate function definitions in Jupyter
+   # notebooks and suggest how to consolidate them
    nu.show_dupl_fn_defs_search_string()
    
-   # Example: Retrieve &lt;table&gt;s from a given URL and return a list of DataFrames
+   # Example: Retrieve &lt;table&gt;s from a given URL and return a list of
+   # DataFrames
    tables_url = 'https://en.wikipedia.org/wiki/'
    tables_url += 'Provinces_of_Afghanistan'
    page_tables_list = nu.get_page_tables(tables_url, verbose=True)
    
-   # Example: Return a mask indicating which elements of X_train and y_train are not inf or nan
+   # Example: Return a mask indicating which elements of X_train and y_train
+   # are not inf or nan
    inf_nan_mask = nu.get_inf_nan_mask(X_train, y_train)
    X_train_filtered = X_train[inf_nan_mask]
    y_train_filtered = y_train[inf_nan_mask]
@@ -211,7 +218,8 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter Notebook:
    })
    nu.get_numeric_columns(df)  # ['A', 'B']
    
-   # Example: Introspect a Python module to discover available functions and classes programmatically
+   # Example: Introspect a Python module to discover available functions and
+   # classes programmatically
    module_name = 'nu'
    import_call = '''
    from notebook_utils import NotebookUtilities
