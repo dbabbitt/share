@@ -1405,7 +1405,7 @@ class NotebookUtilities(object):
             # Is the format code 'I'?
             elif format_code == 'I':
 
-                #Apply uppercase roman numeral numbering
+                # Apply uppercase roman numeral numbering
                 import roman
                 numbering_format = numbering_format.replace(
                     format_code, roman.toRoman(
@@ -4945,6 +4945,8 @@ class NotebookUtilities(object):
         """
 
         # Count name_column occurrences for each unique value in value_column
+        if verbose:
+            print('Creating the random under-sampler')
         counts_dict = unbalanced_df.groupby(value_column).count()[
             name_column
         ].to_dict()
@@ -4960,12 +4962,16 @@ class NotebookUtilities(object):
         rus = RandomUnderSampler(sampling_strategy=sampling_strategy)
 
         # Apply under-sampling to rebalance based on the sampling strategy
+        if verbose:
+            print('Resampling the data')
         X_res, y_res = rus.fit_resample(
             unbalanced_df[name_column].values.reshape(-1, 1),
             unbalanced_df[value_column].values.reshape(-1, 1),
         )
 
         # Create a rebalanced df with the resampled name and value columns
+        if verbose:
+            print('Converting data to Pandas DataFrame')
         rebalanced_df = DataFrame(X_res, columns=[name_column])
         rebalanced_df[value_column] = y_res
 
