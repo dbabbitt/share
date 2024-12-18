@@ -128,22 +128,20 @@ class BaseConfig:
         Examples:
             sequence = ['apple', 'banana', 'apple', 'cherry']
             new_sequence, mapping = nu.convert_strings_to_integers(sequence)
-            new_sequence # array([0, 1, 0, 2])
-            mapping # {'apple': 0, 'banana': 1, 'cherry': 2}
+            display(new_sequence)  # array([0, 1, 0, 2])
+            display(mapping)  # {'apple': 0, 'banana': 1, 'cherry': 2}
         """
 
         # Create an alphabet from the sequence if not provided
         if alphabet_list is None:
             alphabet_list = sorted(set(sequence))
 
-        # Initialize the string to integer map with an enumeration of the
-        # alphabet
+        # Initialize the map with an enumeration of the alphabet
         string_to_integer_map = {
             string: index for index, string in enumerate(alphabet_list)
         }
 
-        # Convert the sequence of strings to a sequence of integers,
-        # assigning -1 for unknown strings
+        # Convert seq of strs to seq of ints, assigning -1 for unknown strs
         new_sequence = np.array(
             [string_to_integer_map.get(string, -1) for string in sequence]
         )

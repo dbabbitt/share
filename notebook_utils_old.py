@@ -293,8 +293,14 @@ class NotebookUtilities(object):
         self.object_evaluators = [
             fn for fn in dir(inspect) if fn.startswith('is')
         ]
+        module_paths = sorted([
+            path
+            for path in sys.path
+            if path and not path.startswith(osp.dirname(__file__))
+        ])
         self.standard_lib_modules = sorted([
-            module_info.name for module_info in pkgutil.iter_modules()
+            module_info.name
+            for module_info in pkgutil.iter_modules(path=module_paths)
         ])
 
     # -------------------
@@ -855,18 +861,17 @@ class NotebookUtilities(object):
                         str(first_item), str(second_item)
                     )
 
-                    # Update the maximum similarity and corresponding item if
-                    # a higher similarity is found
+                    # Has a higher similarity been found?
                     if this_similarity > max_similarity:
+
+                        # Update max_similarity and max_item
                         max_similarity = this_similarity
                         max_item = second_item
 
-            # Create a row dictionary to store information for each similar
-            # item pair
+            # Create row dict to store information for each similar item pair
             row_dict = {'first_item': first_item, 'second_item': max_item}
 
-            # Convert items to byte arrays and join them with '-' for string
-            # representation
+            # Convert items to byte arrays for string representation
             row_dict['first_bytes'] = '-'.join([str(x) for x in bytearray(
                 str(first_item), encoding=self.encoding_type, errors='replace'
             )])
@@ -952,12 +957,13 @@ class NotebookUtilities(object):
             max_similarity = 0.0
             max_item = left_item
 
-            # Iterate through items in the right list and find the most
-            # similar item
+            # Iterate through items in the right list
             for right_item in right_list:
                 this_similarity = self.compute_similarity(
                     left_item, right_item
                 )
+
+                # Find the most similar item
                 if this_similarity > max_similarity:
                     max_similarity = this_similarity
                     max_item = right_item
@@ -975,8 +981,7 @@ class NotebookUtilities(object):
         # Define the column names for the output data frame
         column_list = ['left_item', 'right_item', 'max_similarity']
 
-        # Create a data frame from the list of rows, rename columns if
-        # necessary
+        # Create a df from the list of rows, rename columns if necessary
         name_similarities_df = DataFrame(
             rows_list, columns=column_list
         ).rename(columns=rename_dict)
@@ -1033,14 +1038,12 @@ class NotebookUtilities(object):
         if alphabet_list is None:
             alphabet_list = sorted(set(sequence))
 
-        # Initialize the string to integer map with an enumeration of the
-        # alphabet
+        # Initialize the map with an enumeration of the alphabet
         string_to_integer_map = {
             string: index for index, string in enumerate(alphabet_list)
         }
 
-        # Convert the sequence of strings to a sequence of integers,
-        # assigning -1 for unknown strings
+        # Convert seq of strs to seq of ints, assigning -1 for unknown strs
         new_sequence = np.array(
             [string_to_integer_map.get(string, -1) for string in sequence]
         )
@@ -1089,8 +1092,7 @@ class NotebookUtilities(object):
         if verbose:
             print(f'sequence: {sequence}')
 
-        # Create an array to store index of last occurrence of each
-        # character, supporting extended ASCII characters
+        # Create an array to store index of last occurrences
         last = [-1 for i in range(256 + 1)]
 
         # Get length of input string
@@ -1108,9 +1110,10 @@ class NotebookUtilities(object):
             # Set the number of subsequences for the current substring length
             dp[i] = 2 * dp[i - 1]
 
-            # If current character has appeared before, remove all
-            # subsequences ending with previous occurrence
+            # Has the current character appeared before?
             if last[sequence[i - 1]] != -1:
+
+                # Remove all subsequences ending with previous occurrence
                 dp[i] = dp[i] - dp[last[sequence[i - 1]]]
 
             # Update the last occurrence of the current character
@@ -1170,9 +1173,10 @@ class NotebookUtilities(object):
         try:
             variance_of_state_durations = statistics.variance(state_durations)
 
-        # If variance computation fails (e.g., due to insufficient data), set
-        # variance to 0
+        # Has variance computation failed (eg, due to insufficient data)?
         except Exception:
+
+            # Set variance to 0
             variance_of_state_durations = 0.0
 
         if verbose:
@@ -1229,15 +1233,13 @@ class NotebookUtilities(object):
         # Initialize an empty result list to store the modified elements
         result = []
 
-        # Initialize a count to keep track of consecutive occurrences of the
-        # element
+        # Initialize a count to keep track of consecutive occurrences
         count = 0
 
         # Loop through each element in the input list
         for i in range(len(actions_list)):
 
-            # If the current element is the target element, increment the
-            # count
+            # If the current element is the target element, increment count
             if actions_list[i] == element:
 
                 # Increment the count if it's the target element
@@ -1249,8 +1251,7 @@ class NotebookUtilities(object):
                 # Check if there were consecutive elements before
                 if count > 0:
 
-                    # Append a string representation of the previous element
-                    # and its count
+                    # Append representation of previous element and its count
                     result.append(f'{element} x{str(count)}')
 
                 # Add the current element to the result list
@@ -1263,7 +1264,6 @@ class NotebookUtilities(object):
         if count > 0:
 
             # Append the last counted element with its count to the result
-            # list
             result.append(f'{element} x{str(count)}')
 
         # Return the modified list with counts replacing consecutive elements
@@ -1383,16 +1383,18 @@ class NotebookUtilities(object):
         # Extract each character as the numbering code
         for format_code in format_codes:
 
-            # If '1', apply sequential numbering (replace '1' with current
-            # number)
+            # Is the format code '1'?
             if format_code == '1':
+
+                # Apply sequential numbering (replace with current number)
                 numbering_format = numbering_format.replace(
                     format_code, str(current_number_dict[format_code])
                 )
 
-            # If 'i', apply lowercase roman numeral numbering (use roman
-            # library)
+            # Is the format code 'i'?
             elif format_code == 'i':
+
+                # Apply lowercase roman numeral numbering
                 import roman
                 numbering_format = numbering_format.replace(
                     format_code, roman.toRoman(
@@ -1400,9 +1402,10 @@ class NotebookUtilities(object):
                     ).lower()
                 )
 
-            # If 'I', apply uppercase roman numeral numbering (use roman
-            # library)
+            # Is the format code 'I'?
             elif format_code == 'I':
+
+                #Apply uppercase roman numeral numbering
                 import roman
                 numbering_format = numbering_format.replace(
                     format_code, roman.toRoman(
@@ -1410,15 +1413,15 @@ class NotebookUtilities(object):
                     ).upper()
                 )
 
-            # Otherwise, apply alphabetic numbering, offset by the ASCII
-            # value of the format code
+            # Otherwise
             else:
 
-                # Adjust the ASCII code by the difference between current
-                # number and 1 (zero-based indexing)
+                # Adjust the ASCII code by the offset value of the format
                 new_char_code = ord(
                     format_code
                 ) + current_number_dict[format_code] - 1
+
+                # Apply alphabetic numbering
                 numbering_format = numbering_format.replace(
                     format_code, chr(new_char_code)
                 )
@@ -1475,7 +1478,7 @@ class NotebookUtilities(object):
         # Initialize current_level to track current indentation level
         current_level = 0
 
-        # Initialize current_number_map to track current number within a level
+        # Initialize map to track current number within a level
         current_number_map = {0: 0, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1}
 
         numbered_text_list = []
@@ -1554,12 +1557,12 @@ class NotebookUtilities(object):
         """
 
         # Work out which source or compiled file an object was defined in
-        # using inspect
         file_path = inspect.getfile(func)
 
-        # If the function is defined in a Jupyter notebook, return the
-        # absolute file path
+        # Is the function defined in a Jupyter notebook?
         if file_path.startswith('<stdin>'):
+
+            # Return the absolute file path
             return osp.abspath(file_path)
 
         # Otherwise, return the relative file path
@@ -1598,14 +1601,13 @@ class NotebookUtilities(object):
                 print(f'Iterating over each line in {util_path}')
             for line in lines_list:
 
-                # Search for function definitions using the regular expression
+                # Search for function definitions
                 match_obj = self.simple_defs_regex.search(line)
 
-                # If a function definition is found, extract the function
-                # name and add it to the set
+                # If function definition is found
                 if match_obj:
 
-                    # Extract the function name from the match
+                    # Extract the function name from the match and add it
                     scraping_util = match_obj.group(1)
                     utils_set.add(scraping_util)
 
@@ -1751,16 +1753,14 @@ class NotebookUtilities(object):
                 occurrences.
         """
 
-        # Create a list of directories/files to exclude during the search
-        # (e.g., checkpoints, recycle bin)
+        # Create a list of directories to exclude during the search
         black_list = ['.ipynb_checkpoints', '$Recycle.Bin']
 
         # If no github_folder is provided, use the default one
         if github_folder is None:
             github_folder = self.github_folder
 
-        # Initialize an empty dictionary to store function names and their
-        # counts
+        # Initialize empty dict to store function names and their counts
         rogue_fns_dict = {}
 
         # Walk through the directory structure
@@ -1774,8 +1774,7 @@ class NotebookUtilities(object):
                 # Iterate through files in the current directory
                 for file_name in files_list:
 
-                    # Process only Jupyter notebook files, excluding those
-                    # with 'Attic' in the name
+                    # Process only Jupyter notebook files, excluding 'Attic'
                     if (
                         file_name.endswith('.ipynb')
                         and ('Attic' not in file_name)
@@ -1795,18 +1794,16 @@ class NotebookUtilities(object):
                             # Loop through each line in the notebook
                             for line in lines_list:
 
-                                # Search for function definitions using the
-                                # regular expression
+                                # Search for function definitions
                                 match_obj = self.ipynb_defs_regex.search(line)
 
-                                # Check if a function definition is found
+                                # Has a function definition been found?
                                 if match_obj:
 
-                                    # Extract the function name from the match
+                                    # Extract the function name
                                     fn = match_obj.group(1)
 
-                                    # Increment the function count in the
-                                    # dictionary
+                                    # Increment the function count
                                     rogue_fns_dict[fn] = rogue_fns_dict.get(
                                         fn, 0
                                     ) + 1
@@ -1841,14 +1838,12 @@ class NotebookUtilities(object):
         if github_folder is None:
             github_folder = self.github_folder
 
-        # Get the dictionary of function names and their counts from the
-        # get_notebook_functions_dictionary function
+        # Get the dictionary of function names and their counts
         rogue_fns_dict = self.get_notebook_functions_dictionary(
             github_folder=github_folder
         )
 
-        # Extract a set containing only the unique function names (keys from
-        # the dictionary)
+        # Extract a set containing only the unique function names
         rogue_fns_set = set(rogue_fns_dict.keys())
 
         # Return the set of unique function names
@@ -1922,8 +1917,7 @@ class NotebookUtilities(object):
         if pickle_folder is None:
             pickle_folder = self.saves_pickle_folder
 
-        # Filter the file names to include only pickle files (.pkl or .pickle
-        # extensions)
+        # Filter the file names to include only pickle files
         pickles_list = [
             file_name.split('.')[0]
             for file_name in listdir(pickle_folder)
@@ -1990,8 +1984,7 @@ class NotebookUtilities(object):
         mask_series = df.definition_count > 1
         duplicate_fns_list = df[mask_series].function_name.tolist()
 
-        # If there are duplicate function definitions, print a message and
-        # search string
+        # If there are duplicate function defs, print a search string
         if duplicate_fns_list:
             print(
                 'Search for *.ipynb; file masks in the'  # noqa: E702
@@ -2029,8 +2022,7 @@ class NotebookUtilities(object):
             github_folder
         ):
 
-            # Check if the directory '.ipynb_checkpoints' exists in the
-            # current subdirectory
+            # Does the .ipynb_checkpoints directory exist?
             if '.ipynb_checkpoints' in directories_list:
 
                 # Construct the full path to the '.ipynb_checkpoints' folder
@@ -2125,9 +2117,10 @@ class NotebookUtilities(object):
             # Construct the full path for each item
             full_item_path = osp.join(folder_path, item)
 
-            # Check if the item is a directory, and if so, add its path to
-            # the list
+            # Is the item a directory?
             if osp.isdir(full_item_path):
+
+                # Add its path to the list
                 top_level_folders.append(full_item_path)
 
         # Optionally print information based on the `verbose` flag
@@ -2414,7 +2407,7 @@ class NotebookUtilities(object):
         # Try to compress and store the dataframe with a pickle protocol <= 4
         try:
 
-            # Print the absolute path to the pickle file if verbose is enabled
+            # Print the absolute path to the pickle file if verbose
             if verbose:
                 print(
                     'Pickling to {}'.format(osp.abspath(pickle_path)),
@@ -2431,8 +2424,7 @@ class NotebookUtilities(object):
             # Remove the pickle file if it was partially created
             remove(pickle_path)
 
-            # Print the exception message and the number of cells that failed
-            # to be pickled if verbose is enabled
+            # Print the exception message if verbose
             if verbose:
                 cell_count = df.shape[0] * df.shape[1]
                 print(
@@ -2468,7 +2460,6 @@ class NotebookUtilities(object):
             folder_path = self.saves_csv_folder
 
         # Construct the full path to the CSV file, including the .csv
-        # extension if it's not already included
         if csv_name.endswith('.csv'):
             csv_path = osp.join(folder_path, csv_name)
         else:
@@ -2508,27 +2499,23 @@ class NotebookUtilities(object):
         else:
             csv_folder = osp.join(folder_path, 'csv')
 
-        # Determine the CSV file path based on the provided name or the most
-        # recently modified file in the folder
+        # Is no specific CSV file named?
         if csv_name is None:
 
-            # If no specific CSV file is named, load the most recently
-            # modified CSV file
+            # Use the most recently modified CSV file
             csv_path = max(
                 [osp.join(csv_folder, f) for f in listdir(csv_folder)],
                 key=osp.getmtime
             )
 
-        # If a specific CSV file is named, construct the full path to the CSV
-        # file
+        # If a specific CSV file is named, construct the full path
         elif csv_name.endswith('.csv'):
             csv_path = osp.join(csv_folder, csv_name)
 
         else:
             csv_path = osp.join(csv_folder, f'{csv_name}.csv')
 
-        # Load the CSV file as a pandas DataFrame using the class-specific
-        # encoding
+        # Load the CSV file as a df using the class-specific encoding
         data_frame = read_csv(
             osp.abspath(csv_path), encoding=self.encoding_type
         )
@@ -2546,8 +2533,7 @@ class NotebookUtilities(object):
             bool: True if the pickle file exists, False otherwise.
         """
 
-        # Construct the pickle path using the pickle_name and the class's
-        # saves_pickle_folder
+        # Construct pickle path using pickle_name and saves_pickle_folder
         pickle_path = osp.join(
             self.saves_pickle_folder, '{}.pkl'.format(pickle_name)
         )
@@ -2587,8 +2573,7 @@ class NotebookUtilities(object):
                 or download).
         """
 
-        # If no pickle path is provided, construct the default path using the
-        # object name
+        # If no pickle path provided, construct default path with object name
         if pickle_path is None:
             pickle_path = osp.join(
                 self.saves_pickle_folder, '{}.pkl'.format(obj_name)
@@ -2597,8 +2582,7 @@ class NotebookUtilities(object):
         # Check if the pickle file exists at the specified path
         if not osp.isfile(pickle_path):
 
-            # If the pickle file does not exist and verbose is True, print a
-            # message
+            # If the pickle file doesn't exist and verbose, print a message
             if verbose:
                 pp = osp.abspath(pickle_path)
                 print(
@@ -2635,15 +2619,13 @@ class NotebookUtilities(object):
                     csv_path, low_memory=False, encoding=self.encoding_type
                 )
 
-            # If loaded object is a DataFrame, attempt to save it as pickle
-            # for future use
+            # If loaded object is a df, attempt to save it as a pickle
             if isinstance(object, DataFrame):
                 self.attempt_to_pickle(
                     object, pickle_path, raise_exception=False
                 )
 
-            # Otherwise, pickle the object using the appropriate protocol for
-            # the Python version
+            # Otherwise, pickle the object using the appropriate protocol
             else:
                 with open(pickle_path, 'wb') as handle:
                     if sys.version_info.major == 2:
@@ -2653,18 +2635,16 @@ class NotebookUtilities(object):
 
         else:
 
-            # If the pickle file exists, try to load the object from the
-            # pickle file
+            # If the pickle file exists, try to load the object
             try:
                 object = read_pickle(pickle_path)
 
-            # If reading the pickle file fails, fall back to the pickle module
+            # If reading the pickle file fails, fall back to pickle module
             except Exception:
                 with open(pickle_path, 'rb') as handle:
                     object = pickle.load(handle)
 
-        # If verbose is True, print a message indicating the object was
-        # loaded successfully
+        # If verbose, print a message indicating the object was loaded
         if verbose:
             print(
                 'Loaded object {} from {}'.format(obj_name, pickle_path),
@@ -2702,8 +2682,7 @@ class NotebookUtilities(object):
                     osp.join(self.saves_pickle_folder, f'{frame_name}.pkl')
                 )
 
-                # If the pickle file exists, load it using the load_object
-                # function
+                # If the pickle file exists, load it using load_object
                 if osp.isfile(pickle_path):
                     if verbose:
                         print(
@@ -2717,25 +2696,26 @@ class NotebookUtilities(object):
                             print(str(e).strip())
                         was_successful = False
 
-            # If the pickle file doesn't exist, check for a CSV file with the
-            # same name
+            # If pickle file doesn't exist, check for CSV file with same name
             if not was_successful:
                 csv_name = f'{frame_name}.csv'
                 csv_path = osp.abspath(
                     osp.join(self.saves_csv_folder, csv_name)
                 )
 
-                # If the CSV file exists in the saves folder, load it from
-                # there
+                # Does the CSV file exist in the saves folder?
                 if osp.isfile(csv_path):
                     if verbose:
                         print(
                             f'No pickle exists for {frame_name} - attempting'
                             f' to load {csv_path}.', flush=True
                         )
+
+                    # load it from there
                     try:
                         frame_dict[frame_name] = self.load_csv(
-                            csv_name=frame_name, folder_path=self.saves_folder
+                            csv_name=frame_name,
+                            folder_path=self.saves_folder
                         )
                         was_successful = True
                     except Exception as e:
@@ -2743,21 +2723,21 @@ class NotebookUtilities(object):
                             print(str(e).strip())
                         was_successful = False
 
-            # If the CSV file doesn't exist in the saves folder, check for it
-            # in the data folder
+            # Does the CSV file not exist in the saves folder?
             if not was_successful:
                 csv_path = osp.abspath(
                     osp.join(self.data_csv_folder, csv_name)
                 )
 
-                # If the CSV file exists in the data folder, load it from
-                # there
+                # Does the CSV file exist in the data folder?
                 if osp.isfile(csv_path):
                     if verbose:
                         print(
                             f'No csv exists for {frame_name} -'
                             f' trying {csv_path}.', flush=True
                         )
+
+                    # load it from there
                     try:
                         frame_dict[frame_name] = self.load_csv(
                             csv_name=frame_name
@@ -2768,13 +2748,15 @@ class NotebookUtilities(object):
                             print(str(e).strip())
                         was_successful = False
 
-            # If the CSV file doesn't exist anywhere, skip loading this
+            # Does the CSV file not exist anywhere?
             if not was_successful:
                 if verbose:
                     print(
                         f'No csv exists for {frame_name} - just forget it.',
                         flush=True
                     )
+
+                # Skip loading this
                 frame_dict[frame_name] = None
 
         return frame_dict
@@ -2796,8 +2778,7 @@ class NotebookUtilities(object):
             None
         """
 
-        # Iterate over the data frames in the kwargs dictionary and save them
-        # to CSV files
+        # Iterate over dfs in kwargs dictionary and save them to CSV files
         for frame_name in kwargs:
 
             # Check if it's a dataframe
@@ -2859,8 +2840,7 @@ class NotebookUtilities(object):
 
             else:
 
-                # For non-dataframe objects, print a message if verbose mode
-                # is enabled
+                # For non-df objects, print a message if verbose
                 if verbose:
                     print(
                         'Pickling to {}'.format(osp.abspath(pickle_path)),
@@ -2870,13 +2850,11 @@ class NotebookUtilities(object):
                 # Open the pickle file for writing
                 with open(pickle_path, 'wb') as handle:
 
-                    # If the Python version is 2, use protocol 2 to pickle
-                    # the object
+                    # If the Python version is 2, use protocol 2
                     if sys.version_info.major == 2:
                         pickle.dump(kwargs[obj_name], handle, 2)
 
-                    # If the Python version is 3, use the highest protocol up
-                    # to 4 to pickle the object
+                    # If the version is 3, use the highest protocol up to 4
                     elif sys.version_info.major == 3:
                         pickle.dump(
                             kwargs[obj_name], handle,
@@ -2980,6 +2958,60 @@ class NotebookUtilities(object):
 
         # Return the list of evaluations
         return evaluations_list
+
+    def get_library_names(
+        self, module_obj, import_call, verbose=False
+    ):
+        library_names_list = []
+        try:
+            exec(import_call)  # Execute the import statement
+        except ImportError:
+            pass  # Ignore import errors and continue
+        if verbose:
+            pass
+
+        # Is the module obj just a string?
+        dir_list = []
+        if isinstance(module_obj, str):
+
+            # Create the dir list using eval
+            try:
+                dir_list = eval(f'dir({module_obj})')
+            except AttributeError:
+                pass  # Ignore attribute errors and continue
+
+        # Otherwise, create the dir list from the object
+        else:
+            dir_list = dir(module_obj)
+
+        # Iterate over the attributes of the module
+        for library_name in dir_list:
+            if verbose:
+                print(f'library_name: {library_name}')
+
+            # Skip standard modules
+            if library_name in self.standard_lib_modules:
+                if verbose:
+                    print(f'{library_name} is in the standard modules')
+                continue
+
+            # Skip built-in modules
+            if library_name in sys.builtin_module_names:
+                if verbose:
+                    print(f'{library_name} is in the built-in modules')
+                continue
+
+            # Skip double underscore-prefixed attributes
+            if library_name.startswith('__'):
+                if verbose:
+                    print(f'{library_name} has a double underscore-prefix')
+                continue
+
+            # Add what's left to the library names list
+            library_names_list.append(library_name)
+
+        # Return the list of libraries
+        return library_names_list
 
     def get_dir_tree(
         self, module_name, function_calls=[], contains_str=None,
@@ -3208,13 +3240,11 @@ class NotebookUtilities(object):
                     if match_obj:
                         replaced_str = match_obj.group()
 
-                        # Prepare the replacement string with the static
-                        # method decorator
+                        # Prepare str with static method decorator
                         replacing_str = '    @staticmethod\n'
                         replacing_str += replaced_str.replace('self, ', '')
 
-                        # Replace the original method definition with the
-                        # refactored one
+                        # Replace original method def with refactored one
                         file_text = file_text.replace(
                             replaced_str, replacing_str
                         )
@@ -3325,8 +3355,7 @@ class NotebookUtilities(object):
             if upgrade:
                 command_str += ' --upgrade'
 
-            # Print the command if status messages requested, otherwise add
-            # quiet flag
+            # Print the command if verbose, otherwise add quiet flag
             if verbose:
                 print(command_str, flush=True)
             else:
@@ -3340,8 +3369,7 @@ class NotebookUtilities(object):
                 for line_str in output_str.splitlines():
                     print(line_str.decode(), flush=True)
 
-            # Update the internal list of installed modules after
-            # installation
+            # Update the internal list of installed modules
             self.update_modules_list(verbose=False)
 
     def extract_comments(self, function_obj, verbose=False):
@@ -3645,13 +3673,12 @@ class NotebookUtilities(object):
         if verbose:
             display(tag_obj)
 
-        # Get the parent td tag object
+        # Get the parent td tag object (table tag object)
         tag_obj = self.get_td_parent(tag_obj, verbose=verbose)
         if verbose:
             display(tag_obj)
 
-        # Traverse the siblings of the table tag object backward until a
-        # style column is found
+        # Traverse siblings of tag backward until a style column is found
         from bs4.element import NavigableString
         while isinstance(
             tag_obj, NavigableString
@@ -3660,8 +3687,7 @@ class NotebookUtilities(object):
             if verbose:
                 display(tag_obj)
 
-        # Display the text content of the found style column if verbose is
-        # True
+        # Display text content of found style column if verbose
         if verbose:
             display(tag_obj.text.strip())
 
@@ -3721,8 +3747,7 @@ class NotebookUtilities(object):
         # Get the file name from the URL
         file_name = self.get_filename_from_url(url, verbose=verbose)
 
-        # If the download directory is not specified, use the downloads
-        # subdirectory
+        # Use the downloads subdirectory if download_dir isn't specified
         if download_dir is None:
             download_dir = osp.join(self.data_folder, 'downloads')
 
@@ -3828,15 +3853,13 @@ class NotebookUtilities(object):
             tables_df_list = read_html(tables_url_or_filepath)
         else:
 
-            # If it's not a URL or a filepath, assume it's a string
-            # representation of the tables
+            # If it's not a URL or filepath, assume it's a str
             from io import StringIO
 
             # Create a StringIO object from the string
             f = StringIO(tables_url_or_filepath)
 
-            # Read the tables from the StringIO object using
-            # pandas.read_html()
+            # Read the tables from the StringIO object
             tables_df_list = read_html(f)
 
         # Print a summary of the tables if verbose is True
@@ -3882,16 +3905,14 @@ class NotebookUtilities(object):
                 'table', attrs={'class': 'wikitable'}
             )
 
-            # Recursively get the DataFrames for all the tables on the
-            # Wikipedia page
+            # Recursively get the dfs for all tables on the page
             table_dfs_list = []
             for table_soup in table_soups_list:
                 table_dfs_list += self.get_page_tables(
                     str(table_soup), verbose=False
                 )
 
-            # If verbose is True, print a sorted list of the tables by their
-            # number of rows and columns
+            # Print sorted list of tables by their size if verbose
             if verbose:
                 print(sorted([(i, df.shape) for i, df in enumerate(
                     table_dfs_list
@@ -3899,12 +3920,11 @@ class NotebookUtilities(object):
 
         except Exception as e:
 
-            # If there is an error, print the error message
+            # If verbose, print the error message
             if verbose:
                 print(str(e).strip())
 
-            # Recursively get the DataFrames for the tables on the Wikipedia
-            # page again, but with verbose=False
+            # Recursively get dfs for tables on  page again, but verbose=False
             table_dfs_list = self.get_page_tables(
                 tables_url_or_filepath, verbose=False
             )
@@ -4078,7 +4098,7 @@ class NotebookUtilities(object):
         if X_train.shape[0] == 0 or y_train.shape[0] == 0:
             return np.array([], dtype=bool)
 
-        # Create a notnull mask across the X_train and y_train columns 
+        # Create a notnull mask across the X_train and y_train columns
         mask_series = concat(
             [DataFrame(y_train), DataFrame(X_train)], axis='columns'
         ).applymap(notnull).all(axis='columns')
@@ -4156,7 +4176,9 @@ class NotebookUtilities(object):
                         row_dict['count_zeroes'] = np.nan
 
                     # Check if the column contains any dates
-                    date_series = to_datetime(df[column_name], errors='coerce')
+                    date_series = to_datetime(
+                        df[column_name], errors='coerce'
+                    )
                     null_series = date_series[~date_series.notnull()]
                     null_count = null_series.shape[0]
                     date_count = date_series.shape[0]
@@ -4241,8 +4263,7 @@ class NotebookUtilities(object):
                 cn: describable_df[cn].mode().iloc[0] for cn in columns_list
             }
 
-            # Convert the row dictionary to a data frame to match the df
-            # structure
+            # Convert row dictionary to a df to match the df structure
             row_df = DataFrame([row_dict], index=['mode'])
 
             # Append the row data frame to the df data frame
@@ -4256,8 +4277,7 @@ class NotebookUtilities(object):
                 cn: describable_df[cn].median() for cn in columns_list
             }
 
-            # Convert the row dictionary to a data frame to match the df
-            # structure
+            # Convert row_dict to a data frame to match the df structure
             row_df = DataFrame([row_dict], index=['median'])
 
             # Append the row data frame to the df data frame
@@ -4362,7 +4382,7 @@ class NotebookUtilities(object):
                 specified regex pattern.
         """
 
-        # Ensure that the search_regex is a compiled regular expression object
+        # Ensure that the search_regex is a compiled regex object
         assert (
             isinstance(search_regex, Pattern)
         ), "search_regex must be a compiled regular expression."
@@ -4443,7 +4463,8 @@ class NotebookUtilities(object):
         DataFrame.
 
         Parameters:
-            row_index (int): The index to be assigned to the new DataFrame row.
+            row_index (int):
+                The index to be assigned to the new DataFrame row.
             row_series (pandas.Series):
                 The Pandas Series representing the row's data.
             verbose (bool, optional):
@@ -4455,13 +4476,11 @@ class NotebookUtilities(object):
                 Pandas Series.
         """
 
-        # Print the type of row_index if verbose is True and it is not an
-        # integer
+        # Print type of row_index if verbose and it is not an integer
         if verbose and type(row_index) != int:
             print(type(row_index))
 
-        # Create a new DataFrame with the data from the input Pandas Series
-        # and the specified index
+        # Create new df with data from input Series and specified index
         df = DataFrame(data=row_series.to_dict(), index=[row_index])
 
         return df
@@ -4590,16 +4609,14 @@ class NotebookUtilities(object):
         # Get time-related statistics using the get_statistics method
         df = self.get_statistics(describable_df, columns_list)
 
-        # Apply a formatting function to convert milliseconds to a formatted
-        # timedelta for all elements in the DataFrame
+        # Apply a formatting function to convert milliseconds to timedelta
         df = df.applymap(lambda x: self.format_timedelta(
             timedelta(milliseconds=int(x))
         ), na_action='ignore').T
 
-        # Format the standard deviation (SD) column to include the plus-minus
-        # symbol
-        # df.SD = df.SD.map(lambda x: '±' + str(x))
+        # Format the standard deviation (SD) column to include the ± symbol
         df.SD = df.SD.map(lambda x: '\xB1' + str(x))
+        # df.SD = df.SD.map(lambda x: '±' + str(x))
 
         # Display the resulting DataFrame
         display(df)
@@ -4638,9 +4655,10 @@ class NotebookUtilities(object):
         # Iterate over DataFrame columns to identify numeric columns
         for cn in df.columns:
 
-            # Append elements to the list if they are integers or floats based
-            # on the pandas.core.arrays.numeric functions
+            # Are they are integers or floats?
             if is_integer(df[cn]) or is_float(df[cn]):
+
+                # Append element to the list
                 numeric_columns.append(cn)
 
         # Optionally drop columns with all NaN values
@@ -4778,8 +4796,7 @@ class NotebookUtilities(object):
                 one.
         """
 
-        # Calculate split indices based on index changes before splittable
-        # rows
+        # Calculate split indices based on changes before splittable rows
         split_indices = [0] + list(indices_list[:-1] + 1) + [len(df)]
 
         # Gather the sub-dataframes in a list
@@ -4834,12 +4851,10 @@ class NotebookUtilities(object):
                 consecutive occurrences.
         """
 
-        # Create an empty copy of the dataframe to avoid modifying the
-        # original
+        # Create an empty copy of the df to avoid modifying the original
         result_df = DataFrame([], columns=df.columns)
 
-        # Initialize variables to keep track of row index and current row of
-        # consecutive elements
+        # Initialize variables to keep track of row index and current row
         row_index = 0
         row_series = Series([])
 
@@ -4855,8 +4870,7 @@ class NotebookUtilities(object):
             # Get the value of the time_diff column for the current row
             time_diff = row_series[time_diff_column]
 
-            # Check if the current element is the target element and within
-            # the consecutive cutoff
+            # Check if current element is target element and within cutoff
             if (
                 column_value == element_value
                 and time_diff <= consecutive_cutoff
@@ -4869,15 +4883,16 @@ class NotebookUtilities(object):
                 previous_row_index = row_index
                 previous_row_series = row_series
 
+            # Does the element column value or time difference not match?
             else:
 
-                # If the element column value or time difference doesn't
-                # match, add the current row to the result dataframe
+                # Add the current row to the result data frame
                 result_df.loc[row_index] = row_series
 
-                # If there were consecutive elements, replace the last
-                # consecutive element with a count
+                # Are there consecutive elements?
                 if count > 0:
+
+                    # Replace the last consecutive element with a count
                     result_df.loc[previous_row_index] = previous_row_series
                     result_df.loc[
                         previous_row_index, element_column
@@ -4886,13 +4901,13 @@ class NotebookUtilities(object):
                 # Reset the count of consecutive elements
                 count = 0
 
-        # Handle the last element by adding the last row to the result
-        # dataframe
+        # Handle last element by adding last row to result data frame
         result_df.loc[row_index] = row_series
 
-        # If the last element was part of a consecutive sequence, replace it
-        # with a count of how many there were
+        # Was the last element part of a consecutive sequence?
         if count > 0:
+
+            # Replace it with a count of how many there were
             result_df.loc[
                 row_index, element_column
             ] = f'{element_value} x{count}'
@@ -4908,7 +4923,7 @@ class NotebookUtilities(object):
         verbose=False
     ):
         """
-        Rebalance the given unbalanced DataFrame by under-sampling the 
+        Rebalance the given unbalanced DataFrame by under-sampling the
         majority class(es) to the specified sampling_strategy_limit.
 
         Parameters:
@@ -4933,7 +4948,7 @@ class NotebookUtilities(object):
         counts_dict = unbalanced_df.groupby(value_column).count()[
             name_column
         ].to_dict()
-        
+
         # Limit each class count to sampling_strategy_limit in counts_dict
         sampling_strategy = {
             k: min(sampling_strategy_limit, v)
@@ -5036,7 +5051,8 @@ class NotebookUtilities(object):
 
         # Check if both points have the same dimensions (2D or 3D)
         assert len(first_point) != len(second_point), (
-            f'Mismatched dimensions: {len(first_point)} != {len(second_point)}'
+            f'Mismatched dimensions: {len(first_point)}'
+            f' != {len(second_point)}'
         )
 
         # Check if the points are in 3D
@@ -5089,14 +5105,12 @@ class NotebookUtilities(object):
                 point relative to the reference point.
         """
 
-        # Retrieve the coordinates for both points, defaulting to the origin
-        # for the first point if not provided
+        # Retrieve the coordinates for both points, defaulting to origin
         x1, x2, y1, y2, z1, z2 = self.get_coordinates(
             second_point, first_point=first_point
         )
 
         # Calculate the relative position by adding corresponding coordinates
-        # and rounding to one decimal place
         relative_position = (
             round(x1 + x2, 1), round(y1 + y2, 1), round(z1 + z2, 1)
         )
@@ -5134,12 +5148,10 @@ class NotebookUtilities(object):
         # Iterate over each point in the neighbors list
         for neighbor_point in neighbors_list:
 
-            # Calculate the Euclidean distance between the base point and the
-            # current neighbor point
+            # Calculate distance between base point and current neighbor
             distance = self.get_euclidean_distance(base_point, neighbor_point)
 
-            # Update nearest neighbor and minimum distance if closer neighbor
-            # found
+            # Update nearest neighbor/minimum distance if closer one found
             if distance < min_distance:
 
                 # Update the minimum distance to the calculated distance
@@ -5172,14 +5184,12 @@ class NotebookUtilities(object):
         # Create an empty data frame with sample_df columns
         df = DataFrame([], columns=sample_df.columns)
 
-        # Loop through the four smallest data frames by their groupby
-        # key/values pairs
+        # Loop through 4 smallest dfs by their groupby key/values pairs
         for bool_tuple in sample_df.groupby(
             groupby_columns
         ).size().sort_values().index.tolist()[:4]:
 
-            # Filter the name in the column to the corresponding value of the
-            # tuple
+            # Filter name in column to corresponding value of tuple
             mask_series = True
             for cn, cv in zip(groupby_columns, bool_tuple):
                 mask_series &= (sample_df[cn] == cv)
@@ -5224,9 +5234,10 @@ class NotebookUtilities(object):
         # Create an empty dictionary to store the sub-dictionary
         sub_dict = {}
 
-        # Iterate over the randomly selected keys and add their corresponding
-        # values to the sub-dictionary
+        # Iterate over the randomly selected keys
         for key in random_keys:
+
+            # Add their corresponding values to the sub-dictionary
             sub_dict[key] = super_dict[key]
 
         return sub_dict
@@ -5270,17 +5281,19 @@ class NotebookUtilities(object):
         """
         from math import sqrt
 
-        # If from_color is 'white', compute the Euclidean distance from white
-        # (255, 255, 255)
+        # Is the from_color 'white'?
         if from_color == 'white':
+
+            # Compute the Euclidean distance from (255, 255, 255)
             green_diff = 255 - to_rgb_tuple[0]
             blue_diff = 255 - to_rgb_tuple[1]
             red_diff = 255 - to_rgb_tuple[2]
             color_distance = sqrt(green_diff**2 + blue_diff**2 + red_diff**2)
 
-        # If from_color is 'black', compute the Euclidean distance from black
-        # (0, 0, 0)
+        # Is the from_color 'black'?
         elif from_color == 'black':
+
+            # Compute the Euclidean distance from (0, 0, 0)
             color_distance = sqrt(
                 to_rgb_tuple[0]**2 + to_rgb_tuple[1]**2 + to_rgb_tuple[2]**2
             )
@@ -5347,9 +5360,10 @@ class NotebookUtilities(object):
             # Iterate through predefined readable colors
             for color in ['white', '#404040', 'black']:
 
-                # Calculate the distance between the current text color and
-                # the background color
-                color_distance = self.color_distance_from(color, bar_color_rgb)
+                # Calculate distance between current color and background
+                color_distance = self.color_distance_from(
+                    color, bar_color_rgb
+                )
                 color_tuple = (color_distance, color)
 
                 # Append the color and its distance to the list
@@ -5359,13 +5373,11 @@ class NotebookUtilities(object):
             if verbose:
                 print(text_colors_list)
 
-            # Select the color with the maximum distance from the background
-            # color
+            # Select color with maximum distance from background color
             sorted_list = sorted(text_colors_list, key=lambda x: x[0])
             text_color = sorted_list[-1][1]
 
             # Attempt to convert the text color to a valid HTML/CSS hex code
-            # (optional)
             try:
 
                 # Import the webcolors module
@@ -5384,7 +5396,8 @@ class NotebookUtilities(object):
     @staticmethod
     def get_color_cycler(n):
         """
-        Generate a color cycler for plotting with a specified number of colors.
+        Generate a color cycler for plotting with a specified number of 
+        colors.
 
         This static method creates a color cycler object (`cycler.Cycler`)
         suitable for Matplotlib plotting. The color cycler provides a
@@ -5417,7 +5430,9 @@ class NotebookUtilities(object):
 
         # Use the Accent color map for less than 9 colors
         if n < 9:
-            color_cycler = cycler('color', plt.cm.Accent(np.linspace(0, 1, n)))
+            color_cycler = cycler('color', plt.cm.Accent(np.linspace(
+                0, 1, n
+            )))
 
         # Use tab10 colormap for 9 or 10 colors
         elif n < 11:
@@ -5462,8 +5477,7 @@ class NotebookUtilities(object):
                 The function plots the graph directly using matplotlib.
         """
 
-        # Drop rows with NaN values, group by xname, and calculate mean and
-        # standard deviation
+        # Drop rows with NaN values, group by xname, calculate mean & std
         groupby_list = [xname]
         columns_list = [xname, yname]
         aggs_list = ['mean', 'std']
@@ -5559,9 +5573,10 @@ class NotebookUtilities(object):
             )
             ax.set_xticks(minor_ticks, minor=True)
 
-            # If there are more than 84 minor ticks, set the major x-axis tick
-            # labels to every 5 minutes
+            # Are there are more than 84 minor ticks?
             if len(minor_ticks) > 84:
+
+                # Set major x-axis tick labels to every 5 minutes
                 five_minutes = 1_000 * 60 * 5
                 major_ticks = np.arange(
                     0, df[xname].max() + five_minutes, five_minutes
@@ -5581,8 +5596,7 @@ class NotebookUtilities(object):
             xticklabels_list = []
             for text_obj in ax.get_xticklabels():
 
-                # Call the xtick text function to convert numerical values
-                # into minutes and seconds format
+                # Convert numerical values to minutes+seconds format
                 text_obj.set_text(xtick_text_fn(text_obj))
 
                 xticklabels_list.append(text_obj)
@@ -5721,10 +5735,11 @@ class NotebookUtilities(object):
         from scipy.stats import pearsonr
 
         # Calculate Pearson's r and the associated p-value
-        pearson_r, p_value = pearsonr(xdata[inf_nan_mask], ydata[inf_nan_mask])
+        pearson_r, p_value = pearsonr(
+            xdata[inf_nan_mask], ydata[inf_nan_mask]
+        )
 
-        # Format R-squared value (coefficient of determination) to two decimal
-        # places
+        # Format coefficient of determination to 2 decimal places
         cods = str('%.2f' % pearson_r**2)
 
         # Format p-value based on significance level
@@ -5777,7 +5792,7 @@ class NotebookUtilities(object):
         # Calculate Spearman's rank correlation and the associated p-value
         spearman_corr, p_value = spearmanr(xdata, ydata)
 
-        # Format Spearman's rank correlation coefficient to two decimal places
+        # Format Spearman's rank correlation coefficient to 2 decimal places
         rccs = str('%.2f' % spearman_corr)
 
         # Format p-value based on significance level
@@ -5786,8 +5801,7 @@ class NotebookUtilities(object):
         else:
             pvalue_statement = '=' + str('%.4f' % p_value)
 
-        # Construct the LaTeX string for the Spearman's rank correlation
-        # coefficient and p-value
+        # Construct the LaTeX str for the correlation and p-value
         s_str = '$\\rho=' + rccs + ',\\ p' + pvalue_statement + '$'
 
         # Return the formatted LaTeX string
@@ -6213,8 +6227,7 @@ class NotebookUtilities(object):
                 Matplotlib color cycle for missing entries.
         """
 
-        # Print the input alphabet list and color dictionary if verbose mode
-        # is on
+        # Print the input alphabet list and color dictionary if verbose
         if verbose:
             print(f'alphabet_list = {alphabet_list}')
             print(f'color_dict = {color_dict}')
@@ -6232,8 +6245,7 @@ class NotebookUtilities(object):
         # Iterate over each key in the alphabet list
         for key in alphabet_list:
 
-            # Assign color from dictionary if available, otherwise use next
-            # color from the cycle
+            # Assign color from dict, otherwise use next color from the cycle
             value = color_dict.get(key, next(colors))
 
             # Append the color to the colors list
@@ -6368,8 +6380,7 @@ class NotebookUtilities(object):
         # Get the number of plots to create
         plot_count = len(tuples_list)
 
-        # Determine the optimal grid layout to have a maximum of 3 columns per
-        # row
+        # Determine optimal grid layout to have maximum of 3 columns per row
         ncols = min(3, plot_count)
 
         # Determine the optimal grid layout to have at least 1 row
@@ -6385,19 +6396,17 @@ class NotebookUtilities(object):
         # Loop through data tuples and corresponding subplots
         for i, right_circle_tuple in enumerate(tuples_list):
 
-            # Calculate column index based on loop counter and number of
-            # columns
+            # Calculate column index based on loop counter and columns count
             col = i % ncols
 
             # Print debugging information if verbose flag is set
             if verbose:
                 print(f'Index: {i}, Column: {col}, Columns: {ncols}')
 
-            # Determine subplot based on number of rows and plot count
+            # Is there more than one row?
             if nrows > 1:
 
-                # If more than one row, base the row index on loop counter and
-                # columns
+                # Base the row index on loop counter and columns
                 row = int(math.floor(i / ncols))
 
                 # Access the specific subplot
@@ -6421,20 +6430,20 @@ class NotebookUtilities(object):
             # Draw the Venn diagram on the current axes
             draw_a_two_circle_venn_diagram(right_circle_tuple, ax=ax)
 
-        # Hide any unused subplots in the grid
+        # Hide any unused subplots in the grid (in reverse order)
         for i in range(nrows * ncols, plot_count, -1):
 
-            # Calculate column index based on loop counter and number of
-            # columns (in reverse order)
+            # Calculate column index based on loop counter and columns count
             col = (i - 1) % ncols
 
             # Print debugging information if verbose flag is set
             if verbose:
                 print(f'Index: {i}, Column: {col}, Columns: {ncols}')
 
-            # If there are more than one rows, determine the subplot based on
-            # number of rows and plot count (in reverse order)
+            # Are there are more than one rows?
             if nrows > 1:
+                
+                # Determine subplot based on number of rows and plot count
                 row = (i - 1) // 3
                 ax = axes[row, col]
 
@@ -6453,6 +6462,51 @@ class NotebookUtilities(object):
 
         # Return the Matplotlib figure object containing the generated plots
         return plt
+
+    @staticmethod
+    def update_color_dict(alphabet_list, color_dict=None):
+        """
+        Create or update a dictionary based on the given alphabet list.
+
+        Parameters:
+            alphabet_list (list):
+                A list of keys to include in the dictionary. color_dict (dict,
+                optional): An existing dictionary. Defaults to None.
+
+        Returns:
+            dict:
+                A dictionary with keys from `alphabet_list`. If `color_dict`
+                is supplied, its values are preserved for matching keys;
+                otherwise, values are set to None.
+
+        Examples:
+            alphabet_list = ['a', 'b', 'c', 'd']
+            existing_dict = {'a': 'red', 'b': 'blue'}
+
+            # Case 1: No color dictionary provided
+            print(
+                update_color_dict(alphabet_list)
+            )  # {'a': None, 'b': None, 'c': None, 'd': None}
+
+            # Case 2: An existing color dictionary is provided
+            print(
+                update_color_dict(alphabet_list, existing_dict)
+            )  # {'a': 'red', 'b': 'blue', 'c': None, 'd': None}
+        """
+
+        # Was the color dictionary not supplied?
+        if color_dict is None:
+
+            # Create it with keys from alphabet_list and values set to None
+            color_dict = {a: None for a in alphabet_list}
+
+        # Otherwise
+        else:
+
+            # Update a new one with alphabet_list keys and color_dict values
+            color_dict = {a: color_dict.get(a) for a in alphabet_list}
+
+        return color_dict
 
     def plot_sequence(
         self, sequence, highlighted_ngrams=[], color_dict=None, suptitle=None,
@@ -6495,8 +6549,7 @@ class NotebookUtilities(object):
         # Convert the sequence to a NumPy array
         np_sequence = np.array(sequence)
 
-        # Get the unique characters in the sequence and potentially use them
-        # to set up the color dictionary
+        # Get the unique characters in the sequence
         if alphabet_list is None:
             if highlighted_ngrams and type(highlighted_ngrams[0]) is list:
                 alphabet_list = sorted(self.get_alphabet(sequence + [
@@ -6516,12 +6569,8 @@ class NotebookUtilities(object):
                 0, alphabet_list.pop(alphabet_list.index(first_element))
             )
 
-        # Set up the color dictionary so that its keys consist of the elements
-        # in alphabet_list
-        if color_dict is None:
-            color_dict = {a: None for a in alphabet_list}
-        else:
-            color_dict = {a: color_dict.get(a) for a in alphabet_list}
+        # Set up the color dictionary with alphabet_list keys
+        color_dict = self.update_color_dict(alphabet_list, color_dict)
 
         # Get the length of the alphabet
         alphabet_len = len(alphabet_list)
@@ -6614,7 +6663,8 @@ class NotebookUtilities(object):
                 # Draw a red box around each match
                 if verbose:
                     print(
-                        f'ngram={ngram}, min(ngram)={min(ngram)},'  # noqa E231
+                        f'ngram={ngram},'  # noqa E231
+                        f' min(ngram)={min(ngram)},'  # noqa E231
                         f' max(ngram)={max(ngram)},'  # noqa E231
                         f' match_positions={match_positions}'
                     )
@@ -6625,7 +6675,8 @@ class NotebookUtilities(object):
                     right = left + n - 0.5
                     if verbose:
                         print(
-                            f'bot={bot}, top={top}, left={left}, right={right}'
+                            f'bot={bot}, top={top}, left={left},'
+                            f' right={right}'
                         )
 
                     line_width = 1
@@ -6789,12 +6840,8 @@ class NotebookUtilities(object):
             # Get the unique values in the sequence
             unique_values = alphabet_cache[sequence]
 
-            # Set up the color dictionary so that its keys consist of the
-            # elements in unique_values
-            if color_dict is None:
-                color_dict = {a: None for a in unique_values}
-            else:
-                color_dict = {a: color_dict.get(a) for a in unique_values}
+            # Set up the color dictionary with unique_values keys
+            color_dict = self.update_color_dict(unique_values, color_dict)
 
             # Plot the value positions as scatter points with labels
             if gap:
@@ -6831,8 +6878,7 @@ class NotebookUtilities(object):
             plt.ylim(0, len(sequences))
             plt.xlim(0, max_sequence_length)
 
-        # Force x-ticks to land on integers only (assume all sequences are of
-        # equal length)
+        # Force x-ticks to land on integers only
         xtick_locations = range(len(sequences[0]))
         xtick_labels = [n+1 for n in xtick_locations]
         plt.xticks(ticks=xtick_locations, labels=xtick_labels, minor=False)

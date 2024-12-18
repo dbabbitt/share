@@ -452,13 +452,12 @@ class DataPreparation(BaseConfig):
         if verbose:
             display(tag_obj)
 
-        # Get the parent td tag object
+        # Get the parent td tag object (table tag object)
         tag_obj = self.get_td_parent(tag_obj, verbose=verbose)
         if verbose:
             display(tag_obj)
 
-        # Traverse the siblings of the table tag object backward until a
-        # style column is found
+        # Traverse siblings of tag backward until a style column is found
         from bs4.element import NavigableString
         while isinstance(
             tag_obj, NavigableString
@@ -467,8 +466,7 @@ class DataPreparation(BaseConfig):
             if verbose:
                 display(tag_obj)
 
-        # Display the text content of the found style column if verbose is
-        # True
+        # Display text content of found style column if verbose
         if verbose:
             display(tag_obj.text.strip())
 
@@ -528,8 +526,7 @@ class DataPreparation(BaseConfig):
         # Get the file name from the URL
         file_name = self.get_filename_from_url(url, verbose=verbose)
 
-        # If the download directory is not specified, use the downloads
-        # subdirectory
+        # Use the downloads subdirectory if download_dir isn't specified
         if download_dir is None:
             download_dir = osp.join(self.data_folder, 'downloads')
 
@@ -635,15 +632,13 @@ class DataPreparation(BaseConfig):
             tables_df_list = read_html(tables_url_or_filepath)
         else:
 
-            # If it's not a URL or a filepath, assume it's a string
-            # representation of the tables
+            # If it's not a URL or filepath, assume it's a str
             from io import StringIO
 
             # Create a StringIO object from the string
             f = StringIO(tables_url_or_filepath)
 
-            # Read the tables from the StringIO object using
-            # pandas.read_html()
+            # Read the tables from the StringIO object
             tables_df_list = read_html(f)
 
         # Print a summary of the tables if verbose is True
@@ -689,16 +684,14 @@ class DataPreparation(BaseConfig):
                 'table', attrs={'class': 'wikitable'}
             )
 
-            # Recursively get the DataFrames for all the tables on the
-            # Wikipedia page
+            # Recursively get the dfs for all tables on the page
             table_dfs_list = []
             for table_soup in table_soups_list:
                 table_dfs_list += self.get_page_tables(
                     str(table_soup), verbose=False
                 )
 
-            # If verbose is True, print a sorted list of the tables by their
-            # number of rows and columns
+            # Print sorted list of tables by their size if verbose
             if verbose:
                 print(sorted([(i, df.shape) for i, df in enumerate(
                     table_dfs_list
@@ -706,12 +699,11 @@ class DataPreparation(BaseConfig):
 
         except Exception as e:
 
-            # If there is an error, print the error message
+            # If verbose, print the error message
             if verbose:
                 print(str(e).strip())
 
-            # Recursively get the DataFrames for the tables on the Wikipedia
-            # page again, but with verbose=False
+            # Recursively get dfs for tables on  page again, but verbose=False
             table_dfs_list = self.get_page_tables(
                 tables_url_or_filepath, verbose=False
             )

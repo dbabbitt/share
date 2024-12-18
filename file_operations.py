@@ -101,11 +101,10 @@ class FileOperations(BaseConfig):
                 # Search for function definitions using the regular expression
                 match_obj = self.simple_defs_regex.search(line)
 
-                # If a function definition is found, extract the function
-                # name and add it to the set
+                # If function definition is found
                 if match_obj:
 
-                    # Extract the function name from the match
+                    # Extract the function name from the match and add it
                     scraping_util = match_obj.group(1)
                     utils_set.add(scraping_util)
 
@@ -135,16 +134,14 @@ class FileOperations(BaseConfig):
                 occurrences.
         """
 
-        # Create a list of directories/files to exclude during the search
-        # (e.g., checkpoints, recycle bin)
+        # Create a list of directories to exclude during the search
         black_list = ['.ipynb_checkpoints', '$Recycle.Bin']
 
         # If no github_folder is provided, use the default one
         if github_folder is None:
             github_folder = self.github_folder
 
-        # Initialize an empty dictionary to store function names and their
-        # counts
+        # Initialize empty dict to store function names and their counts
         rogue_fns_dict = {}
 
         # Walk through the directory structure
@@ -158,8 +155,7 @@ class FileOperations(BaseConfig):
                 # Iterate through files in the current directory
                 for file_name in files_list:
 
-                    # Process only Jupyter notebook files, excluding those
-                    # with 'Attic' in the name
+                    # Process only Jupyter notebook files, excluding 'Attic'
                     if (
                         file_name.endswith('.ipynb')
                         and ('Attic' not in file_name)
@@ -179,18 +175,16 @@ class FileOperations(BaseConfig):
                             # Loop through each line in the notebook
                             for line in lines_list:
 
-                                # Search for function definitions using the
-                                # regular expression
+                                # Search for function definitions
                                 match_obj = self.ipynb_defs_regex.search(line)
 
-                                # Check if a function definition is found
+                                # Has a function definition been found?
                                 if match_obj:
 
                                     # Extract the function name from the match
                                     fn = match_obj.group(1)
 
-                                    # Increment the function count in the
-                                    # dictionary
+                                    # Increment the function count
                                     rogue_fns_dict[fn] = rogue_fns_dict.get(
                                         fn, 0
                                     ) + 1
@@ -225,14 +219,12 @@ class FileOperations(BaseConfig):
         if github_folder is None:
             github_folder = self.github_folder
 
-        # Get the dictionary of function names and their counts from the
-        # get_notebook_functions_dictionary function
+        # Get the dictionary of function names and their counts
         rogue_fns_dict = self.get_notebook_functions_dictionary(
             github_folder=github_folder
         )
 
-        # Extract a set containing only the unique function names (keys from
-        # the dictionary)
+        # Extract a set containing only the unique function names
         rogue_fns_set = set(rogue_fns_dict.keys())
 
         # Return the set of unique function names
@@ -339,8 +331,7 @@ class FileOperations(BaseConfig):
         mask_series = df.definition_count > 1
         duplicate_fns_list = df[mask_series].function_name.tolist()
 
-        # If there are duplicate function definitions, print a message and
-        # search string
+        # If there are duplicate function defs, print a search string
         if duplicate_fns_list:
             print(
                 'Search for *.ipynb; file masks in the'  # noqa: E702
@@ -378,8 +369,7 @@ class FileOperations(BaseConfig):
             github_folder
         ):
 
-            # Check if the directory '.ipynb_checkpoints' exists in the
-            # current subdirectory
+            # Does the .ipynb_checkpoints directory exist?
             if '.ipynb_checkpoints' in directories_list:
 
                 # Construct the full path to the '.ipynb_checkpoints' folder
@@ -492,8 +482,7 @@ class FileOperations(BaseConfig):
             # Remove the pickle file if it was partially created
             remove(pickle_path)
 
-            # Print the exception message and the number of cells that failed
-            # to be pickled if verbose is enabled
+            # Print the exception message if verbose
             if verbose:
                 cell_count = df.shape[0] * df.shape[1]
                 print(
@@ -529,7 +518,6 @@ class FileOperations(BaseConfig):
             folder_path = self.saves_csv_folder
 
         # Construct the full path to the CSV file, including the .csv
-        # extension if it's not already included
         if csv_name.endswith('.csv'):
             csv_path = osp.join(folder_path, csv_name)
         else:
@@ -569,27 +557,23 @@ class FileOperations(BaseConfig):
         else:
             csv_folder = osp.join(folder_path, 'csv')
 
-        # Determine the CSV file path based on the provided name or the most
-        # recently modified file in the folder
+        # Is no specific CSV file named?
         if csv_name is None:
 
-            # If no specific CSV file is named, load the most recently
-            # modified CSV file
+            # Use the most recently modified CSV file
             csv_path = max(
                 [osp.join(csv_folder, f) for f in listdir(csv_folder)],
                 key=osp.getmtime
             )
 
-        # If a specific CSV file is named, construct the full path to the CSV
-        # file
+        # If a specific CSV file is named, construct the full path
         elif csv_name.endswith('.csv'):
             csv_path = osp.join(csv_folder, csv_name)
 
         else:
             csv_path = osp.join(csv_folder, f'{csv_name}.csv')
 
-        # Load the CSV file as a pandas DataFrame using the class-specific
-        # encoding
+        # Load the CSV file as a df using the class-specific encoding
         data_frame = read_csv(
             osp.abspath(csv_path), encoding=self.encoding_type
         )
@@ -607,8 +591,7 @@ class FileOperations(BaseConfig):
             bool: True if the pickle file exists, False otherwise.
         """
 
-        # Construct the pickle path using the pickle_name and the class's
-        # saves_pickle_folder
+        # Construct pickle path using pickle_name and saves_pickle_folder
         pickle_path = osp.join(
             self.saves_pickle_folder, '{}.pkl'.format(pickle_name)
         )
@@ -648,8 +631,7 @@ class FileOperations(BaseConfig):
                 or download).
         """
 
-        # If no pickle path is provided, construct the default path using the
-        # object name
+        # If no pickle path provided, construct default path using object name
         if pickle_path is None:
             pickle_path = osp.join(
                 self.saves_pickle_folder, '{}.pkl'.format(obj_name)
@@ -658,8 +640,7 @@ class FileOperations(BaseConfig):
         # Check if the pickle file exists at the specified path
         if not osp.isfile(pickle_path):
 
-            # If the pickle file does not exist and verbose is True, print a
-            # message
+            # If the pickle file doesn't exist and verbose, print a message
             if verbose:
                 pp = osp.abspath(pickle_path)
                 print(
@@ -696,15 +677,13 @@ class FileOperations(BaseConfig):
                     csv_path, low_memory=False, encoding=self.encoding_type
                 )
 
-            # If loaded object is a DataFrame, attempt to save it as pickle
-            # for future use
+            # If loaded object is a df, attempt to save it as a pickle
             if isinstance(object, DataFrame):
                 self.attempt_to_pickle(
                     object, pickle_path, raise_exception=False
                 )
 
-            # Otherwise, pickle the object using the appropriate protocol for
-            # the Python version
+            # Otherwise, pickle the object using the appropriate protocol
             else:
                 with open(pickle_path, 'wb') as handle:
                     if sys.version_info.major == 2:
@@ -714,8 +693,7 @@ class FileOperations(BaseConfig):
 
         else:
 
-            # If the pickle file exists, try to load the object from the
-            # pickle file
+            # If the pickle file exists, try to load the object
             try:
                 object = read_pickle(pickle_path)
 
@@ -724,8 +702,7 @@ class FileOperations(BaseConfig):
                 with open(pickle_path, 'rb') as handle:
                     object = pickle.load(handle)
 
-        # If verbose is True, print a message indicating the object was
-        # loaded successfully
+        # If verbose, print a message indicating the object was loaded
         if verbose:
             print(
                 'Loaded object {} from {}'.format(obj_name, pickle_path),
@@ -763,8 +740,7 @@ class FileOperations(BaseConfig):
                     osp.join(self.saves_pickle_folder, f'{frame_name}.pkl')
                 )
 
-                # If the pickle file exists, load it using the load_object
-                # function
+                # If the pickle file exists, load it using load_object
                 if osp.isfile(pickle_path):
                     if verbose:
                         print(
@@ -778,22 +754,22 @@ class FileOperations(BaseConfig):
                             print(str(e).strip())
                         was_successful = False
 
-            # If the pickle file doesn't exist, check for a CSV file with the
-            # same name
+            # If pickle file doesn't exist, check for CSV file with same name
             if not was_successful:
                 csv_name = f'{frame_name}.csv'
                 csv_path = osp.abspath(
                     osp.join(self.saves_csv_folder, csv_name)
                 )
 
-                # If the CSV file exists in the saves folder, load it from
-                # there
+                # Does the CSV file exist in the saves folder?
                 if osp.isfile(csv_path):
                     if verbose:
                         print(
                             f'No pickle exists for {frame_name} - attempting'
                             f' to load {csv_path}.', flush=True
                         )
+
+                    # load it from there
                     try:
                         frame_dict[frame_name] = self.load_csv(
                             csv_name=frame_name, folder_path=self.saves_folder
@@ -804,21 +780,21 @@ class FileOperations(BaseConfig):
                             print(str(e).strip())
                         was_successful = False
 
-            # If the CSV file doesn't exist in the saves folder, check for it
-            # in the data folder
+            # Does the CSV file not exist in the saves folder?
             if not was_successful:
                 csv_path = osp.abspath(
                     osp.join(self.data_csv_folder, csv_name)
                 )
 
-                # If the CSV file exists in the data folder, load it from
-                # there
+                # Does the CSV file exist in the data folder?
                 if osp.isfile(csv_path):
                     if verbose:
                         print(
                             f'No csv exists for {frame_name} -'
                             f' trying {csv_path}.', flush=True
                         )
+
+                    # load it from there
                     try:
                         frame_dict[frame_name] = self.load_csv(
                             csv_name=frame_name
@@ -829,13 +805,15 @@ class FileOperations(BaseConfig):
                             print(str(e).strip())
                         was_successful = False
 
-            # If the CSV file doesn't exist anywhere, skip loading this
+            # Does the CSV file not exist anywhere?
             if not was_successful:
                 if verbose:
                     print(
                         f'No csv exists for {frame_name} - just forget it.',
                         flush=True
                     )
+
+                # Skip loading this
                 frame_dict[frame_name] = None
 
         return frame_dict
@@ -857,8 +835,7 @@ class FileOperations(BaseConfig):
             None
         """
 
-        # Iterate over the data frames in the kwargs dictionary and save them
-        # to CSV files
+        # Iterate over dfs in the kwargs dictionary and save them to CSV files
         for frame_name in kwargs:
 
             # Check if it's a dataframe
@@ -920,8 +897,7 @@ class FileOperations(BaseConfig):
 
             else:
 
-                # For non-dataframe objects, print a message if verbose mode
-                # is enabled
+                # For non-df objects, print a message if verbose
                 if verbose:
                     print(
                         'Pickling to {}'.format(osp.abspath(pickle_path)),
@@ -931,13 +907,11 @@ class FileOperations(BaseConfig):
                 # Open the pickle file for writing
                 with open(pickle_path, 'wb') as handle:
 
-                    # If the Python version is 2, use protocol 2 to pickle
-                    # the object
+                    # If the Python version is 2, use protocol 2
                     if sys.version_info.major == 2:
                         pickle.dump(kwargs[obj_name], handle, 2)
 
-                    # If the Python version is 3, use the highest protocol up
-                    # to 4 to pickle the object
+                    # If the version is 3, use the highest protocol up to 4
                     elif sys.version_info.major == 3:
                         pickle.dump(
                             kwargs[obj_name], handle,

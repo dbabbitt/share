@@ -160,8 +160,14 @@ class Uncategorized(BaseConfig):
         self.object_evaluators = [
             fn for fn in dir(inspect) if fn.startswith('is')
         ]
+        module_paths = sorted([
+            path
+            for path in sys.path
+            if path and not path.startswith(osp.dirname(__file__))
+        ])
         self.standard_lib_modules = sorted([
-            module_info.name for module_info in pkgutil.iter_modules()
+            module_info.name
+            for module_info in pkgutil.iter_modules(path=module_paths)
         ])
 
     # -------------------
@@ -418,14 +424,12 @@ class Uncategorized(BaseConfig):
         if alphabet_list is None:
             alphabet_list = sorted(set(sequence))
 
-        # Initialize the string to integer map with an enumeration of the
-        # alphabet
+        # Initialize the map with an enumeration of the alphabet
         string_to_integer_map = {
             string: index for index, string in enumerate(alphabet_list)
         }
 
-        # Convert the sequence of strings to a sequence of integers,
-        # assigning -1 for unknown strings
+        # Convert seq of strs to seq of ints, assigning -1 for unknown strs
         new_sequence = np.array(
             [string_to_integer_map.get(string, -1) for string in sequence]
         )
@@ -474,8 +478,7 @@ class Uncategorized(BaseConfig):
         if verbose:
             print(f'sequence: {sequence}')
 
-        # Create an array to store index of last occurrence of each
-        # character, supporting extended ASCII characters
+        # Create an array to store index of last occurrences
         last = [-1 for i in range(256 + 1)]
 
         # Get length of input string
@@ -493,9 +496,10 @@ class Uncategorized(BaseConfig):
             # Set the number of subsequences for the current substring length
             dp[i] = 2 * dp[i - 1]
 
-            # If current character has appeared before, remove all
-            # subsequences ending with previous occurrence
+            # Has the current character appeared before?
             if last[sequence[i - 1]] != -1:
+
+                # Remove all subsequences ending with previous occurrence
                 dp[i] = dp[i] - dp[last[sequence[i - 1]]]
 
             # Update the last occurrence of the current character
@@ -555,9 +559,10 @@ class Uncategorized(BaseConfig):
         try:
             variance_of_state_durations = statistics.variance(state_durations)
 
-        # If variance computation fails (e.g., due to insufficient data), set
-        # variance to 0
+        # Has variance computation failed (eg, due to insufficient data)?
         except Exception:
+            
+            # Set variance to 0
             variance_of_state_durations = 0.0
 
         if verbose:
@@ -614,15 +619,13 @@ class Uncategorized(BaseConfig):
         # Initialize an empty result list to store the modified elements
         result = []
 
-        # Initialize a count to keep track of consecutive occurrences of the
-        # element
+        # Initialize a count to keep track of consecutive occurrences
         count = 0
 
         # Loop through each element in the input list
         for i in range(len(actions_list)):
 
-            # If the current element is the target element, increment the
-            # count
+            # If the current element is the target element, increment count
             if actions_list[i] == element:
 
                 # Increment the count if it's the target element
@@ -634,8 +637,7 @@ class Uncategorized(BaseConfig):
                 # Check if there were consecutive elements before
                 if count > 0:
 
-                    # Append a string representation of the previous element
-                    # and its count
+                    # Append representation of previous element and its count
                     result.append(f'{element} x{str(count)}')
 
                 # Add the current element to the result list
@@ -648,7 +650,6 @@ class Uncategorized(BaseConfig):
         if count > 0:
 
             # Append the last counted element with its count to the result
-            # list
             result.append(f'{element} x{str(count)}')
 
         # Return the modified list with counts replacing consecutive elements
@@ -719,16 +720,18 @@ class Uncategorized(BaseConfig):
         # Extract each character as the numbering code
         for format_code in format_codes:
 
-            # If '1', apply sequential numbering (replace '1' with current
-            # number)
+            # Is the format code '1'?
             if format_code == '1':
+
+                # Apply sequential numbering (replace with current number)
                 numbering_format = numbering_format.replace(
                     format_code, str(current_number_dict[format_code])
                 )
 
-            # If 'i', apply lowercase roman numeral numbering (use roman
-            # library)
+            # Is the format code 'i'?
             elif format_code == 'i':
+
+                # Apply lowercase roman numeral numbering
                 import roman
                 numbering_format = numbering_format.replace(
                     format_code, roman.toRoman(
@@ -736,9 +739,10 @@ class Uncategorized(BaseConfig):
                     ).lower()
                 )
 
-            # If 'I', apply uppercase roman numeral numbering (use roman
-            # library)
+            # Is the format code 'I'?
             elif format_code == 'I':
+
+                #Apply uppercase roman numeral numbering
                 import roman
                 numbering_format = numbering_format.replace(
                     format_code, roman.toRoman(
@@ -746,15 +750,15 @@ class Uncategorized(BaseConfig):
                     ).upper()
                 )
 
-            # Otherwise, apply alphabetic numbering, offset by the ASCII
-            # value of the format code
+            # Otherwise
             else:
 
-                # Adjust the ASCII code by the difference between current
-                # number and 1 (zero-based indexing)
+                # Adjust the ASCII code by the offset value of the format
                 new_char_code = ord(
                     format_code
                 ) + current_number_dict[format_code] - 1
+
+                # Apply alphabetic numbering
                 numbering_format = numbering_format.replace(
                     format_code, chr(new_char_code)
                 )
@@ -811,7 +815,7 @@ class Uncategorized(BaseConfig):
         # Initialize current_level to track current indentation level
         current_level = 0
 
-        # Initialize current_number_map to track current number within a level
+        # Initialize map to track current number within a level
         current_number_map = {0: 0, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1}
 
         numbered_text_list = []
@@ -890,12 +894,12 @@ class Uncategorized(BaseConfig):
         """
 
         # Work out which source or compiled file an object was defined in
-        # using inspect
         file_path = inspect.getfile(func)
 
-        # If the function is defined in a Jupyter notebook, return the
-        # absolute file path
+        # Is the function defined in a Jupyter notebook?
         if file_path.startswith('<stdin>'):
+
+            # Return the absolute file path
             return osp.abspath(file_path)
 
         # Otherwise, return the relative file path
@@ -997,9 +1001,10 @@ class Uncategorized(BaseConfig):
             # Construct the full path for each item
             full_item_path = osp.join(folder_path, item)
 
-            # Check if the item is a directory, and if so, add its path to
-            # the list
+            # Is the item a directory?
             if osp.isdir(full_item_path):
+                
+                # Add its path to the list
                 top_level_folders.append(full_item_path)
 
         # Optionally print information based on the `verbose` flag
@@ -1313,13 +1318,11 @@ class Uncategorized(BaseConfig):
                     if match_obj:
                         replaced_str = match_obj.group()
 
-                        # Prepare the replacement string with the static
-                        # method decorator
+                        # Prepare str with static method decorator
                         replacing_str = '    @staticmethod\n'
                         replacing_str += replaced_str.replace('self, ', '')
 
-                        # Replace the original method definition with the
-                        # refactored one
+                        # Replace original method def with refactored one
                         file_text = file_text.replace(
                             replaced_str, replacing_str
                         )
@@ -1430,8 +1433,7 @@ class Uncategorized(BaseConfig):
             if upgrade:
                 command_str += ' --upgrade'
 
-            # Print the command if status messages requested, otherwise add
-            # quiet flag
+            # Print the command if verbose, otherwise add quiet flag
             if verbose:
                 print(command_str, flush=True)
             else:
@@ -1445,8 +1447,7 @@ class Uncategorized(BaseConfig):
                 for line_str in output_str.splitlines():
                     print(line_str.decode(), flush=True)
 
-            # Update the internal list of installed modules after
-            # installation
+            # Update the internal list of installed modules
             self.update_modules_list(verbose=False)
 
     def extract_comments(self, function_obj, verbose=False):
@@ -1746,8 +1747,7 @@ class Uncategorized(BaseConfig):
                 cn: describable_df[cn].mode().iloc[0] for cn in columns_list
             }
 
-            # Convert the row dictionary to a data frame to match the df
-            # structure
+            # Convert row dictionary to a df to match the df structure
             row_df = DataFrame([row_dict], index=['mode'])
 
             # Append the row data frame to the df data frame
@@ -1761,8 +1761,7 @@ class Uncategorized(BaseConfig):
                 cn: describable_df[cn].median() for cn in columns_list
             }
 
-            # Convert the row dictionary to a data frame to match the df
-            # structure
+            # Convert row_dict to a data frame to match the df structure
             row_df = DataFrame([row_dict], index=['median'])
 
             # Append the row data frame to the df data frame
@@ -1793,7 +1792,8 @@ class Uncategorized(BaseConfig):
         DataFrame.
 
         Parameters:
-            row_index (int): The index to be assigned to the new DataFrame row.
+            row_index (int):
+                The index to be assigned to the new DataFrame row.
             row_series (pandas.Series):
                 The Pandas Series representing the row's data.
             verbose (bool, optional):
@@ -1805,13 +1805,11 @@ class Uncategorized(BaseConfig):
                 Pandas Series.
         """
 
-        # Print the type of row_index if verbose is True and it is not an
-        # integer
+        # Print type of row_index if verbose and it is not an integer
         if verbose and type(row_index) != int:
             print(type(row_index))
 
-        # Create a new DataFrame with the data from the input Pandas Series
-        # and the specified index
+        # Create new df with data from input Series and specified index
         df = DataFrame(data=row_series.to_dict(), index=[row_index])
 
         return df
@@ -1836,16 +1834,14 @@ class Uncategorized(BaseConfig):
         # Get time-related statistics using the get_statistics method
         df = self.get_statistics(describable_df, columns_list)
 
-        # Apply a formatting function to convert milliseconds to a formatted
-        # timedelta for all elements in the DataFrame
+        # Apply a formatting function to convert milliseconds to timedelta
         df = df.applymap(lambda x: self.format_timedelta(
             timedelta(milliseconds=int(x))
         ), na_action='ignore').T
 
-        # Format the standard deviation (SD) column to include the plus-minus
-        # symbol
-        # df.SD = df.SD.map(lambda x: '±' + str(x))
+        # Format the standard deviation (SD) column to include the ± symbol
         df.SD = df.SD.map(lambda x: '\xB1' + str(x))
+        # df.SD = df.SD.map(lambda x: '±' + str(x))
 
         # Display the resulting DataFrame
         display(df)
@@ -1976,8 +1972,7 @@ class Uncategorized(BaseConfig):
                 one.
         """
 
-        # Calculate split indices based on index changes before splittable
-        # rows
+        # Calculate split indices based on changes before splittable rows
         split_indices = [0] + list(indices_list[:-1] + 1) + [len(df)]
 
         # Gather the sub-dataframes in a list
@@ -2032,12 +2027,10 @@ class Uncategorized(BaseConfig):
                 consecutive occurrences.
         """
 
-        # Create an empty copy of the dataframe to avoid modifying the
-        # original
+        # Create an empty copy of the df to avoid modifying the original
         result_df = DataFrame([], columns=df.columns)
 
-        # Initialize variables to keep track of row index and current row of
-        # consecutive elements
+        # Initialize variables to keep track of row index and current row
         row_index = 0
         row_series = Series([])
 
@@ -2053,8 +2046,7 @@ class Uncategorized(BaseConfig):
             # Get the value of the time_diff column for the current row
             time_diff = row_series[time_diff_column]
 
-            # Check if the current element is the target element and within
-            # the consecutive cutoff
+            # Check if current element is target element and within cutoff
             if (
                 column_value == element_value
                 and time_diff <= consecutive_cutoff
@@ -2067,15 +2059,16 @@ class Uncategorized(BaseConfig):
                 previous_row_index = row_index
                 previous_row_series = row_series
 
+            # Does the element column value or time difference not match?
             else:
 
-                # If the element column value or time difference doesn't
-                # match, add the current row to the result dataframe
+                # Add the current row to the result data frame
                 result_df.loc[row_index] = row_series
 
-                # If there were consecutive elements, replace the last
-                # consecutive element with a count
+                # Are there consecutive elements?
                 if count > 0:
+
+                    # Replace the last consecutive element with a count
                     result_df.loc[previous_row_index] = previous_row_series
                     result_df.loc[
                         previous_row_index, element_column
@@ -2084,13 +2077,13 @@ class Uncategorized(BaseConfig):
                 # Reset the count of consecutive elements
                 count = 0
 
-        # Handle the last element by adding the last row to the result
-        # dataframe
+        # Handle last element by adding last row to result data frame
         result_df.loc[row_index] = row_series
 
-        # If the last element was part of a consecutive sequence, replace it
-        # with a count of how many there were
+        # Was the last element part of a consecutive sequence?
         if count > 0:
+
+            # Replace it with a count of how many there were
             result_df.loc[
                 row_index, element_column
             ] = f'{element_value} x{count}'
@@ -2251,17 +2244,19 @@ class Uncategorized(BaseConfig):
         """
         from math import sqrt
 
-        # If from_color is 'white', compute the Euclidean distance from white
-        # (255, 255, 255)
+        # Is the from_color 'white'?
         if from_color == 'white':
+
+            # Compute the Euclidean distance from (255, 255, 255)
             green_diff = 255 - to_rgb_tuple[0]
             blue_diff = 255 - to_rgb_tuple[1]
             red_diff = 255 - to_rgb_tuple[2]
             color_distance = sqrt(green_diff**2 + blue_diff**2 + red_diff**2)
 
-        # If from_color is 'black', compute the Euclidean distance from black
-        # (0, 0, 0)
+        # Is the from_color 'black'?
         elif from_color == 'black':
+
+            # Compute the Euclidean distance from (0, 0, 0)
             color_distance = sqrt(
                 to_rgb_tuple[0]**2 + to_rgb_tuple[1]**2 + to_rgb_tuple[2]**2
             )
@@ -2328,9 +2323,10 @@ class Uncategorized(BaseConfig):
             # Iterate through predefined readable colors
             for color in ['white', '#404040', 'black']:
 
-                # Calculate the distance between the current text color and
-                # the background color
-                color_distance = self.color_distance_from(color, bar_color_rgb)
+                # Calculate distance between current color and background
+                color_distance = self.color_distance_from(
+                    color, bar_color_rgb
+                )
                 color_tuple = (color_distance, color)
 
                 # Append the color and its distance to the list
@@ -2340,13 +2336,11 @@ class Uncategorized(BaseConfig):
             if verbose:
                 print(text_colors_list)
 
-            # Select the color with the maximum distance from the background
-            # color
+            # Select color with maximum distance from background color
             sorted_list = sorted(text_colors_list, key=lambda x: x[0])
             text_color = sorted_list[-1][1]
 
             # Attempt to convert the text color to a valid HTML/CSS hex code
-            # (optional)
             try:
 
                 # Import the webcolors module
@@ -2471,8 +2465,7 @@ class Uncategorized(BaseConfig):
                 Matplotlib color cycle for missing entries.
         """
 
-        # Print the input alphabet list and color dictionary if verbose mode
-        # is on
+        # Print the input alphabet list and color dictionary if verbose
         if verbose:
             print(f'alphabet_list = {alphabet_list}')
             print(f'color_dict = {color_dict}')
@@ -2490,8 +2483,7 @@ class Uncategorized(BaseConfig):
         # Iterate over each key in the alphabet list
         for key in alphabet_list:
 
-            # Assign color from dictionary if available, otherwise use next
-            # color from the cycle
+            # Assign color from dict, otherwise use next color from the cycle
             value = color_dict.get(key, next(colors))
 
             # Append the color to the colors list
@@ -2626,8 +2618,7 @@ class Uncategorized(BaseConfig):
         # Get the number of plots to create
         plot_count = len(tuples_list)
 
-        # Determine the optimal grid layout to have a maximum of 3 columns per
-        # row
+        # Determine optimal grid layout to have maximum of 3 columns per row
         ncols = min(3, plot_count)
 
         # Determine the optimal grid layout to have at least 1 row
@@ -2643,19 +2634,17 @@ class Uncategorized(BaseConfig):
         # Loop through data tuples and corresponding subplots
         for i, right_circle_tuple in enumerate(tuples_list):
 
-            # Calculate column index based on loop counter and number of
-            # columns
+            # Calculate column index based on loop counter and columns count
             col = i % ncols
 
             # Print debugging information if verbose flag is set
             if verbose:
                 print(f'Index: {i}, Column: {col}, Columns: {ncols}')
 
-            # Determine subplot based on number of rows and plot count
+            # Is there more than one row?
             if nrows > 1:
 
-                # If more than one row, base the row index on loop counter and
-                # columns
+                # Base the row index on loop counter and columns
                 row = int(math.floor(i / ncols))
 
                 # Access the specific subplot
@@ -2679,20 +2668,20 @@ class Uncategorized(BaseConfig):
             # Draw the Venn diagram on the current axes
             draw_a_two_circle_venn_diagram(right_circle_tuple, ax=ax)
 
-        # Hide any unused subplots in the grid
+        # Hide any unused subplots in the grid (in reverse order)
         for i in range(nrows * ncols, plot_count, -1):
 
-            # Calculate column index based on loop counter and number of
-            # columns (in reverse order)
+            # Calculate column index based on loop counter and columns count
             col = (i - 1) % ncols
 
             # Print debugging information if verbose flag is set
             if verbose:
                 print(f'Index: {i}, Column: {col}, Columns: {ncols}')
 
-            # If there are more than one rows, determine the subplot based on
-            # number of rows and plot count (in reverse order)
+            # Are there are more than one rows?
             if nrows > 1:
+                
+                # Determine subplot based on number of rows and plot count
                 row = (i - 1) // 3
                 ax = axes[row, col]
 
@@ -2711,6 +2700,51 @@ class Uncategorized(BaseConfig):
 
         # Return the Matplotlib figure object containing the generated plots
         return plt
+
+    @staticmethod
+    def update_color_dict(alphabet_list, color_dict=None):
+        """
+        Create or update a dictionary based on the given alphabet list.
+
+        Parameters:
+            alphabet_list (list):
+                A list of keys to include in the dictionary. color_dict (dict,
+                optional): An existing dictionary. Defaults to None.
+
+        Returns:
+            dict:
+                A dictionary with keys from `alphabet_list`. If `color_dict`
+                is supplied, its values are preserved for matching keys;
+                otherwise, values are set to None.
+
+        Examples:
+            alphabet_list = ['a', 'b', 'c', 'd']
+            existing_dict = {'a': 'red', 'b': 'blue'}
+
+            # Case 1: No color dictionary provided
+            print(
+                update_color_dict(alphabet_list)
+            )  # {'a': None, 'b': None, 'c': None, 'd': None}
+
+            # Case 2: An existing color dictionary is provided
+            print(
+                update_color_dict(alphabet_list, existing_dict)
+            )  # {'a': 'red', 'b': 'blue', 'c': None, 'd': None}
+        """
+
+        # Was the color dictionary not supplied?
+        if color_dict is None:
+
+            # Create it with keys from alphabet_list and values set to None
+            color_dict = {a: None for a in alphabet_list}
+
+        # Otherwise
+        else:
+
+            # Update a new one with alphabet_list keys and color_dict values
+            color_dict = {a: color_dict.get(a) for a in alphabet_list}
+
+        return color_dict
 
     def plot_sequence(
         self, sequence, highlighted_ngrams=[], color_dict=None, suptitle=None,
@@ -2753,8 +2787,7 @@ class Uncategorized(BaseConfig):
         # Convert the sequence to a NumPy array
         np_sequence = np.array(sequence)
 
-        # Get the unique characters in the sequence and potentially use them
-        # to set up the color dictionary
+        # Get the unique characters in the sequence
         if alphabet_list is None:
             if highlighted_ngrams and type(highlighted_ngrams[0]) is list:
                 alphabet_list = sorted(self.get_alphabet(sequence + [
@@ -2774,12 +2807,8 @@ class Uncategorized(BaseConfig):
                 0, alphabet_list.pop(alphabet_list.index(first_element))
             )
 
-        # Set up the color dictionary so that its keys consist of the elements
-        # in alphabet_list
-        if color_dict is None:
-            color_dict = {a: None for a in alphabet_list}
-        else:
-            color_dict = {a: color_dict.get(a) for a in alphabet_list}
+        # Set up the color dictionary with alphabet_list keys
+        color_dict = self.update_color_dict(alphabet_list, color_dict)
 
         # Get the length of the alphabet
         alphabet_len = len(alphabet_list)
@@ -2872,7 +2901,8 @@ class Uncategorized(BaseConfig):
                 # Draw a red box around each match
                 if verbose:
                     print(
-                        f'ngram={ngram}, min(ngram)={min(ngram)},'  # noqa E231
+                        f'ngram={ngram},'  # noqa E231
+                        f' min(ngram)={min(ngram)},'  # noqa E231
                         f' max(ngram)={max(ngram)},'  # noqa E231
                         f' match_positions={match_positions}'
                     )
@@ -2883,7 +2913,8 @@ class Uncategorized(BaseConfig):
                     right = left + n - 0.5
                     if verbose:
                         print(
-                            f'bot={bot}, top={top}, left={left}, right={right}'
+                            f'bot={bot}, top={top}, left={left},'
+                            f' right={right}'
                         )
 
                     line_width = 1
@@ -3047,12 +3078,8 @@ class Uncategorized(BaseConfig):
             # Get the unique values in the sequence
             unique_values = alphabet_cache[sequence]
 
-            # Set up the color dictionary so that its keys consist of the
-            # elements in unique_values
-            if color_dict is None:
-                color_dict = {a: None for a in unique_values}
-            else:
-                color_dict = {a: color_dict.get(a) for a in unique_values}
+            # Set up the color dictionary with unique_values keys
+            color_dict = self.update_color_dict(unique_values, color_dict)
 
             # Plot the value positions as scatter points with labels
             if gap:
@@ -3089,8 +3116,7 @@ class Uncategorized(BaseConfig):
             plt.ylim(0, len(sequences))
             plt.xlim(0, max_sequence_length)
 
-        # Force x-ticks to land on integers only (assume all sequences are of
-        # equal length)
+        # Force x-ticks to land on integers only
         xtick_locations = range(len(sequences[0]))
         xtick_labels = [n+1 for n in xtick_locations]
         plt.xticks(ticks=xtick_locations, labels=xtick_labels, minor=False)

@@ -262,18 +262,17 @@ class DataValidation(BaseConfig):
                         str(first_item), str(second_item)
                     )
 
-                    # Update the maximum similarity and corresponding item if
-                    # a higher similarity is found
+                    # Has a higher similarity been found?
                     if this_similarity > max_similarity:
+
+                        # Update max_similarity and max_item
                         max_similarity = this_similarity
                         max_item = second_item
 
-            # Create a row dictionary to store information for each similar
-            # item pair
+            # Create row dict to store information for each similar item pair
             row_dict = {'first_item': first_item, 'second_item': max_item}
 
-            # Convert items to byte arrays and join them with '-' for string
-            # representation
+            # Convert items to byte arrays for string representation
             row_dict['first_bytes'] = '-'.join([str(x) for x in bytearray(
                 str(first_item), encoding=self.encoding_type, errors='replace'
             )])
@@ -359,12 +358,13 @@ class DataValidation(BaseConfig):
             max_similarity = 0.0
             max_item = left_item
 
-            # Iterate through items in the right list and find the most
-            # similar item
+            # Iterate through items in the right list
             for right_item in right_list:
                 this_similarity = self.compute_similarity(
                     left_item, right_item
                 )
+
+                # Find the most similar item
                 if this_similarity > max_similarity:
                     max_similarity = this_similarity
                     max_item = right_item
@@ -382,8 +382,7 @@ class DataValidation(BaseConfig):
         # Define the column names for the output data frame
         column_list = ['left_item', 'right_item', 'max_similarity']
 
-        # Create a data frame from the list of rows, rename columns if
-        # necessary
+        # Create a df from the list of rows, rename columns if necessary
         name_similarities_df = DataFrame(
             rows_list, columns=column_list
         ).rename(columns=rename_dict)
@@ -417,8 +416,7 @@ class DataValidation(BaseConfig):
         if pickle_folder is None:
             pickle_folder = self.saves_pickle_folder
 
-        # Filter the file names to include only pickle files (.pkl or .pickle
-        # extensions)
+        # Filter the file names to include only pickle files
         pickles_list = [
             file_name.split('.')[0]
             for file_name in listdir(pickle_folder)
@@ -484,14 +482,12 @@ class DataValidation(BaseConfig):
                 point relative to the reference point.
         """
 
-        # Retrieve the coordinates for both points, defaulting to the origin
-        # for the first point if not provided
+        # Retrieve the coordinates for both points, defaulting to origin
         x1, x2, y1, y2, z1, z2 = self.get_coordinates(
             second_point, first_point=first_point
         )
 
         # Calculate the relative position by adding corresponding coordinates
-        # and rounding to one decimal place
         relative_position = (
             round(x1 + x2, 1), round(y1 + y2, 1), round(z1 + z2, 1)
         )
@@ -534,9 +530,10 @@ class DataValidation(BaseConfig):
         # Create an empty dictionary to store the sub-dictionary
         sub_dict = {}
 
-        # Iterate over the randomly selected keys and add their corresponding
-        # values to the sub-dictionary
+        # Iterate over the randomly selected keys
         for key in random_keys:
+            
+            # Add their corresponding values to the sub-dictionary
             sub_dict[key] = super_dict[key]
 
         return sub_dict

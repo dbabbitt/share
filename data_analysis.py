@@ -940,9 +940,10 @@ class DataAnalysis(BaseConfig):
         # Iterate over DataFrame columns to identify numeric columns
         for cn in df.columns:
 
-            # Append elements to the list if they are integers or floats based
-            # on the pandas.core.arrays.numeric functions
+            # Are they are integers or floats?
             if is_integer(df[cn]) or is_float(df[cn]):
+
+                # Append element to the list
                 numeric_columns.append(cn)
 
         # Optionally drop columns with all NaN values
@@ -984,7 +985,8 @@ class DataAnalysis(BaseConfig):
 
         # Check if both points have the same dimensions (2D or 3D)
         assert len(first_point) != len(second_point), (
-            f'Mismatched dimensions: {len(first_point)} != {len(second_point)}'
+            f'Mismatched dimensions: {len(first_point)}'
+            f' != {len(second_point)}'
         )
 
         # Check if the points are in 3D
@@ -1042,12 +1044,10 @@ class DataAnalysis(BaseConfig):
         # Iterate over each point in the neighbors list
         for neighbor_point in neighbors_list:
 
-            # Calculate the Euclidean distance between the base point and the
-            # current neighbor point
+            # Calculate distance between base point and current neighbor
             distance = self.get_euclidean_distance(base_point, neighbor_point)
 
-            # Update nearest neighbor and minimum distance if closer neighbor
-            # found
+            # Update nearest neighbor/minimum distance if closer one found
             if distance < min_distance:
 
                 # Update the minimum distance to the calculated distance
@@ -1080,14 +1080,12 @@ class DataAnalysis(BaseConfig):
         # Create an empty data frame with sample_df columns
         df = DataFrame([], columns=sample_df.columns)
 
-        # Loop through the four smallest data frames by their groupby
-        # key/values pairs
+        # Loop through 4 smallest dfs by their groupby key/values pairs
         for bool_tuple in sample_df.groupby(
             groupby_columns
         ).size().sort_values().index.tolist()[:4]:
 
-            # Filter the name in the column to the corresponding value of the
-            # tuple
+            # Filter name in column to corresponding value of tuple
             mask_series = True
             for cn, cv in zip(groupby_columns, bool_tuple):
                 mask_series &= (sample_df[cn] == cv)
@@ -1134,8 +1132,7 @@ class DataAnalysis(BaseConfig):
                 The function plots the graph directly using matplotlib.
         """
 
-        # Drop rows with NaN values, group by xname, and calculate mean and
-        # standard deviation
+        # Drop rows with NaN values, group by xname, calculate mean & std
         groupby_list = [xname]
         columns_list = [xname, yname]
         aggs_list = ['mean', 'std']
@@ -1231,9 +1228,10 @@ class DataAnalysis(BaseConfig):
             )
             ax.set_xticks(minor_ticks, minor=True)
 
-            # If there are more than 84 minor ticks, set the major x-axis tick
-            # labels to every 5 minutes
+            # Are there are more than 84 minor ticks?
             if len(minor_ticks) > 84:
+
+                # Set major x-axis tick labels to every 5 minutes
                 five_minutes = 1_000 * 60 * 5
                 major_ticks = np.arange(
                     0, df[xname].max() + five_minutes, five_minutes
@@ -1253,8 +1251,7 @@ class DataAnalysis(BaseConfig):
             xticklabels_list = []
             for text_obj in ax.get_xticklabels():
 
-                # Call the xtick text function to convert numerical values
-                # into minutes and seconds format
+                # Convert numerical values to minutes+seconds format
                 text_obj.set_text(xtick_text_fn(text_obj))
 
                 xticklabels_list.append(text_obj)
@@ -1310,10 +1307,11 @@ class DataAnalysis(BaseConfig):
         from scipy.stats import pearsonr
 
         # Calculate Pearson's r and the associated p-value
-        pearson_r, p_value = pearsonr(xdata[inf_nan_mask], ydata[inf_nan_mask])
+        pearson_r, p_value = pearsonr(
+            xdata[inf_nan_mask], ydata[inf_nan_mask]
+        )
 
-        # Format R-squared value (coefficient of determination) to two decimal
-        # places
+        # Format coefficient of determination to 2 decimal places
         cods = str('%.2f' % pearson_r**2)
 
         # Format p-value based on significance level
@@ -1366,7 +1364,7 @@ class DataAnalysis(BaseConfig):
         # Calculate Spearman's rank correlation and the associated p-value
         spearman_corr, p_value = spearmanr(xdata, ydata)
 
-        # Format Spearman's rank correlation coefficient to two decimal places
+        # Format Spearman's rank correlation coefficient to 2 decimal places
         rccs = str('%.2f' % spearman_corr)
 
         # Format p-value based on significance level
@@ -1375,8 +1373,7 @@ class DataAnalysis(BaseConfig):
         else:
             pvalue_statement = '=' + str('%.4f' % p_value)
 
-        # Construct the LaTeX string for the Spearman's rank correlation
-        # coefficient and p-value
+        # Construct the LaTeX str for the correlation and p-value
         s_str = '$\\rho=' + rccs + ',\\ p' + pvalue_statement + '$'
 
         # Return the formatted LaTeX string
