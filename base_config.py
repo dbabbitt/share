@@ -68,24 +68,6 @@ class BaseConfig:
         self.facebook_aspect_ratio = 1.91
         self.twitter_aspect_ratio = 16/9
 
-        # Evaluator list
-        self.object_evaluators = [
-            fn for fn in dir(inspect) if fn.startswith('is')
-        ]
-        
-        # Get built-in module names
-        self.built_in_modules = set(sys.builtin_module_names)
-
-        # Get pure Python modules from the standard library
-        self.std_lib_path = osp.dirname(os.__file__)
-        self.std_lib_modules = set([
-            module_info.name
-            for module_info in pkgutil.iter_modules([self.std_lib_path])
-        ])
-
-        # Combine both lists and sort for easier reading
-        self.standard_library_modules = sorted(self.built_in_modules | self.std_lib_modules)
-
     # -------------------
     # Numeric Functions
     # -------------------
