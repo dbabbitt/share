@@ -328,15 +328,25 @@ class DataValidation(BaseConfig):
             'right_item', and 'max_similarity'.
 
         Example:
-            commonly_misspelled_words = ["absence", "consensus", "definitely", "broccoli", "necessary"]
-            common_misspellings = ["absense", "concensus", "definately", "brocolli", "neccessary"]
+            commonly_misspelled_words = [
+                "absence", "consensus", "definitely", "broccoli", "necessary"
+            ]
+            common_misspellings = [
+                "absense", "concensus", "definately", "brocolli", "neccessary"
+            ]
             typos_df = nu.check_for_typos(
-               commonly_misspelled_words,
-               common_misspellings,
-               rename_dict={'left_item': 'commonly_misspelled', 'right_item': 'common_misspelling'}
+                commonly_misspelled_words,
+                common_misspellings,
+                rename_dict={
+                    'left_item': 'commonly_misspelled',
+                    'right_item': 'common_misspelling'
+                }
             ).sort_values(
-               ['max_similarity', 'commonly_misspelled', 'common_misspelling'],
-               ascending=[False, True, True]
+                [
+                    'max_similarity', 'commonly_misspelled',
+                    'common_misspelling'
+                ],
+                ascending=[False, True, True]
             )
             display(typos_df)
         """
