@@ -118,6 +118,7 @@ class BaseConfig:
             display(new_sequence)  # array([0, 1, 0, 2])
             display(mapping)  # {'apple': 0, 'banana': 1, 'cherry': 2}
         """
+        assert hasattr(sequence, '__iter__') and not isinstance(sequence, str), f"sequence needs to be an iterable, not a {type(sequence)}."
 
         # Create an alphabet from the sequence if not provided
         if alphabet_list is None:
