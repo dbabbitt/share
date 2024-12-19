@@ -114,7 +114,7 @@ To remove the `share` submodule from your repository:
 
 ## 🛠️ Usage
 
-Here’s how you can use the `NotebookUtilities` class in your Jupyter Notebook:
+Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
 
 1. Import the `NotebookUtilities` class:
    ```python
@@ -132,8 +132,13 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter Notebook:
 2. Initialize the class:
    ```python
    nu = NotebookUtilities(
+       
+       # This will create a data folder if there isn't already one there
        data_folder_path=osp.abspath(osp.join(os.pardir, 'data')),
+       
+       # This will create a saves folder if there isn't already one there
        saves_folder_path=osp.abspath(osp.join(os.pardir, 'saves'))
+       
    )
    ```
 3. Use the utility functions as needed:
