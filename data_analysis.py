@@ -528,6 +528,8 @@ class DataAnalysis(BaseConfig):
             pandas.DataFrame:
                 The modified DataFrame with the new column representing the
                 modal value.
+        
+        Example:
         """
 
         # Ensure that all columns are in the data frame
@@ -561,6 +563,19 @@ class DataAnalysis(BaseConfig):
             Returns:
                 The first valid value in the Series, or raises an error if no
                 valid index exists.
+            
+            Example:
+                import numpy as np
+                import pandas as pd
+
+                df = pd.DataFrame({
+                    'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3], 'C': ['a', 'b', 'c']
+                })
+                df['D'] = pd.Series([np.nan, 2, np.nan])
+                df['E'] = pd.Series([1, np.nan, 3])
+                df = nu.modalize_columns(df, ['D', 'E'], 'F')
+                display(df)
+                all(df['A'] == df['F'])
             """
             return srs[srs.first_valid_index()]
 

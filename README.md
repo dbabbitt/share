@@ -192,12 +192,8 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    ))  # 360.62445840513925
    ```
    ```python
-   # Generate a color cycler with a specified number of colors
-   color_cycler = nu.get_color_cycler(len(possible_cause_list))
-   for possible_cause, face_color_dict in zip(
-       possible_cause_list, color_cycler()
-   ):
-       face_color = face_color_dict['color']
+   # Generate a step-by-step description of how to perform a function by hand from its comments
+   nu.describe_procedure(nu.describe_procedure)
    ```
    ```python
    # Check the closest names for typos by comparing items from two different lists
