@@ -226,7 +226,7 @@ class DataPreparation(BaseConfig):
                 continue
 
             # Skip built-in modules
-            if library_name in sys.builtin_module_names:
+            if library_name in self.built_in_modules:
                 if verbose:
                     print(f'{library_name} is in the built-in modules')
                 continue
