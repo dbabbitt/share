@@ -214,7 +214,8 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
       ['max_similarity', 'commonly_misspelled', 'common_misspelling'],
       ascending=[False, True, True]
    )
-   typos_df
+   mask_series = (typos_df.max_similarity < 1.0)
+   typos_df[mask_series]
    
    # Open a file in Notepad
    nu.open_path_in_notepad(r'C:\this_example.txt')
