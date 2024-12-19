@@ -304,12 +304,18 @@ class FileOperations(BaseConfig):
             notebook using `get_notebook_functions_dictionary()`.
 
         Example:
-            nu.show_dupl_fn_defs_search_string()
+            util_path = osp.abspath(osp.join(
+                os.pardir, 'share', 'notebook_utils.py'
+            ))
+            repo_folder = nu.github_folder
+            nu.show_dupl_fn_defs_search_string(util_path, repo_folder)
         """
 
         # Set the utility path if not provided
         if util_path is None:
-            util_path = osp.abspath(osp.join(os.pardir, 'share', 'notebook_utils.py'))
+            util_path = osp.abspath(osp.join(
+                os.pardir, 'share', 'notebook_utils.py'
+            ))
 
         # Set the GitHub folder path if not provided
         if repo_folder is None:

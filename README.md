@@ -223,6 +223,7 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    tables_url = 'https://en.wikipedia.org/wiki/'
    tables_url += 'Provinces_of_Afghanistan'
    page_tables_list = nu.get_page_tables(tables_url, verbose=True)
+   page_tables_list[2]
    ```
    ```python
    # Return a mask indicating which elements of X_train and y_train are not inf or nan

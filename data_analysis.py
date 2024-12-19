@@ -770,6 +770,7 @@ class DataAnalysis(BaseConfig):
 
         return row_dict
 
+    @staticmethod
     def get_numeric_columns(df, is_na_dropped=True):
         """
         Identify numeric columns in a DataFrame.
