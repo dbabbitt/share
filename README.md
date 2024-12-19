@@ -186,10 +186,10 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    ```
    ```python
    # Calculate the Euclidean distance between two colors in RGB space
-   nu.color_distance_from('white', (255, 0, 0))  # 360.62445840513925
-   nu.color_distance_from(
+   print(nu.color_distance_from('white', (255, 0, 0)))  # 360.62445840513925
+   print(nu.color_distance_from(
        '#0000FF', (255, 0, 0)
-   )  # 360.62445840513925
+   ))  # 360.62445840513925
    ```
    ```python
    # Generate a color cycler with a specified number of colors
@@ -217,11 +217,6 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    ```python
    # Open a file in Notepad
    nu.open_path_in_notepad(r'C:\this_example.txt')
-   ```
-   ```python
-   # Identify and report duplicate function definitions in Jupyter notebooks
-   # and suggest how to consolidate them
-   nu.show_dupl_fn_defs_search_string()
    ```
    ```python
    # Retrieve <table>s from a given URL as a list of DataFrames

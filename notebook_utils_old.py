@@ -1938,7 +1938,7 @@ class NotebookUtilities(object):
         return dfs_list
 
     def show_dupl_fn_defs_search_string(
-        self, util_path=None, github_folder=None
+        self, util_path=None, repo_folder=None
     ):
         """
         Identify and report duplicate function definitions in Jupyter
@@ -1948,7 +1948,7 @@ class NotebookUtilities(object):
             util_path (str, optional):
                 The path to the utility file where refactored functions will
                 be added. Defaults to '../py/notebook_utils.py'.
-            github_folder (str, optional):
+            repo_folder (str, optional):
                 The path to the GitHub repository containing the Jupyter
                 notebooks. Default is the parent folder of the current
                 directory.
@@ -1968,11 +1968,11 @@ class NotebookUtilities(object):
 
         # Set the utility path if not provided
         if util_path is None:
-            util_path = osp.join(os.pardir, 'py', 'notebook_utils.py')
+            util_path = osp.abspath(osp.join(os.pardir, 'share', 'notebook_utils.py'))
 
         # Set the GitHub folder path if not provided
-        if github_folder is None:
-            github_folder = self.github_folder
+        if repo_folder is None:
+            repo_folder = self.github_folder
 
         # Get the function definitions dictionary
         function_definitions_dict = self.get_notebook_functions_dictionary()
@@ -1991,9 +1991,9 @@ class NotebookUtilities(object):
         if duplicate_fns_list:
             print(
                 'Search for *.ipynb; file masks in the'  # noqa: E702
-                f' {github_folder} folder for this pattern:'  # noqa: E231
+                f' {repo_folder} folder for this pattern:'  # noqa: E231
             )
-            print('\\s+"def (' + '|'.join(duplicate_fns_list) + ')\\(')
+            print('\\s+"def\\s+(' + '|'.join(duplicate_fns_list) + ')')
             print(
                 'Consolidate these duplicate definitions and add the'
                 f' refactored one to {util_path} (and delete the'

@@ -95,7 +95,7 @@ class FileOperations(BaseConfig):
                 print(f'Iterating over each line in {util_path}')
             for line in lines_list:
 
-                # Search for function definitions using the regular expression
+                # Search for function definitions
                 match_obj = self.simple_defs_regex.search(line)
 
                 # If function definition is found
@@ -178,7 +178,7 @@ class FileOperations(BaseConfig):
                                 # Has a function definition been found?
                                 if match_obj:
 
-                                    # Extract the function name from the match
+                                    # Extract the function name
                                     fn = match_obj.group(1)
 
                                     # Increment the function count
@@ -279,7 +279,7 @@ class FileOperations(BaseConfig):
             )
 
     def show_dupl_fn_defs_search_string(
-        self, util_path=None, github_folder=None
+        self, util_path=None, repo_folder=None
     ):
         """
         Identify and report duplicate function definitions in Jupyter
@@ -289,7 +289,7 @@ class FileOperations(BaseConfig):
             util_path (str, optional):
                 The path to the utility file where refactored functions will
                 be added. Defaults to '../py/notebook_utils.py'.
-            github_folder (str, optional):
+            repo_folder (str, optional):
                 The path to the GitHub repository containing the Jupyter
                 notebooks. Default is the parent folder of the current
                 directory.
@@ -309,11 +309,11 @@ class FileOperations(BaseConfig):
 
         # Set the utility path if not provided
         if util_path is None:
-            util_path = osp.join(os.pardir, 'py', 'notebook_utils.py')
+            util_path = osp.abspath(osp.join(os.pardir, 'share', 'notebook_utils.py'))
 
         # Set the GitHub folder path if not provided
-        if github_folder is None:
-            github_folder = self.github_folder
+        if repo_folder is None:
+            repo_folder = self.github_folder
 
         # Get the function definitions dictionary
         function_definitions_dict = self.get_notebook_functions_dictionary()
@@ -332,9 +332,9 @@ class FileOperations(BaseConfig):
         if duplicate_fns_list:
             print(
                 'Search for *.ipynb; file masks in the'  # noqa: E702
-                f' {github_folder} folder for this pattern:'  # noqa: E231
+                f' {repo_folder} folder for this pattern:'  # noqa: E231
             )
-            print('\\s+"def (' + '|'.join(duplicate_fns_list) + ')\\(')
+            print('\\s+"def\\s+(' + '|'.join(duplicate_fns_list) + ')')
             print(
                 'Consolidate these duplicate definitions and add the'
                 f' refactored one to {util_path} (and delete the'
@@ -462,7 +462,7 @@ class FileOperations(BaseConfig):
         # Try to compress and store the dataframe with a pickle protocol <= 4
         try:
 
-            # Print the absolute path to the pickle file if verbose is enabled
+            # Print the absolute path to the pickle file if verbose
             if verbose:
                 print(
                     'Pickling to {}'.format(osp.abspath(pickle_path)),
@@ -628,7 +628,7 @@ class FileOperations(BaseConfig):
                 or download).
         """
 
-        # If no pickle path provided, construct default path using object name
+        # If no pickle path provided, construct default path with object name
         if pickle_path is None:
             pickle_path = osp.join(
                 self.saves_pickle_folder, '{}.pkl'.format(obj_name)
@@ -694,7 +694,7 @@ class FileOperations(BaseConfig):
             try:
                 object = read_pickle(pickle_path)
 
-            # If reading the pickle file fails, fall back to the pickle module
+            # If reading the pickle file fails, fall back to pickle module
             except Exception:
                 with open(pickle_path, 'rb') as handle:
                     object = pickle.load(handle)
@@ -769,7 +769,8 @@ class FileOperations(BaseConfig):
                     # load it from there
                     try:
                         frame_dict[frame_name] = self.load_csv(
-                            csv_name=frame_name, folder_path=self.saves_folder
+                            csv_name=frame_name,
+                            folder_path=self.saves_folder
                         )
                         was_successful = True
                     except Exception as e:
@@ -832,7 +833,7 @@ class FileOperations(BaseConfig):
             None
         """
 
-        # Iterate over dfs in the kwargs dictionary and save them to CSV files
+        # Iterate over dfs in kwargs dictionary and save them to CSV files
         for frame_name in kwargs:
 
             # Check if it's a dataframe
