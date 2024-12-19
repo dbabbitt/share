@@ -25,10 +25,7 @@ import sys
 try:
     import dill as pickle
 except Exception:
-    try:
-        import pickle5 as pickle
-    except Exception:
-        import pickle
+    import pickle
 
 
 class FileOperations(BaseConfig):

@@ -44,10 +44,7 @@ import warnings
 try:
     import dill as pickle
 except Exception:
-    try:
-        import pickle5 as pickle
-    except Exception:
-        import pickle
+    import pickle
 
 warnings.filterwarnings('ignore')
 
