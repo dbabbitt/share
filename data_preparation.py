@@ -27,6 +27,7 @@ import importlib
 import inspect
 import numpy as np
 import os
+import pkgutil
 import sys
 import urllib
 
