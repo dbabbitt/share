@@ -147,13 +147,15 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    actions = ['jump', 'run', 'jump', 'run', 'jump']
    ngrams = ['jump', 'run']
    nu.count_ngrams(actions, ngrams)  # 2
-   
+   ```
+   ```python
    # Convert a sequence of strings into a sequence of integers and a mapping dictionary
    sequence = ['apple', 'banana', 'apple', 'cherry']
    new_sequence, mapping = nu.convert_strings_to_integers(sequence)
    print(new_sequence)  # array([0, 1, 0, 2])
    print(mapping)  # {'apple': 0, 'banana': 1, 'cherry': 2}
-   
+   ```
+   ```python
    # Take a list of strings with indentation and prefix them based on a
    # multi-level list style
    level_count = 8
@@ -174,19 +176,22 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    )
    for line in numbered_list:
        print(line)
-   
+   ```
+   ```python
    # Get the absolute file path where a function object is stored
    import os.path as osp
    my_function = lambda: None
    file_path = nu.get_function_file_path(my_function)
    print(osp.abspath(file_path))
-   
+   ```
+   ```python
    # Calculate the Euclidean distance between two colors in RGB space
    nu.color_distance_from('white', (255, 0, 0))  # 360.62445840513925
    nu.color_distance_from(
        '#0000FF', (255, 0, 0)
    )  # 360.62445840513925
-   
+   ```
+   ```python
    # Visualize a subgraph with a custom node grouping
    import networkx as nx
    sub_graph = nx.erdos_renyi_graph(10, 0.3)
@@ -195,14 +200,16 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    show_subgraph(
        sub_graph, nodes_list_list=nodes_list_list, verbose=True
    )
-   
+   ```
+   ```python
    # Generate a color cycler with a specified number of colors
    color_cycler = nu.get_color_cycler(len(possible_cause_list))
    for possible_cause, face_color_dict in zip(
        possible_cause_list, color_cycler()
    ):
        face_color = face_color_dict['color']
-   
+   ```
+   ```python
    # Check the closest names for typos by comparing items from two different lists
    commonly_misspelled_words = ["absence", "consensus", "definitely", "broccoli", "necessary"]
    common_misspellings = ["absense", "concensus", "definately", "brocolli", "neccessary"]
@@ -216,31 +223,37 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    )
    mask_series = (typos_df.max_similarity < 1.0)
    typos_df[mask_series]
-   
+   ```
+   ```python
    # Open a file in Notepad
    nu.open_path_in_notepad(r'C:\this_example.txt')
-   
+   ```
+   ```python
    # Identify and report duplicate function definitions in Jupyter notebooks
    # and suggest how to consolidate them
    nu.show_dupl_fn_defs_search_string()
-   
+   ```
+   ```python
    # Retrieve <table>s from a given URL as a list of DataFrames
    tables_url = 'https://en.wikipedia.org/wiki/'
    tables_url += 'Provinces_of_Afghanistan'
    page_tables_list = nu.get_page_tables(tables_url, verbose=True)
-   
+   ```
+   ```python
    # Return a mask indicating which elements of X_train and y_train are not inf or nan
    inf_nan_mask = nu.get_inf_nan_mask(X_train, y_train)
    X_train_filtered = X_train[inf_nan_mask]
    y_train_filtered = y_train[inf_nan_mask]
-   
+   ```
+   ```python
    # Identify numeric columns in a DataFrame
    import pandas as pd
    df = pd.DataFrame({
        'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3], 'C': ['a', 'b', 'c']
    })
    nu.get_numeric_columns(df)  # ['A', 'B']
-   
+   ```
+   ```python
    # Introspect a Python module to discover available functions and classes programmatically
    module_name = 'nu'
    import_call = '''
