@@ -384,7 +384,7 @@ class DataAnalysis(BaseConfig):
         if X_train.shape[0] == 0 or y_train.shape[0] == 0:
             return np.array([], dtype=bool)
 
-        # Create a notnull mask across the X_train and y_train columns 
+        # Create a notnull mask across the X_train and y_train columns
         mask_series = concat(
             [DataFrame(y_train), DataFrame(X_train)], axis='columns'
         ).applymap(notnull).all(axis='columns')

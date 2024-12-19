@@ -1035,7 +1035,9 @@ class NotebookUtilities(object):
             display(new_sequence)  # array([0, 1, 0, 2])
             display(mapping)  # {'apple': 0, 'banana': 1, 'cherry': 2}
         """
-        assert hasattr(sequence, '__iter__') and not isinstance(sequence, str), f"sequence needs to be an iterable, not a {type(sequence)}."
+        assert (
+            hasattr(sequence, '__iter__') and not isinstance(sequence, str)
+        ), f"sequence needs to be an iterable, not a {type(sequence)}."
 
         # Create an alphabet from the sequence if not provided
         if alphabet_list is None:
@@ -1968,7 +1970,9 @@ class NotebookUtilities(object):
 
         # Set the utility path if not provided
         if util_path is None:
-            util_path = osp.abspath(osp.join(os.pardir, 'share', 'notebook_utils.py'))
+            util_path = osp.abspath(osp.join(
+                os.pardir, 'share', 'notebook_utils.py'
+            ))
 
         # Set the GitHub folder path if not provided
         if repo_folder is None:
@@ -3138,7 +3142,7 @@ class NotebookUtilities(object):
 
             if verbose:
                 print(
-                    f'function_call: {function_call},'
+                    f'function_call: {function_call},'  # noqa: E231
                     f' evaluations_list: {evaluations_list}'
                 )
 
@@ -3406,9 +3410,11 @@ class NotebookUtilities(object):
 
         # Split code into lines to retrieve the indentation
         code_lines = source_code.splitlines()
+        from io import StringIO
         code_io = StringIO(source_code)
 
         # Tokenize the source code
+        import tokenize
         for token in tokenize.generate_tokens(code_io.readline):
 
             # Is the token a comment?
@@ -5405,7 +5411,7 @@ class NotebookUtilities(object):
     @staticmethod
     def get_color_cycler(n):
         """
-        Generate a color cycler for plotting with a specified number of 
+        Generate a color cycler for plotting with a specified number of
         colors.
 
         This static method creates a color cycler object (`cycler.Cycler`)
@@ -6451,7 +6457,7 @@ class NotebookUtilities(object):
 
             # Are there are more than one rows?
             if nrows > 1:
-                
+
                 # Determine subplot based on number of rows and plot count
                 row = (i - 1) // 3
                 ax = axes[row, col]
@@ -6684,7 +6690,8 @@ class NotebookUtilities(object):
                     right = left + n - 0.5
                     if verbose:
                         print(
-                            f'bot={bot}, top={top}, left={left},'
+                            f'bot={bot}, top={top},'  # noqa E231
+                            f' left={left},'  # noqa E231
                             f' right={right}'
                         )
 

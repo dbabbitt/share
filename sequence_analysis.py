@@ -13,29 +13,19 @@ Run this in a Git Bash terminal if you push anything:
 """
 
 from base_config import BaseConfig
-from bs4 import BeautifulSoup as bs
-from datetime import timedelta
-from io import StringIO
 from os import (
-    listdir as listdir, makedirs as makedirs, path as osp,
-    walk as walk
+    path as osp
 )
 from pandas import (
-    DataFrame, Series, concat
+    Series
 )
 from re import (
-    IGNORECASE, sub
+    sub
 )
-import humanize
-import math
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
-import re
-import seaborn as sns
-import subprocess
-import tokenize
 
 # Check for presence of 'get_ipython' function (exists in Jupyter)
 try:
@@ -329,7 +319,6 @@ class SequenceAnalysis(BaseConfig):
         # Return the split list
         return split_list
 
-
     @staticmethod
     def convert_strings_to_integers(sequence, alphabet_list=None):
         """
@@ -369,7 +358,9 @@ class SequenceAnalysis(BaseConfig):
             display(new_sequence)  # array([0, 1, 0, 2])
             display(mapping)  # {'apple': 0, 'banana': 1, 'cherry': 2}
         """
-        assert hasattr(sequence, '__iter__') and not isinstance(sequence, str), f"sequence needs to be an iterable, not a {type(sequence)}."
+        assert (
+            hasattr(sequence, '__iter__') and not isinstance(sequence, str)
+        ), f"sequence needs to be an iterable, not a {type(sequence)}."
 
         # Create an alphabet from the sequence if not provided
         if alphabet_list is None:
@@ -512,7 +503,7 @@ class SequenceAnalysis(BaseConfig):
 
         # Has variance computation failed (eg, due to insufficient data)?
         except Exception:
-            
+
             # Set variance to 0
             variance_of_state_durations = 0.0
 
@@ -858,7 +849,7 @@ class SequenceAnalysis(BaseConfig):
                     right = left + n - 0.5
                     if verbose:
                         print(
-                            f'bot={bot}, top={top}, left={left},'
+                            f'bot={bot}, top={top}, left={left},'  # noqa E231
                             f' right={right}'
                         )
 

@@ -164,7 +164,7 @@ class BaseConfig:
     @staticmethod
     def get_color_cycler(n):
         """
-        Generate a color cycler for plotting with a specified number of 
+        Generate a color cycler for plotting with a specified number of
         colors.
 
         This static method creates a color cycler object (`cycler.Cycler`)

@@ -23,7 +23,6 @@ from pandas import (
 from re import (
     split, sub
 )
-import importlib
 import inspect
 import numpy as np
 import os
@@ -71,7 +70,7 @@ class DataPreparation(BaseConfig):
         self.object_evaluators = [
             fn for fn in dir(inspect) if fn.startswith('is')
         ]
-        
+
         # Get built-in module names
         self.built_in_modules = set(sys.builtin_module_names)
 
@@ -92,7 +91,9 @@ class DataPreparation(BaseConfig):
         ])
 
         # Combine both lists and sort for easier reading
-        self.standard_library_modules = sorted(self.built_in_modules | self.std_lib_modules)
+        self.standard_library_modules = sorted(
+            self.built_in_modules | self.std_lib_modules
+        )
 
     # -------------------
     # Numeric Functions
@@ -393,7 +394,7 @@ class DataPreparation(BaseConfig):
 
             if verbose:
                 print(
-                    f'function_call: {function_call},'
+                    f'function_call: {function_call},'  # noqa E231
                     f' evaluations_list: {evaluations_list}'
                 )
 

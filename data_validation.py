@@ -471,7 +471,7 @@ class DataValidation(BaseConfig):
 
         # Iterate over the randomly selected keys
         for key in random_keys:
-            
+
             # Add their corresponding values to the sub-dictionary
             sub_dict[key] = super_dict[key]
 

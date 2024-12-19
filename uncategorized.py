@@ -24,7 +24,7 @@ from pandas import (
     DataFrame, Series, concat
 )
 from re import (
-    IGNORECASE, sub
+    IGNORECASE
 )
 import humanize
 import inspect
@@ -33,7 +33,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
-import pkgutil
 import re
 import seaborn as sns
 import subprocess
@@ -368,7 +367,7 @@ class Uncategorized(BaseConfig):
             # Is the format code 'I'?
             elif format_code == 'I':
 
-                #Apply uppercase roman numeral numbering
+                # Apply uppercase roman numeral numbering
                 import roman
                 numbering_format = numbering_format.replace(
                     format_code, roman.toRoman(
@@ -629,7 +628,7 @@ class Uncategorized(BaseConfig):
 
             # Is the item a directory?
             if osp.isdir(full_item_path):
-                
+
                 # Add its path to the list
                 top_level_folders.append(full_item_path)
 
@@ -1725,7 +1724,7 @@ class Uncategorized(BaseConfig):
         verbose=False
     ):
         """
-        Rebalance the given unbalanced DataFrame by under-sampling the 
+        Rebalance the given unbalanced DataFrame by under-sampling the
         majority class(es) to the specified sampling_strategy_limit.
 
         Parameters:
@@ -1752,7 +1751,7 @@ class Uncategorized(BaseConfig):
         counts_dict = unbalanced_df.groupby(value_column).count()[
             name_column
         ].to_dict()
-        
+
         # Limit each class count to sampling_strategy_limit in counts_dict
         sampling_strategy = {
             k: min(sampling_strategy_limit, v)
@@ -2312,7 +2311,7 @@ class Uncategorized(BaseConfig):
 
             # Are there are more than one rows?
             if nrows > 1:
-                
+
                 # Determine subplot based on number of rows and plot count
                 row = (i - 1) // 3
                 ax = axes[row, col]
