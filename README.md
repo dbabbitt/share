@@ -133,10 +133,10 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    ```python
    nu = NotebookUtilities(
        
-       # This will create a data folder if there isn't already one there
+       # This will create a data folder if there isn't one already
        data_folder_path=osp.abspath(osp.join(os.pardir, 'data')),
        
-       # This will create a saves folder if there isn't already one there
+       # This will create a saves folder if there isn't one already
        saves_folder_path=osp.abspath(osp.join(os.pardir, 'saves'))
        
    )
@@ -146,13 +146,13 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    # Count the occurrences of a sequence of elements (n-grams) in a list
    actions = ['jump', 'run', 'jump', 'run', 'jump']
    ngrams = ['jump', 'run']
-   nu.count_ngrams(actions, ngrams)
+   nu.count_ngrams(actions, ngrams)  # 2
    
    # Convert a sequence of strings into a sequence of integers and a mapping dictionary
    sequence = ['apple', 'banana', 'apple', 'cherry']
    new_sequence, mapping = nu.convert_strings_to_integers(sequence)
-   display(new_sequence)  # array([0, 1, 0, 2])
-   display(mapping)  # {'apple': 0, 'banana': 1, 'cherry': 2}
+   print(new_sequence)  # array([0, 1, 0, 2])
+   print(mapping)  # {'apple': 0, 'banana': 1, 'cherry': 2}
    
    # Take a list of strings with indentation and prefix them based on a
    # multi-level list style
@@ -204,22 +204,17 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
        face_color = face_color_dict['color']
    
    # Check the closest names for typos by comparing items from two different lists
-   sd_set = set(some_dict.keys()).symmetric_difference(set(
-       df.similar_key
-   ))
-   typos_df = check_for_typos(
-       list(set(df.similar_key).intersection(sd_set)),
-       list(set(some_dict.keys()).intersection(sd_set)),
-       verbose=False
+   commonly_misspelled_words = ["absence", "consensus", "definitely", "broccoli", "necessary"]
+   common_misspellings = ["absense", "concensus", "definately", "brocolli", "neccessary"]
+   typos_df = nu.check_for_typos(
+      commonly_misspelled_words,
+      common_misspellings,
+      rename_dict={'left_item': 'commonly_misspelled', 'right_item': 'common_misspelling'}
    ).sort_values(
-       ['max_similarity', 'left_item', 'right_item'],
-       ascending=[False, True, True]
+      ['max_similarity', 'commonly_misspelled', 'common_misspelling'],
+      ascending=[False, True, True]
    )
-   for i, r in typos_df.iterrows():
-       print(
-           f"some_dict['{r.left_item}'] ="
-           f" some_dict.pop('{r.right_item}')"
-       )
+   typos_df
    
    # Open a file in Notepad
    nu.open_path_in_notepad(r'C:\this_example.txt')

@@ -328,22 +328,17 @@ class DataValidation(BaseConfig):
             'right_item', and 'max_similarity'.
 
         Example:
-            sd_set = set(some_dict.keys()).symmetric_difference(set(
-                df.similar_key
-            ))
-            typos_df = check_for_typos(
-                list(set(df.similar_key).intersection(sd_set)),
-                list(set(some_dict.keys()).intersection(sd_set)),
-                verbose=False
+            commonly_misspelled_words = ["absence", "consensus", "definitely", "broccoli", "necessary"]
+            common_misspellings = ["absense", "concensus", "definately", "brocolli", "neccessary"]
+            typos_df = nu.check_for_typos(
+               commonly_misspelled_words,
+               common_misspellings,
+               rename_dict={'left_item': 'commonly_misspelled', 'right_item': 'common_misspelling'}
             ).sort_values(
-                ['max_similarity', 'left_item', 'right_item'],
-                ascending=[False, True, True]
+               ['max_similarity', 'commonly_misspelled', 'common_misspelling'],
+               ascending=[False, True, True]
             )
-            for i, r in typos_df.iterrows():
-                print(
-                    f"some_dict['{r.left_item}'] ="
-                    f" some_dict.pop('{r.right_item}')"
-                )
+            display(typos_df)
         """
 
         # Initialize the time taken for the computation if verbose is True
