@@ -380,62 +380,6 @@ class Uncategorized(BaseConfig):
         # Return a tuple representing the shape of the list of lists
         return (len(list_of_lists), num_cols)
 
-    @staticmethod
-    def convert_strings_to_integers(sequence, alphabet_list=None):
-        """
-        Convert a sequence of strings into a sequence of integers and a
-        mapping dictionary.
-
-        This method converts each string in the input sequence to an
-        integer based on its position in an alphabet list. If the alphabet
-        list is not provided, it is generated from the unique elements of
-        the sequence. The method returns a new sequence where each string
-        is replaced by its corresponding integer, and a dictionary mapping
-        strings to integers.
-
-        Parameters:
-            sequence (iterable):
-                A sequence of strings to be converted.
-            alphabet_list (list, optional):
-                A list of the unique elements of sequence, passed in to
-                stabilize the order. If None (default), the alphabet is
-                derived from the `sequence`.
-
-        Returns:
-            tuple:
-                A tuple containing two elements:
-                - new_sequence (numpy.ndarray): An array of integers
-                  representing the converted sequence.
-                - string_to_integer_map (dict): A dictionary mapping the
-                  original strings to their corresponding integer codes.
-
-        Note:
-            Strings not present in the alphabet are mapped to -1 in the
-            dictionary.
-
-        Examples:
-            sequence = ['apple', 'banana', 'apple', 'cherry']
-            new_sequence, mapping = nu.convert_strings_to_integers(sequence)
-            display(new_sequence)  # array([0, 1, 0, 2])
-            display(mapping)  # {'apple': 0, 'banana': 1, 'cherry': 2}
-        """
-
-        # Create an alphabet from the sequence if not provided
-        if alphabet_list is None:
-            alphabet_list = sorted(set(sequence))
-
-        # Initialize the map with an enumeration of the alphabet
-        string_to_integer_map = {
-            string: index for index, string in enumerate(alphabet_list)
-        }
-
-        # Convert seq of strs to seq of ints, assigning -1 for unknown strs
-        new_sequence = np.array(
-            [string_to_integer_map.get(string, -1) for string in sequence]
-        )
-
-        return (new_sequence, string_to_integer_map)
-
     def get_ndistinct_subsequences(self, sequence, verbose=False):
         """
         Calculate the number of distinct subsequences in a given sequence.
@@ -3250,9 +3194,9 @@ class Uncategorized(BaseConfig):
         Examples:
             import networkx as nx
             sub_graph = nx.erdos_renyi_graph(10, 0.3)
-            show_subgraph(sub_graph)
+            nu.show_subgraph(sub_graph)
             nodes_list_list = [['node1', 'node2'], ['node3', 'node4']]
-            show_subgraph(
+            nu.show_subgraph(
                 sub_graph, nodes_list_list=nodes_list_list, verbose=True
             )
         """

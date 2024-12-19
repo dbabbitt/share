@@ -192,16 +192,6 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    )  # 360.62445840513925
    ```
    ```python
-   # Visualize a subgraph with a custom node grouping
-   import networkx as nx
-   sub_graph = nx.erdos_renyi_graph(10, 0.3)
-   show_subgraph(sub_graph)
-   nodes_list_list = [['node1', 'node2'], ['node3', 'node4']]
-   show_subgraph(
-       sub_graph, nodes_list_list=nodes_list_list, verbose=True
-   )
-   ```
-   ```python
    # Generate a color cycler with a specified number of colors
    color_cycler = nu.get_color_cycler(len(possible_cause_list))
    for possible_cause, face_color_dict in zip(

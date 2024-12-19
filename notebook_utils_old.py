@@ -7020,9 +7020,9 @@ class NotebookUtilities(object):
         Examples:
             import networkx as nx
             sub_graph = nx.erdos_renyi_graph(10, 0.3)
-            show_subgraph(sub_graph)
+            nu.show_subgraph(sub_graph)
             nodes_list_list = [['node1', 'node2'], ['node3', 'node4']]
-            show_subgraph(
+            nu.show_subgraph(
                 sub_graph, nodes_list_list=nodes_list_list, verbose=True
             )
         """
