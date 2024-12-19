@@ -142,7 +142,7 @@ class NotebookUtilities(object):
             osp.dirname(__file__), os.pardir, os.pardir, os.pardir, 'share'
         ))
 
-        # Add the shared folder to sys.path if it's not already included
+        # Add the shared folder to system path if it's not already included
         import sys
         if shared_folder not in sys.path:
             sys.path.insert(1, shared_folder)
@@ -1035,6 +1035,7 @@ class NotebookUtilities(object):
             display(new_sequence)  # array([0, 1, 0, 2])
             display(mapping)  # {'apple': 0, 'banana': 1, 'cherry': 2}
         """
+        assert hasattr(sequence, '__iter__') and not isinstance(sequence, str), f"sequence needs to be an iterable, not a {type(sequence)}."
 
         # Create an alphabet from the sequence if not provided
         if alphabet_list is None:
@@ -4906,7 +4907,7 @@ class NotebookUtilities(object):
         # Handle last element by adding last row to result data frame
         result_df.loc[row_index] = row_series
 
-        # Was the last element part of a consecutive sequence?
+        # Was the last element part of a consecutive series?
         if count > 0:
 
             # Replace it with a count of how many there were
@@ -5409,7 +5410,7 @@ class NotebookUtilities(object):
 
         This static method creates a color cycler object (`cycler.Cycler`)
         suitable for Matplotlib plotting. The color cycler provides a
-        sequence of colors to be used for lines, markers, or other plot
+        series of colors to be used for lines, markers, or other plot
         elements. The function selects a colormap based on the requested
         number of colors (`n`).
 

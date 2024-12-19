@@ -16,6 +16,7 @@ from data_analysis import DataAnalysis
 from data_preparation import DataPreparation
 from data_validation import DataValidation
 from file_operations import FileOperations
+from sequence_analysis import SequenceAnalysis
 from uncategorized import Uncategorized
 from os import (
     makedirs as makedirs, path as osp
@@ -39,7 +40,7 @@ class NotebookUtilities(object):
             osp.dirname(__file__), os.pardir, os.pardir, os.pardir, 'share'
         ))
 
-        # Add the shared folder to sys.path if it's not already included
+        # Add the shared folder to system path if it's not already included
         import sys
         if shared_folder not in sys.path:
             sys.path.insert(1, shared_folder)
@@ -102,6 +103,10 @@ class NotebookUtilities(object):
             data_folder_path=data_folder_path,
             saves_folder_path=saves_folder_path
         )
+        self.sequence_analysis = SequenceAnalysis(
+            data_folder_path=data_folder_path,
+            saves_folder_path=saves_folder_path
+        )
         self.uncategorized = Uncategorized(
             data_folder_path=data_folder_path,
             saves_folder_path=saves_folder_path
@@ -112,7 +117,7 @@ class NotebookUtilities(object):
         # Check if the method exists in one of the smaller classes
         for component in [
             self.data_analysis, self.data_preparation, self.data_validation,
-            self.file_operations, self.uncategorized
+            self.file_operations, self.sequence_analysis, self.uncategorized
         ]:
             if hasattr(component, name):
                 return getattr(component, name)
