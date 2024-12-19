@@ -81,6 +81,15 @@ class DataPreparation(BaseConfig):
             module_info.name
             for module_info in pkgutil.iter_modules([self.std_lib_path])
         ])
+        module_paths = sorted([
+            path
+            for path in sys.path
+            if path and not path.startswith(osp.dirname(__file__))
+        ])
+        self.standard_lib_modules = sorted([
+            module_info.name
+            for module_info in pkgutil.iter_modules(path=module_paths)
+        ])
 
         # Combine both lists and sort for easier reading
         self.standard_library_modules = sorted(self.built_in_modules | self.std_lib_modules)
