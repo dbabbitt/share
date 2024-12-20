@@ -1511,24 +1511,22 @@ class DataAnalysis(BaseConfig):
                 # Handle exceptions and print a clean error message
                 print(f"Error saving plot to {dir_name}: {str(e).strip()}")
 
-    @staticmethod
-    def ball_and_chain(ax, index, values, c, label=None):
-        """
-        import matplotlib as mpl
-        
-        colormap = r()
-        cmap = mpl.colormaps.get_cmap(colormap)
-        norm = LogNorm(vmin=values.min(), vmax=values.max())
-        ball_and_chain(ax, index, values, c=cmap(norm(values)))
-        """
+    def ball_and_chain(self, ax, index, values, face_color=None, label=None):
         ax.plot(index, values, c='k', zorder=1, alpha=.25)
+        if face_color is None:
+            colormap = self.get_random_colormap()
+            import matplotlib as mpl
+            cmap = mpl.colormaps.get_cmap(colormap)
+            from matplotlib.colors import LogNorm
+            norm = LogNorm(vmin=values.min(), vmax=values.max())
+            face_color = cmap(norm(values))
         if label is None:
             ax.scatter(
-                index, values, s=30, lw=.5, c=c, edgecolors='k', zorder=2
+                index, values, s=30, lw=.5, c=face_color, edgecolors='k', zorder=2
             )
         else:
             ax.scatter(
-                index, values, s=30, lw=.5, c=c, edgecolors='k', zorder=2,
+                index, values, s=30, lw=.5, c=face_color, edgecolors='k', zorder=2,
                 label=label
             )
 
