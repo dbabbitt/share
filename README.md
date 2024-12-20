@@ -275,7 +275,7 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    sequence = ["SESSION_START", "LOGIN", "VIEW_PRODUCT"]
    
    # Generate more shopping elements
-   for _ in range(9):
+   for _ in range(19):
        if sequence[-1] != 'ADD_TO_CART':
            sequence.append(random.choice(['VIEW_PRODUCT', 'ADD_TO_CART']))
        else:
