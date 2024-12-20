@@ -267,8 +267,7 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    sorted(nu_functions, key=lambda x: x[::-1])[:6]
    ```
    ```python
-   # Create a standard sequence plot where each
-   # element corresponds to a position on the y-axis
+   # Create a standard sequence plot where each element corresponds to a position on the y-axis
    import matplotlib.pyplot as plt
    import random
    
