@@ -222,10 +222,19 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    page_tables_list[2]
    ```
    ```python
-   # Return a mask indicating which elements of X_train and y_train are not inf or nan
-   inf_nan_mask = nu.get_inf_nan_mask(X_train, y_train)
-   X_train_filtered = X_train[inf_nan_mask]
-   y_train_filtered = y_train[inf_nan_mask]
+   import numpy as np
+   import pandas as pd
+   
+   # Create a new column in a DataFrame representing
+   # the modal value of the D and E columns
+   df = pd.DataFrame({
+   'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3], 'C': ['a', 'b', 'c']
+   })
+   df['D'] = pd.Series([np.nan, 2, np.nan])
+   df['E'] = pd.Series([1, np.nan, 3])
+   df = nu.modalize_columns(df, ['D', 'E'], 'F')
+   display(df)
+   assert all(df['A'] == df['F'])
    ```
    ```python
    # Identify numeric columns in a DataFrame

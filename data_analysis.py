@@ -530,19 +530,19 @@ class DataAnalysis(BaseConfig):
             pandas.DataFrame:
                 The modified DataFrame with the new column representing the
                 modal value.
-            
-            Example:
-                import numpy as np
-                import pandas as pd
+        
+        Example:
+            import numpy as np
+            import pandas as pd
 
-                df = pd.DataFrame({
-                    'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3], 'C': ['a', 'b', 'c']
-                })
-                df['D'] = pd.Series([np.nan, 2, np.nan])
-                df['E'] = pd.Series([1, np.nan, 3])
-                df = nu.modalize_columns(df, ['D', 'E'], 'F')
-                display(df)
-                assert all(df['A'] == df['F'])
+            df = pd.DataFrame({
+                'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3], 'C': ['a', 'b', 'c']
+            })
+            df['D'] = pd.Series([np.nan, 2, np.nan])
+            df['E'] = pd.Series([1, np.nan, 3])
+            df = nu.modalize_columns(df, ['D', 'E'], 'F')
+            display(df)
+            assert all(df['A'] == df['F'])
         """
 
         # Ensure that all columns are in the data frame
