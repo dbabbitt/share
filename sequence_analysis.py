@@ -738,6 +738,51 @@ class SequenceAnalysis(BaseConfig):
         # Return the final list of colors
         return colors_list
 
+    @staticmethod
+    def update_color_dict(alphabet_list, color_dict=None):
+        """
+        Create or update a dictionary based on the given alphabet list.
+
+        Parameters:
+            alphabet_list (list):
+                A list of keys to include in the dictionary. color_dict (dict,
+                optional): An existing dictionary. Defaults to None.
+
+        Returns:
+            dict:
+                A dictionary with keys from `alphabet_list`. If `color_dict`
+                is supplied, its values are preserved for matching keys;
+                otherwise, values are set to None.
+
+        Examples:
+            alphabet_list = ['a', 'b', 'c', 'd']
+            existing_dict = {'a': 'red', 'b': 'blue'}
+
+            # Case 1: No color dictionary provided
+            print(
+                update_color_dict(alphabet_list)
+            )  # {'a': None, 'b': None, 'c': None, 'd': None}
+
+            # Case 2: An existing color dictionary is provided
+            print(
+                update_color_dict(alphabet_list, existing_dict)
+            )  # {'a': 'red', 'b': 'blue', 'c': None, 'd': None}
+        """
+
+        # Was the color dictionary not supplied?
+        if color_dict is None:
+
+            # Create it with keys from alphabet_list and values set to None
+            color_dict = {a: None for a in alphabet_list}
+
+        # Otherwise
+        else:
+
+            # Update a new one with alphabet_list keys and color_dict values
+            color_dict = {a: color_dict.get(a) for a in alphabet_list}
+
+        return color_dict
+
     def plot_sequence(
         self, sequence, highlighted_ngrams=[], color_dict=None, suptitle=None,
         first_element='SESSION_START', last_element='SESSION_END',
@@ -774,6 +819,50 @@ class SequenceAnalysis(BaseConfig):
 
         Returns:
             A matplotlib figure and axes objects.
+
+        Example:
+            import matplotlib.pyplot as plt
+            import random
+
+            # Define the sequence of user actions
+            sequence = ["SESSION_START", "LOGIN", "VIEW_PRODUCT"]
+
+            # Generate more shopping elements
+            for _ in range(19):
+                if sequence[-1] != 'ADD_TO_CART':
+                    sequence.append(
+                        random.choice(['VIEW_PRODUCT', 'ADD_TO_CART'])
+                    )
+                else:
+                    sequence.append('VIEW_PRODUCT')
+
+            # Finish up the shopping
+            sequence += ["LOGOUT", "SESSION_END"]
+
+            # Define n-grams to highlight
+            highlighted_ngrams = [["VIEW_PRODUCT", "ADD_TO_CART"]]
+
+            # Define a custom color dictionary for the actions
+            color_dict = {
+                "SESSION_START": "green",
+                "LOGIN": "blue",
+                "VIEW_PRODUCT": "orange",
+                "ADD_TO_CART": "purple",
+                "LOGOUT": "red",
+                "SESSION_END": "black"
+            }
+
+            # Plot the sequence
+            fig, ax = nu.plot_sequence(
+                sequence=sequence,
+                highlighted_ngrams=highlighted_ngrams,
+                color_dict=color_dict,
+                suptitle="User Session Sequence",
+                verbose=False
+            )
+
+            # Show the plot
+            plt.show()
         """
 
         # Convert the sequence to a NumPy array
@@ -1176,51 +1265,5 @@ class SequenceAnalysis(BaseConfig):
 
         # Return the matplotlib figure object
         return plt
-
-    @staticmethod
-    def update_color_dict(alphabet_list, color_dict=None):
-        """
-        Create or update a dictionary based on the given alphabet list.
-
-        Parameters:
-            alphabet_list (list):
-                A list of keys to include in the dictionary. color_dict (dict,
-                optional): An existing dictionary. Defaults to None.
-
-        Returns:
-            dict:
-                A dictionary with keys from `alphabet_list`. If `color_dict`
-                is supplied, its values are preserved for matching keys;
-                otherwise, values are set to None.
-
-        Examples:
-            alphabet_list = ['a', 'b', 'c', 'd']
-            existing_dict = {'a': 'red', 'b': 'blue'}
-
-            # Case 1: No color dictionary provided
-            print(
-                update_color_dict(alphabet_list)
-            )  # {'a': None, 'b': None, 'c': None, 'd': None}
-
-            # Case 2: An existing color dictionary is provided
-            print(
-                update_color_dict(alphabet_list, existing_dict)
-            )  # {'a': 'red', 'b': 'blue', 'c': None, 'd': None}
-        """
-
-        # Was the color dictionary not supplied?
-        if color_dict is None:
-
-            # Create it with keys from alphabet_list and values set to None
-            color_dict = {a: None for a in alphabet_list}
-
-        # Otherwise
-        else:
-
-            # Update a new one with alphabet_list keys and color_dict values
-            color_dict = {a: color_dict.get(a) for a in alphabet_list}
-
-        return color_dict
-
 
 # print('\\b(' + '|'.join(dir()) + ')\\b')

@@ -6670,6 +6670,48 @@ class NotebookUtilities(object):
 
         Returns:
             A matplotlib figure and axes objects.
+
+        Example:
+            import matplotlib.pyplot as plt
+            import random
+
+            # Define the sequence of user actions
+            sequence = ["SESSION_START", "LOGIN", "VIEW_PRODUCT"]
+
+            # Generate more shopping elements
+            for _ in range(19):
+                if sequence[-1] != 'ADD_TO_CART':
+                    sequence.append(random.choice(['VIEW_PRODUCT', 'ADD_TO_CART']))
+                else:
+                    sequence.append('VIEW_PRODUCT')
+
+            # Finish up the shopping
+            sequence += ["LOGOUT", "SESSION_END"]
+
+            # Define n-grams to highlight
+            highlighted_ngrams = [["VIEW_PRODUCT", "ADD_TO_CART"]]
+
+            # Define a custom color dictionary for the actions
+            color_dict = {
+                "SESSION_START": "green",
+                "LOGIN": "blue",
+                "VIEW_PRODUCT": "orange",
+                "ADD_TO_CART": "purple",
+                "LOGOUT": "red",
+                "SESSION_END": "black"
+            }
+
+            # Plot the sequence
+            fig, ax = nu.plot_sequence(
+                sequence=sequence,
+                highlighted_ngrams=highlighted_ngrams,
+                color_dict=color_dict,
+                suptitle="User Session Sequence",
+                verbose=False
+            )
+
+            # Show the plot
+            plt.show()
         """
 
         # Convert the sequence to a NumPy array
@@ -6865,8 +6907,6 @@ class NotebookUtilities(object):
                     from scipy.optimize import curve_fit
                     import matplotlib.pyplot as plt
                     import numpy as np
-                    import os.path as osp
-                    from re import sub
 
                     # The data to predict the y-value of the suptitle
                     x = np.array([1, 4, 6])
@@ -6948,9 +6988,10 @@ class NotebookUtilities(object):
                     ax.legend()
 
                     # Save figure to PNG
+                    import re
                     file_path = osp.join(
                         self.saves_png_folder,
-                        sub(
+                        re.sub(
                             r'\W+', '_', str(suptitle)
                         ).strip('_').lower() + '_verbose.png'
                     )
