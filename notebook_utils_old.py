@@ -4343,18 +4343,18 @@ class NotebookUtilities(object):
                 The modified DataFrame with the new column representing the
                 modal value.
         
-            Example:
-                import numpy as np
-                import pandas as pd
+        Example:
+            import numpy as np
+            import pandas as pd
 
-                df = pd.DataFrame({
-                    'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3], 'C': ['a', 'b', 'c']
-                })
-                df['D'] = pd.Series([np.nan, 2, np.nan])
-                df['E'] = pd.Series([1, np.nan, 3])
-                df = nu.modalize_columns(df, ['D', 'E'], 'F')
-                display(df)
-                assert all(df['A'] == df['F'])
+            df = pd.DataFrame({
+                'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3], 'C': ['a', 'b', 'c']
+            })
+            df['D'] = pd.Series([np.nan, 2, np.nan])
+            df['E'] = pd.Series([1, np.nan, 3])
+            df = nu.modalize_columns(df, ['D', 'E'], 'F')
+            display(df)
+            assert all(df['A'] == df['F'])
         """
 
         # Ensure that all columns are in the data frame
@@ -6298,24 +6298,22 @@ class NotebookUtilities(object):
                 # Handle exceptions and print a clean error message
                 print(f"Error saving plot to {dir_name}: {str(e).strip()}")
 
-    @staticmethod
-    def ball_and_chain(ax, index, values, c, label=None):
-        """
-        import matplotlib as mpl
-        
-        colormap = r()
-        cmap = mpl.colormaps.get_cmap(colormap)
-        norm = LogNorm(vmin=values.min(), vmax=values.max())
-        ball_and_chain(ax, index, values, c=cmap(norm(values)))
-        """
+    def ball_and_chain(self, ax, index, values, face_color=None, label=None):
         ax.plot(index, values, c='k', zorder=1, alpha=.25)
+        if face_color is None:
+            colormap = self.get_random_colormap()
+            import matplotlib as mpl
+            cmap = mpl.colormaps.get_cmap(colormap)
+            from matplotlib.colors import LogNorm
+            norm = LogNorm(vmin=values.min(), vmax=values.max())
+            face_color = cmap(norm(values))
         if label is None:
             ax.scatter(
-                index, values, s=30, lw=.5, c=c, edgecolors='k', zorder=2
+                index, values, s=30, lw=.5, c=face_color, edgecolors='k', zorder=2
             )
         else:
             ax.scatter(
-                index, values, s=30, lw=.5, c=c, edgecolors='k', zorder=2,
+                index, values, s=30, lw=.5, c=face_color, edgecolors='k', zorder=2,
                 label=label
             )
 
@@ -6672,11 +6670,18 @@ class NotebookUtilities(object):
         """
 
         # Convert the sequence to a NumPy array
+        import numpy as np
         np_sequence = np.array(sequence)
 
         # Get the unique characters in the sequence
+        if highlighted_ngrams:
+            sample_ngram = highlighted_ngrams[0]
+            highlighted_type = type(sample_ngram)
+        else:
+            sample_ngram = None
+            highlighted_type = None
         if alphabet_list is None:
-            if highlighted_ngrams and type(highlighted_ngrams[0]) is list:
+            if highlighted_type is list:
                 alphabet_list = sorted(self.get_alphabet(sequence + [
                     el
                     for sublist in highlighted_ngrams
@@ -6701,12 +6706,12 @@ class NotebookUtilities(object):
         alphabet_len = len(alphabet_list)
 
         # Convert the sequence to integers
-        int_sequence, _ = self.convert_strings_to_integers(
+        INT_SEQUENCE, _ = self.convert_strings_to_integers(
             np_sequence, alphabet_list=alphabet_list
         )
 
         # Create a string-to-integer map
-        if highlighted_ngrams and type(highlighted_ngrams[0]) is list:
+        if highlighted_type is list:
             _, string_to_integer_map = self.convert_strings_to_integers(
                 sequence + [
                     el for sublist in highlighted_ngrams for el in sublist
@@ -6718,10 +6723,12 @@ class NotebookUtilities(object):
             )
 
         # If the sequence is not already in integer format, convert it
-        if np_sequence.dtype.str not in ['<U21', '<U11']:
-            int_sequence = np_sequence
+        if verbose:
+            print(f'np_sequence.dtype.str = {np_sequence.dtype.str}')
+        # if np_sequence.dtype.str not in ['<U21', '<U11']: int_sequence = np_sequence
 
         # Create a figure and axes
+        import matplotlib.pyplot as plt
         fig, ax = plt.subplots(
             figsize=[len(sequence) * 0.3, alphabet_len * 0.3]
         )
@@ -6736,6 +6743,12 @@ class NotebookUtilities(object):
         ax.set_xlim([-0.5, len(sequence) - 0.5])
 
         # Iterate over the alphabet and plot the points for each character
+        if False:  # verbose
+            color_cycle = plt.rcParams['axes.prop_cycle']
+            print('\nPrinting the colors in the rcParams color cycle:')
+            for color in color_cycle:
+                print(color)
+            print()
         for i, value in enumerate(alphabet_list):
 
             # Get the positions of the current character in the sequence
@@ -6746,12 +6759,6 @@ class NotebookUtilities(object):
                 x=range(len(np_sequence)), y=points, marker='s', label=value,
                 s=35, color=color_dict[value]
             )
-            if verbose:
-                color_cycle = plt.rcParams['axes.prop_cycle']
-                print('\nPrinting the colors in the rcParams color cycle:')
-                for color in color_cycle:
-                    print(color)
-                print()
 
         # Set the yticks label values
         plt.yticks(range(alphabet_len), alphabet_list)
@@ -6771,31 +6778,35 @@ class NotebookUtilities(object):
         # Highlight any of the n-grams given
         if highlighted_ngrams != []:
             if verbose:
-                display(highlighted_ngrams)
+                print(f'highlighted_ngrams = {highlighted_ngrams}')
 
-            def highlight_ngram(ngram):
+            def highlight_ngram(int_ngram):
+                if verbose:
+                    print(f'int_ngram in highlight_ngram: {int_ngram}')
 
                 # Get the length of the n-gram
-                n = len(ngram)
+                n = len(int_ngram)
 
                 # Find all matches of the n-gram in the sequence
                 match_positions = []
-                for x in range(len(int_sequence) - n + 1):
-                    this_ngram = list(int_sequence[x:x + n])
-                    if str(this_ngram) == str(ngram):
+                if verbose:
+                    print(f'INT_SEQUENCE in highlight_ngram: {INT_SEQUENCE}')
+                for x in range(len(INT_SEQUENCE) - n + 1):
+                    this_ngram = list(INT_SEQUENCE[x:x + n])
+                    if str(this_ngram) == str(int_ngram):
                         match_positions.append(x)
 
                 # Draw a red box around each match
                 if verbose:
                     print(
-                        f'ngram={ngram},'  # noqa E231
-                        f' min(ngram)={min(ngram)},'  # noqa E231
-                        f' max(ngram)={max(ngram)},'  # noqa E231
+                        f'int_ngram={int_ngram},'  # noqa E231
+                        f' min(int_ngram)={min(int_ngram)},'  # noqa E231
+                        f' max(int_ngram)={max(int_ngram)},'  # noqa E231
                         f' match_positions={match_positions}'
                     )
                 for position in match_positions:
-                    bot = min(ngram) - 0.25
-                    top = max(ngram) + 0.25
+                    bot = min(int_ngram) - 0.25
+                    top = max(int_ngram) + 0.25
                     left = position - 0.25
                     right = left + n - 0.5
                     if verbose:
@@ -6824,15 +6835,15 @@ class NotebookUtilities(object):
                     )
 
             # check if only one n-gram has been supplied
-            if type(highlighted_ngrams[0]) is str:
+            if highlighted_type is str:
                 highlight_ngram(
                     [string_to_integer_map[x] for x in highlighted_ngrams]
                 )
-            elif type(highlighted_ngrams[0]) is int:
+            elif highlighted_type is int:
                 highlight_ngram(highlighted_ngrams)
 
             # multiple n-gram's found
-            else:
+            elif highlighted_type is list:
                 for ngram in highlighted_ngrams:
                     if type(ngram[0]) is str:
                         highlight_ngram(
@@ -6850,9 +6861,20 @@ class NotebookUtilities(object):
                     from scipy.optimize import curve_fit
                     import matplotlib.pyplot as plt
                     import numpy as np
+                    import os.path as osp
+                    from re import sub
+
+                    # The data to predict the y-value of the suptitle
                     x = np.array([1, 4, 6])
                     y = np.array([1.95, 1.08, 1.0])
 
+                    # Create a figure and axis
+                    fig, ax = plt.subplots()
+
+                    # Plot data points
+                    ax.plot(x, y, 'o', label='Data points')
+
+                    # Define linear function
                     def linear_func(x, m, b):
                         """
                         Compute a linear function: y = m * x + b.
@@ -6867,6 +6889,20 @@ class NotebookUtilities(object):
                         """
                         return m * x + b
 
+                    # Fit linear function to data
+                    popt_linear, pcov_linear = curve_fit(linear_func, x, y)
+                    m, b = popt_linear
+                    fitted_equation = (
+                        f'y = {m:.2f}*alphabet_len + {b:.2f}'  # noqa E231
+                    )
+                    # print(fitted_equation)
+
+                    # Plot linear fit
+                    ax.plot(
+                        x, linear_func(x, *popt_linear), label='Linear line'
+                    )
+
+                    # Define exponential decay function
                     def exp_decay_func(x, a, b, c):
                         """
                         Compute an exponential decay function:
@@ -6887,31 +6923,36 @@ class NotebookUtilities(object):
                         """
                         return a * np.exp(-b * x) + c
 
-                    popt, pcov = curve_fit(linear_func, x, y)
-                    m, b = popt
-                    fitted_equation = (
-                        f'y = {m:.2f}*alphabet_len + {b:.2f}'  # noqa E231
-                    )
-                    print(fitted_equation)
-
-                    popt, pcov = curve_fit(exp_decay_func, x, y)
-                    a, b, c = popt
+                    # Fit exponential decay function to data
+                    popt_exp, pcov_exp = curve_fit(exp_decay_func, x, y)
+                    a, b, c = popt_exp
                     fitted_equation = (
                         f'y = {a:.2f} * np.exp(-{b:.2f} '  # noqa E231
                         f'* alphabet_len) + {c:.2f}'  # noqa E231
                     )
-                    print(fitted_equation)
+                    # print(fitted_equation)
 
-                    plt.plot(x, y, 'o', label='Data points')
-                    plt.plot(x, linear_func(x, *popt), label='Linear line')
-                    plt.plot(
-                        x, exp_decay_func(x, *popt),
+                    # Plot exponential decay fit
+                    ax.plot(
+                        x, exp_decay_func(x, *popt_exp),
                         label='Exponential Decay line'
                     )
-                    plt.xlabel('x')
-                    plt.ylabel('y')
-                    plt.legend()
-                    plt.show()
+
+                    # Set labels and legend
+                    ax.set_xlabel('x')
+                    ax.set_ylabel('y')
+                    ax.legend()
+
+                    # Save figure to PNG
+                    file_path = osp.join(
+                        self.saves_png_folder,
+                        sub(
+                            r'\W+', '_', str(suptitle)
+                        ).strip('_').lower() + '_verbose.png'
+                    )
+                    # print(f'Saving verbose to {file_path}')
+                    plt.savefig(file_path, bbox_inches='tight')
+                    plt.close(fig)
                 y = 2.06 * np.exp(-0.75 * alphabet_len) + 0.98
                 if verbose:
                     print(f'alphabet_len={alphabet_len}, y={y}')
@@ -6920,6 +6961,8 @@ class NotebookUtilities(object):
             fig.suptitle(suptitle, y=y)
 
             # Save figure to PNG
+            from os import path as osp
+            from re import sub
             file_path = osp.join(
                 self.saves_png_folder,
                 sub(r'\W+', '_', str(suptitle)).strip('_').lower() + '.png'
@@ -7220,5 +7263,51 @@ class NotebookUtilities(object):
         plt.show()
 
         return (layout_dict, fig, ax)
+
+    @staticmethod
+    def update_color_dict(alphabet_list, color_dict=None):
+        """
+        Create or update a dictionary based on the given alphabet list.
+
+        Parameters:
+            alphabet_list (list):
+                A list of keys to include in the dictionary. color_dict (dict,
+                optional): An existing dictionary. Defaults to None.
+
+        Returns:
+            dict:
+                A dictionary with keys from `alphabet_list`. If `color_dict`
+                is supplied, its values are preserved for matching keys;
+                otherwise, values are set to None.
+
+        Examples:
+            alphabet_list = ['a', 'b', 'c', 'd']
+            existing_dict = {'a': 'red', 'b': 'blue'}
+
+            # Case 1: No color dictionary provided
+            print(
+                update_color_dict(alphabet_list)
+            )  # {'a': None, 'b': None, 'c': None, 'd': None}
+
+            # Case 2: An existing color dictionary is provided
+            print(
+                update_color_dict(alphabet_list, existing_dict)
+            )  # {'a': 'red', 'b': 'blue', 'c': None, 'd': None}
+        """
+
+        # Was the color dictionary not supplied?
+        if color_dict is None:
+
+            # Create it with keys from alphabet_list and values set to None
+            color_dict = {a: None for a in alphabet_list}
+
+        # Otherwise
+        else:
+
+            # Update a new one with alphabet_list keys and color_dict values
+            color_dict = {a: color_dict.get(a) for a in alphabet_list}
+
+        return color_dict
+
 
 # print('\\b(' + '|'.join(dir()) + ')\\b')
