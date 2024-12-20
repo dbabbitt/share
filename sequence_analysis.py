@@ -1167,7 +1167,7 @@ class SequenceAnalysis(BaseConfig):
                 print(f'Saving figure to {file_path}')
             plt.savefig(file_path, bbox_inches='tight')
 
-        return (fig, ax)
+        return fig, ax  # Return the figure and axis
 
     def plot_sequences(self, sequences, gap=True, color_dict=None):
         """
@@ -1181,15 +1181,14 @@ class SequenceAnalysis(BaseConfig):
                 Defaults to True.
 
         Returns:
-            plt.Figure
-                The matplotlib figure object.
+            A matplotlib figure and axes objects.
         """
 
         # Determine the maximum sequence length
         max_sequence_length = max([len(s) for s in sequences])
 
-        # Create a figure with appropriate dimensions
-        plt.figure(figsize=[max_sequence_length * 0.3, 0.3 * len(sequences)])
+        # Create a figure and axes with appropriate dimensions
+        fig, ax = plt.subplots(figsize=[max_sequence_length * 0.3, 0.3 * len(sequences)])
         alphabet_cache = {
             sequence: self.get_alphabet(sequence) for sequence in sequences
         }
@@ -1200,7 +1199,7 @@ class SequenceAnalysis(BaseConfig):
             np_sequence = np.array(sequence)
 
             # Disable automatic color cycling
-            plt.gca().set_prop_cycle(None)
+            ax.set_prop_cycle(None)
 
             # Get the unique values in the sequence
             unique_values = alphabet_cache[sequence]
@@ -1210,10 +1209,9 @@ class SequenceAnalysis(BaseConfig):
 
             # Plot the value positions as scatter points with labels
             if gap:
-
                 for i, value in enumerate(unique_values):
                     points = np.where(np_sequence == value, y + 1, np.nan)
-                    plt.scatter(
+                    ax.scatter(
                         x=range(len(np_sequence)),
                         y=points,
                         marker='s',
@@ -1221,11 +1219,12 @@ class SequenceAnalysis(BaseConfig):
                         s=100,
                         color=color_dict[value]
                     )
-            else:
 
+            # Plot using bars without gaps
+            else:
                 for i, value in enumerate(unique_values):
                     points = np.where(np_sequence == value, 1, np.nan)
-                    plt.bar(
+                    ax.bar(
                         range(len(points)),
                         points,
                         bottom=[y for x in range(len(points))],
@@ -1237,33 +1236,33 @@ class SequenceAnalysis(BaseConfig):
 
         # Set the y-axis limits with or without gaps
         if gap:
-            plt.ylim(0.4, len(sequences) + 0.6)
-            plt.xlim(-0.6, max_sequence_length - 0.4)
+            ax.set_ylim(0.4, len(sequences) + 0.6)
+            ax.set_xlim(-0.6, max_sequence_length - 0.4)
         else:
-            plt.ylim(0, len(sequences))
-            plt.xlim(0, max_sequence_length)
+            ax.set_ylim(0, len(sequences))
+            ax.set_xlim(0, max_sequence_length)
 
         # Force x-ticks to land on integers only
         xtick_locations = range(len(sequences[0]))
-        xtick_labels = [n+1 for n in xtick_locations]
-        plt.xticks(ticks=xtick_locations, labels=xtick_labels, minor=False)
+        xtick_labels = [n + 1 for n in xtick_locations]
+        ax.set_xticks(ticks=xtick_locations)
+        ax.set_xticklabels(labels=xtick_labels, minor=False)
 
         # Get the legend handles and labels
-        handles, labels = plt.gca().get_legend_handles_labels()
+        handles, labels = ax.get_legend_handles_labels()
 
         # Convert the legend handles and labels into a dictionary
         by_label = dict(zip(labels, handles))
 
         # Place the legend in the upper left corner
-        plt.legend(
+        ax.legend(
             by_label.values(), by_label.keys(), bbox_to_anchor=(1.0, 1.1),
             loc='upper left'
         )
 
         # Hide the y-axis ticks and labels
-        plt.tick_params(axis='y', which='both', left=False, labelleft=False)
+        ax.tick_params(axis='y', which='both', left=False, labelleft=False)
 
-        # Return the matplotlib figure object
-        return plt
+        return fig, ax  # Return the figure and axis
 
 # print('\\b(' + '|'.join(dir()) + ')\\b')
