@@ -475,7 +475,7 @@ class NotebookUtilities(object):
             if verbose:
                 print(f'{char} or {ord(char)}: {i} or {chr(i)}')
             ord_list.append(i)
-            
+
         return ''.join([chr(i) for i in ord_list])
 
     # -------------------
@@ -4342,7 +4342,7 @@ class NotebookUtilities(object):
             pandas.DataFrame:
                 The modified DataFrame with the new column representing the
                 modal value.
-        
+
         Example:
             import numpy as np
             import pandas as pd
@@ -4665,7 +4665,7 @@ class NotebookUtilities(object):
         for cn in columns_list:
             df[cn] = df[cn].map(lambda x: re.sub(r'[^0-9\.]+', '', str(x)))
             df[cn] = pd.to_numeric(df[cn], errors='coerce', downcast='integer')
-        
+
         return df
 
     @staticmethod
@@ -6267,20 +6267,22 @@ class NotebookUtilities(object):
         Parameters:
             fig (Figure): The matplotlib figure to save.
             chart_name (str): The base name for the saved files.
-            dir_names_list (list[str]): A list of directory names (and file extensions) to save the figure in.
+            dir_names_list (list[str]):
+                A list of directory names (and file extensions) to save the
+                figure in.
             verbose (bool): If True, prints the file paths of the saved plots.
 
         Returns:
             None
         """
-        import os
-        from matplotlib.figure import Figure  # For type hinting
         for dir_name in dir_names_list:
             try:
-                
+
                 # Create the directory path
                 dir_path = os.path.join(os.pardir, 'saves', dir_name)
-                os.makedirs(dir_path, exist_ok=True)  # Create the directory if it doesn't exist
+
+                # Create the directory if it doesn't exist
+                os.makedirs(dir_path, exist_ok=True)
 
                 # Construct the file path
                 file_path = os.path.join(dir_path, f'{chart_name}.{dir_name}')
@@ -6293,7 +6295,7 @@ class NotebookUtilities(object):
                 if verbose:
                     print(f'Saving plot to {os.path.abspath(file_path)}')
                 fig.savefig(file_path, bbox_inches='tight')
-            
+
             except Exception as e:
                 # Handle exceptions and print a clean error message
                 print(f"Error saving plot to {dir_name}: {str(e).strip()}")
@@ -6309,12 +6311,13 @@ class NotebookUtilities(object):
             face_color = cmap(norm(values))
         if label is None:
             ax.scatter(
-                index, values, s=30, lw=.5, c=face_color, edgecolors='k', zorder=2
+                index, values, s=30, lw=.5, c=face_color, edgecolors='k',
+                zorder=2
             )
         else:
             ax.scatter(
-                index, values, s=30, lw=.5, c=face_color, edgecolors='k', zorder=2,
-                label=label
+                index, values, s=30, lw=.5, c=face_color, edgecolors='k',
+                zorder=2, label=label
             )
 
     @staticmethod
@@ -6725,7 +6728,8 @@ class NotebookUtilities(object):
         # If the sequence is not already in integer format, convert it
         if verbose:
             print(f'np_sequence.dtype.str = {np_sequence.dtype.str}')
-        # if np_sequence.dtype.str not in ['<U21', '<U11']: int_sequence = np_sequence
+        # if np_sequence.dtype.str not in ['<U21', '<U11']:
+        #     int_sequence = np_sequence
 
         # Create a figure and axes
         import matplotlib.pyplot as plt
@@ -6895,7 +6899,7 @@ class NotebookUtilities(object):
                     fitted_equation = (
                         f'y = {m:.2f}*alphabet_len + {b:.2f}'  # noqa E231
                     )
-                    # print(fitted_equation)
+                    print(fitted_equation)
 
                     # Plot linear fit
                     ax.plot(
@@ -6930,7 +6934,7 @@ class NotebookUtilities(object):
                         f'y = {a:.2f} * np.exp(-{b:.2f} '  # noqa E231
                         f'* alphabet_len) + {c:.2f}'  # noqa E231
                     )
-                    # print(fitted_equation)
+                    print(fitted_equation)
 
                     # Plot exponential decay fit
                     ax.plot(
@@ -7263,51 +7267,6 @@ class NotebookUtilities(object):
         plt.show()
 
         return (layout_dict, fig, ax)
-
-    @staticmethod
-    def update_color_dict(alphabet_list, color_dict=None):
-        """
-        Create or update a dictionary based on the given alphabet list.
-
-        Parameters:
-            alphabet_list (list):
-                A list of keys to include in the dictionary. color_dict (dict,
-                optional): An existing dictionary. Defaults to None.
-
-        Returns:
-            dict:
-                A dictionary with keys from `alphabet_list`. If `color_dict`
-                is supplied, its values are preserved for matching keys;
-                otherwise, values are set to None.
-
-        Examples:
-            alphabet_list = ['a', 'b', 'c', 'd']
-            existing_dict = {'a': 'red', 'b': 'blue'}
-
-            # Case 1: No color dictionary provided
-            print(
-                update_color_dict(alphabet_list)
-            )  # {'a': None, 'b': None, 'c': None, 'd': None}
-
-            # Case 2: An existing color dictionary is provided
-            print(
-                update_color_dict(alphabet_list, existing_dict)
-            )  # {'a': 'red', 'b': 'blue', 'c': None, 'd': None}
-        """
-
-        # Was the color dictionary not supplied?
-        if color_dict is None:
-
-            # Create it with keys from alphabet_list and values set to None
-            color_dict = {a: None for a in alphabet_list}
-
-        # Otherwise
-        else:
-
-            # Update a new one with alphabet_list keys and color_dict values
-            color_dict = {a: color_dict.get(a) for a in alphabet_list}
-
-        return color_dict
 
 
 # print('\\b(' + '|'.join(dir()) + ')\\b')

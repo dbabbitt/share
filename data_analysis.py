@@ -530,7 +530,7 @@ class DataAnalysis(BaseConfig):
             pandas.DataFrame:
                 The modified DataFrame with the new column representing the
                 modal value.
-        
+
         Example:
             import numpy as np
             import pandas as pd
@@ -787,12 +787,13 @@ class DataAnalysis(BaseConfig):
 
     @staticmethod
     def clean_numerics(df, columns_list=None, verbose=False):
+        import re
         if columns_list is None:
             columns_list = df.columns
         for cn in columns_list:
             df[cn] = df[cn].map(lambda x: re.sub(r'[^0-9\.]+', '', str(x)))
             df[cn] = pd.to_numeric(df[cn], errors='coerce', downcast='integer')
-        
+
         return df
 
     @staticmethod
@@ -1480,20 +1481,22 @@ class DataAnalysis(BaseConfig):
         Parameters:
             fig (Figure): The matplotlib figure to save.
             chart_name (str): The base name for the saved files.
-            dir_names_list (list[str]): A list of directory names (and file extensions) to save the figure in.
+            dir_names_list (list[str]):
+                A list of directory names (and file extensions) to save the
+                figure in.
             verbose (bool): If True, prints the file paths of the saved plots.
 
         Returns:
             None
         """
-        import os
-        from matplotlib.figure import Figure  # For type hinting
         for dir_name in dir_names_list:
             try:
-                
+
                 # Create the directory path
                 dir_path = os.path.join(os.pardir, 'saves', dir_name)
-                os.makedirs(dir_path, exist_ok=True)  # Create the directory if it doesn't exist
+
+                # Create the directory if it doesn't exist
+                os.makedirs(dir_path, exist_ok=True)
 
                 # Construct the file path
                 file_path = os.path.join(dir_path, f'{chart_name}.{dir_name}')
@@ -1506,7 +1509,7 @@ class DataAnalysis(BaseConfig):
                 if verbose:
                     print(f'Saving plot to {os.path.abspath(file_path)}')
                 fig.savefig(file_path, bbox_inches='tight')
-            
+
             except Exception as e:
                 # Handle exceptions and print a clean error message
                 print(f"Error saving plot to {dir_name}: {str(e).strip()}")
@@ -1522,12 +1525,13 @@ class DataAnalysis(BaseConfig):
             face_color = cmap(norm(values))
         if label is None:
             ax.scatter(
-                index, values, s=30, lw=.5, c=face_color, edgecolors='k', zorder=2
+                index, values, s=30, lw=.5, c=face_color, edgecolors='k',
+                zorder=2
             )
         else:
             ax.scatter(
-                index, values, s=30, lw=.5, c=face_color, edgecolors='k', zorder=2,
-                label=label
+                index, values, s=30, lw=.5, c=face_color, edgecolors='k',
+                zorder=2, label=label
             )
 
     @staticmethod

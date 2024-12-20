@@ -19,9 +19,6 @@ from os import (
 from pandas import (
     Series
 )
-from re import (
-    sub
-)
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -835,7 +832,8 @@ class SequenceAnalysis(BaseConfig):
         # If the sequence is not already in integer format, convert it
         if verbose:
             print(f'np_sequence.dtype.str = {np_sequence.dtype.str}')
-        # if np_sequence.dtype.str not in ['<U21', '<U11']: int_sequence = np_sequence
+        # if np_sequence.dtype.str not in ['<U21', '<U11']:
+        #     int_sequence = np_sequence
 
         # Create a figure and axes
         import matplotlib.pyplot as plt
@@ -971,8 +969,6 @@ class SequenceAnalysis(BaseConfig):
                     from scipy.optimize import curve_fit
                     import matplotlib.pyplot as plt
                     import numpy as np
-                    import os.path as osp
-                    from re import sub
 
                     # The data to predict the y-value of the suptitle
                     x = np.array([1, 4, 6])
@@ -1005,7 +1001,7 @@ class SequenceAnalysis(BaseConfig):
                     fitted_equation = (
                         f'y = {m:.2f}*alphabet_len + {b:.2f}'  # noqa E231
                     )
-                    # print(fitted_equation)
+                    print(fitted_equation)
 
                     # Plot linear fit
                     ax.plot(
@@ -1040,7 +1036,7 @@ class SequenceAnalysis(BaseConfig):
                         f'y = {a:.2f} * np.exp(-{b:.2f} '  # noqa E231
                         f'* alphabet_len) + {c:.2f}'  # noqa E231
                     )
-                    # print(fitted_equation)
+                    print(fitted_equation)
 
                     # Plot exponential decay fit
                     ax.plot(
@@ -1054,9 +1050,10 @@ class SequenceAnalysis(BaseConfig):
                     ax.legend()
 
                     # Save figure to PNG
+                    import re
                     file_path = osp.join(
                         self.saves_png_folder,
-                        sub(
+                        re.sub(
                             r'\W+', '_', str(suptitle)
                         ).strip('_').lower() + '_verbose.png'
                     )

@@ -15,7 +15,6 @@ Run this in a Git Bash terminal if you push anything:
 from base_config import BaseConfig
 from bs4 import BeautifulSoup as bs
 from datetime import timedelta
-from io import StringIO
 from os import (
     listdir as listdir, makedirs as makedirs, path as osp,
     walk as walk
@@ -37,7 +36,6 @@ import re
 import seaborn as sns
 import subprocess
 import sys
-import tokenize
 
 # Check for presence of 'get_ipython' function (exists in Jupyter)
 try:
