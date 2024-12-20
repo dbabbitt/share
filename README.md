@@ -28,13 +28,13 @@ Below is an overview of the structure:
 #### 2. **Data Validation**
    - **Module Name**: `data_validation.py`
    - **Key Functions**:
-     - `compute_similarity`, `conjunctify_nouns`, `split_list_by_exclusion`, `check_for_typos`, `list_dfs_in_folder`, `get_relative_position`, `get_random_subdictionary`, `plot_inauguration_age`.
+     - `compute_similarity`, `conjunctify_nouns`, `check_for_typos`, `list_dfs_in_folder`, `get_relative_position`, `get_random_subdictionary`, `plot_inauguration_age`.
    - **Description**: Contains the `DataValidation` class for functions related to validation and utility workflows.
 
 #### 3. **Data Analysis and Visualization**
    - **Module Name**: `data_analysis.py`
    - **Key Functions**:
-     - `get_jitter_list`, `split_list_by_gap`, `count_swaps_to_perfect_order`, `open_path_in_notepad`, `get_wiki_infobox_data_frame`, `get_inf_nan_mask`, `get_column_descriptions`, `modalize_columns`, `get_regexed_columns`, `get_regexed_dataframe`, `one_hot_encode`, `get_flattened_dictionary`, `get_numeric_columns`, `get_euclidean_distance`, `get_nearest_neighbor`, `get_minority_combinations`, `plot_line_with_error_bars`, `plot_histogram`, `get_r_squared_value_latex`, `get_spearman_rho_value_latex`, `first_order_linear_scatterplot`.
+     - `open_path_in_notepad`, `get_wiki_infobox_data_frame`, `get_inf_nan_mask`, `get_column_descriptions`, `modalize_columns`, `get_regexed_columns`, `get_regexed_dataframe`, `one_hot_encode`, `get_flattened_dictionary`, `get_numeric_columns`, `get_euclidean_distance`, `get_nearest_neighbor`, `get_minority_combinations`, `plot_line_with_error_bars`, `plot_histogram`, `get_r_squared_value_latex`, `get_spearman_rho_value_latex`, `first_order_linear_scatterplot`.
    - **Description**: Provides the `DataAnalysis` class for functions related to data analysis and visualization.
 
 #### 4. **File Operations**
@@ -42,6 +42,12 @@ Below is an overview of the structure:
    - **Key Functions**:
      - `get_utility_file_functions`, `get_notebook_functions_dictionary`, `get_notebook_functions_set`, `show_duplicated_util_fns_search_string`, `show_dupl_fn_defs_search_string`, `delete_ipynb_checkpoint_folders`, `get_random_py_file`, `attempt_to_pickle`, `csv_exists`, `load_csv`, `pickle_exists`, `load_object`, `load_data_frames`, `save_data_frames`, `store_objects`, `get_random_function`.
    - **Description**: Contains the `FileOperations` class for functions related to file cleanup and basic file operations.
+
+#### 5. **Sequence Analysis**
+   - **Module Name**: `sequence_analysis.py`
+   - **Key Functions**:
+     - `split_list_by_gap`, `count_ngrams`, `get_sequences_by_count`, `split_list_by_exclusion`, `convert_strings_to_integers`, `get_ndistinct_subsequences`, `get_turbulence`, `replace_consecutive_elements`, `count_swaps_to_perfect_order`, `get_color_cycled_list`, `plot_sequence`, `plot_sequences`.
+   - **Description**: Contains the `SequenceAnalysis` class for analyzing, manipulating, and visualizing sequences, including numeric, string, and plotting utilities.
 
 ---
 
@@ -259,6 +265,50 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
        verbose=False
    )
    sorted(nu_functions, key=lambda x: x[::-1])[:6]
+   ```
+   ```python
+   # Create a standard sequence plot where each
+   # element corresponds to a position on the y-axis
+   import matplotlib.pyplot as plt
+   import random
+   
+   # Define the sequence of user actions
+   sequence = ["SESSION_START", "LOGIN", "VIEW_PRODUCT"]
+   
+   # Generate more shopping elements
+   for _ in range(9):
+       if sequence[-1] != 'ADD_TO_CART':
+           sequence.append(random.choice(['VIEW_PRODUCT', 'ADD_TO_CART']))
+       else:
+           sequence.append('VIEW_PRODUCT')
+   
+   # Finish up the shopping
+   sequence += ["LOGOUT", "SESSION_END"]
+   
+   # Define n-grams to highlight
+   highlighted_ngrams = [["VIEW_PRODUCT", "ADD_TO_CART"]]
+   
+   # Define a custom color dictionary for the actions
+   color_dict = {
+       "SESSION_START": "green",
+       "LOGIN": "blue",
+       "VIEW_PRODUCT": "orange",
+       "ADD_TO_CART": "purple",
+       "LOGOUT": "red",
+       "SESSION_END": "black"
+   }
+   
+   # Plot the sequence
+   fig, ax = nu.plot_sequence(
+       sequence=sequence,
+       highlighted_ngrams=highlighted_ngrams,
+       color_dict=color_dict,
+       suptitle="User Session Sequence",
+       verbose=False
+   )
+   
+   # Show the plot
+   plt.show()
    ```
 
 For detailed examples and use cases, refer to the documentation (TODO: write docs).
