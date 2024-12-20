@@ -14,7 +14,7 @@ Run this in a Git Bash terminal if you push anything:
 
 from base_config import BaseConfig
 from os import (
-    path as osp
+    makedirs as makedirs, path as osp
 )
 from pandas import (
     Series
@@ -62,6 +62,8 @@ class SequenceAnalysis(BaseConfig):
             self.saves_folder = saves_folder_path
 
         super().__init__()  # Inherit shared attributes
+        self.saves_png_folder = osp.join(self.saves_folder, 'png')
+        makedirs(name=self.saves_png_folder, exist_ok=True)
 
         try:
             from pysan.elements import get_alphabet
@@ -682,6 +684,63 @@ class SequenceAnalysis(BaseConfig):
     # Plotting Functions
     # -------------------
 
+    @staticmethod
+    def get_color_cycled_list(alphabet_list, color_dict, verbose=False):
+        """
+        Get a list of colors cycled from the given color dictionary and the
+        default color cycle.
+
+        This method matches each alphabet in the input list with a color from
+        the input color dictionary. If a color is not specified for an
+        alphabet, it assigns the next color from the matplotlib color cycle.
+
+        Parameters:
+            alphabet_list (list of str):
+                A list of keys for which colors are to be matched.
+            color_dict (dict):
+                A dictionary mapping elements from the alphabet to desired
+                colors.
+            verbose (bool, optional):
+                Whether to print debug or status messages. Defaults to False.
+
+        Returns:
+            list of str
+                A list of colors, where the length matches the alphabet list.
+                Colors are assigned based on the color dictionary and the
+                Matplotlib color cycle for missing entries.
+        """
+
+        # Print the input alphabet list and color dictionary if verbose
+        if verbose:
+            print(f'alphabet_list = {alphabet_list}')
+            print(f'color_dict = {color_dict}')
+
+        # Import the cycle iterator from itertools
+        from itertools import cycle
+
+        # Get the color cycle from matplotlib's rcParams
+        prop_cycle = plt.rcParams['axes.prop_cycle']
+        colors = cycle(prop_cycle.by_key()['color'])
+
+        # Initialize an empty list to store the resulting colors
+        colors_list = []
+
+        # Iterate over each key in the alphabet list
+        for key in alphabet_list:
+
+            # Assign color from dict, otherwise use next color from the cycle
+            value = color_dict.get(key, next(colors))
+
+            # Append the color to the colors list
+            colors_list.append(value)
+
+        # Print the resulting colors list if verbose mode is on
+        if verbose:
+            print(f'colors_list = {colors_list}')
+
+        # Return the final list of colors
+        return colors_list
+
     def plot_sequence(
         self, sequence, highlighted_ngrams=[], color_dict=None, suptitle=None,
         first_element='SESSION_START', last_element='SESSION_END',
@@ -721,11 +780,18 @@ class SequenceAnalysis(BaseConfig):
         """
 
         # Convert the sequence to a NumPy array
+        import numpy as np
         np_sequence = np.array(sequence)
 
         # Get the unique characters in the sequence
+        if highlighted_ngrams:
+            sample_ngram = highlighted_ngrams[0]
+            highlighted_type = type(sample_ngram)
+        else:
+            sample_ngram = None
+            highlighted_type = None
         if alphabet_list is None:
-            if highlighted_ngrams and type(highlighted_ngrams[0]) is list:
+            if highlighted_type is list:
                 alphabet_list = sorted(self.get_alphabet(sequence + [
                     el
                     for sublist in highlighted_ngrams
@@ -750,12 +816,12 @@ class SequenceAnalysis(BaseConfig):
         alphabet_len = len(alphabet_list)
 
         # Convert the sequence to integers
-        int_sequence, _ = self.convert_strings_to_integers(
+        INT_SEQUENCE, _ = self.convert_strings_to_integers(
             np_sequence, alphabet_list=alphabet_list
         )
 
         # Create a string-to-integer map
-        if highlighted_ngrams and type(highlighted_ngrams[0]) is list:
+        if highlighted_type is list:
             _, string_to_integer_map = self.convert_strings_to_integers(
                 sequence + [
                     el for sublist in highlighted_ngrams for el in sublist
@@ -767,10 +833,12 @@ class SequenceAnalysis(BaseConfig):
             )
 
         # If the sequence is not already in integer format, convert it
-        if np_sequence.dtype.str not in ['<U21', '<U11']:
-            int_sequence = np_sequence
+        if verbose:
+            print(f'np_sequence.dtype.str = {np_sequence.dtype.str}')
+        # if np_sequence.dtype.str not in ['<U21', '<U11']: int_sequence = np_sequence
 
         # Create a figure and axes
+        import matplotlib.pyplot as plt
         fig, ax = plt.subplots(
             figsize=[len(sequence) * 0.3, alphabet_len * 0.3]
         )
@@ -785,6 +853,12 @@ class SequenceAnalysis(BaseConfig):
         ax.set_xlim([-0.5, len(sequence) - 0.5])
 
         # Iterate over the alphabet and plot the points for each character
+        if False:  # verbose
+            color_cycle = plt.rcParams['axes.prop_cycle']
+            print('\nPrinting the colors in the rcParams color cycle:')
+            for color in color_cycle:
+                print(color)
+            print()
         for i, value in enumerate(alphabet_list):
 
             # Get the positions of the current character in the sequence
@@ -795,12 +869,6 @@ class SequenceAnalysis(BaseConfig):
                 x=range(len(np_sequence)), y=points, marker='s', label=value,
                 s=35, color=color_dict[value]
             )
-            if verbose:
-                color_cycle = plt.rcParams['axes.prop_cycle']
-                print('\nPrinting the colors in the rcParams color cycle:')
-                for color in color_cycle:
-                    print(color)
-                print()
 
         # Set the yticks label values
         plt.yticks(range(alphabet_len), alphabet_list)
@@ -820,36 +888,41 @@ class SequenceAnalysis(BaseConfig):
         # Highlight any of the n-grams given
         if highlighted_ngrams != []:
             if verbose:
-                display(highlighted_ngrams)
+                print(f'highlighted_ngrams = {highlighted_ngrams}')
 
-            def highlight_ngram(ngram):
+            def highlight_ngram(int_ngram):
+                if verbose:
+                    print(f'int_ngram in highlight_ngram: {int_ngram}')
 
                 # Get the length of the n-gram
-                n = len(ngram)
+                n = len(int_ngram)
 
                 # Find all matches of the n-gram in the sequence
                 match_positions = []
-                for x in range(len(int_sequence) - n + 1):
-                    this_ngram = list(int_sequence[x:x + n])
-                    if str(this_ngram) == str(ngram):
+                if verbose:
+                    print(f'INT_SEQUENCE in highlight_ngram: {INT_SEQUENCE}')
+                for x in range(len(INT_SEQUENCE) - n + 1):
+                    this_ngram = list(INT_SEQUENCE[x:x + n])
+                    if str(this_ngram) == str(int_ngram):
                         match_positions.append(x)
 
                 # Draw a red box around each match
                 if verbose:
                     print(
-                        f'ngram={ngram},'  # noqa E231
-                        f' min(ngram)={min(ngram)},'  # noqa E231
-                        f' max(ngram)={max(ngram)},'  # noqa E231
+                        f'int_ngram={int_ngram},'  # noqa E231
+                        f' min(int_ngram)={min(int_ngram)},'  # noqa E231
+                        f' max(int_ngram)={max(int_ngram)},'  # noqa E231
                         f' match_positions={match_positions}'
                     )
                 for position in match_positions:
-                    bot = min(ngram) - 0.25
-                    top = max(ngram) + 0.25
+                    bot = min(int_ngram) - 0.25
+                    top = max(int_ngram) + 0.25
                     left = position - 0.25
                     right = left + n - 0.5
                     if verbose:
                         print(
-                            f'bot={bot}, top={top}, left={left},'  # noqa E231
+                            f'bot={bot}, top={top},'  # noqa E231
+                            f' left={left},'  # noqa E231
                             f' right={right}'
                         )
 
@@ -872,15 +945,15 @@ class SequenceAnalysis(BaseConfig):
                     )
 
             # check if only one n-gram has been supplied
-            if type(highlighted_ngrams[0]) is str:
+            if highlighted_type is str:
                 highlight_ngram(
                     [string_to_integer_map[x] for x in highlighted_ngrams]
                 )
-            elif type(highlighted_ngrams[0]) is int:
+            elif highlighted_type is int:
                 highlight_ngram(highlighted_ngrams)
 
             # multiple n-gram's found
-            else:
+            elif highlighted_type is list:
                 for ngram in highlighted_ngrams:
                     if type(ngram[0]) is str:
                         highlight_ngram(
@@ -898,9 +971,20 @@ class SequenceAnalysis(BaseConfig):
                     from scipy.optimize import curve_fit
                     import matplotlib.pyplot as plt
                     import numpy as np
+                    import os.path as osp
+                    from re import sub
+
+                    # The data to predict the y-value of the suptitle
                     x = np.array([1, 4, 6])
                     y = np.array([1.95, 1.08, 1.0])
 
+                    # Create a figure and axis
+                    fig, ax = plt.subplots()
+
+                    # Plot data points
+                    ax.plot(x, y, 'o', label='Data points')
+
+                    # Define linear function
                     def linear_func(x, m, b):
                         """
                         Compute a linear function: y = m * x + b.
@@ -915,6 +999,20 @@ class SequenceAnalysis(BaseConfig):
                         """
                         return m * x + b
 
+                    # Fit linear function to data
+                    popt_linear, pcov_linear = curve_fit(linear_func, x, y)
+                    m, b = popt_linear
+                    fitted_equation = (
+                        f'y = {m:.2f}*alphabet_len + {b:.2f}'  # noqa E231
+                    )
+                    # print(fitted_equation)
+
+                    # Plot linear fit
+                    ax.plot(
+                        x, linear_func(x, *popt_linear), label='Linear line'
+                    )
+
+                    # Define exponential decay function
                     def exp_decay_func(x, a, b, c):
                         """
                         Compute an exponential decay function:
@@ -935,31 +1033,36 @@ class SequenceAnalysis(BaseConfig):
                         """
                         return a * np.exp(-b * x) + c
 
-                    popt, pcov = curve_fit(linear_func, x, y)
-                    m, b = popt
-                    fitted_equation = (
-                        f'y = {m:.2f}*alphabet_len + {b:.2f}'  # noqa E231
-                    )
-                    print(fitted_equation)
-
-                    popt, pcov = curve_fit(exp_decay_func, x, y)
-                    a, b, c = popt
+                    # Fit exponential decay function to data
+                    popt_exp, pcov_exp = curve_fit(exp_decay_func, x, y)
+                    a, b, c = popt_exp
                     fitted_equation = (
                         f'y = {a:.2f} * np.exp(-{b:.2f} '  # noqa E231
                         f'* alphabet_len) + {c:.2f}'  # noqa E231
                     )
-                    print(fitted_equation)
+                    # print(fitted_equation)
 
-                    plt.plot(x, y, 'o', label='Data points')
-                    plt.plot(x, linear_func(x, *popt), label='Linear line')
-                    plt.plot(
-                        x, exp_decay_func(x, *popt),
+                    # Plot exponential decay fit
+                    ax.plot(
+                        x, exp_decay_func(x, *popt_exp),
                         label='Exponential Decay line'
                     )
-                    plt.xlabel('x')
-                    plt.ylabel('y')
-                    plt.legend()
-                    plt.show()
+
+                    # Set labels and legend
+                    ax.set_xlabel('x')
+                    ax.set_ylabel('y')
+                    ax.legend()
+
+                    # Save figure to PNG
+                    file_path = osp.join(
+                        self.saves_png_folder,
+                        sub(
+                            r'\W+', '_', str(suptitle)
+                        ).strip('_').lower() + '_verbose.png'
+                    )
+                    # print(f'Saving verbose to {file_path}')
+                    plt.savefig(file_path, bbox_inches='tight')
+                    plt.close(fig)
                 y = 2.06 * np.exp(-0.75 * alphabet_len) + 0.98
                 if verbose:
                     print(f'alphabet_len={alphabet_len}, y={y}')
@@ -968,6 +1071,8 @@ class SequenceAnalysis(BaseConfig):
             fig.suptitle(suptitle, y=y)
 
             # Save figure to PNG
+            from os import path as osp
+            from re import sub
             file_path = osp.join(
                 self.saves_png_folder,
                 sub(r'\W+', '_', str(suptitle)).strip('_').lower() + '.png'
@@ -1074,5 +1179,51 @@ class SequenceAnalysis(BaseConfig):
 
         # Return the matplotlib figure object
         return plt
+
+    @staticmethod
+    def update_color_dict(alphabet_list, color_dict=None):
+        """
+        Create or update a dictionary based on the given alphabet list.
+
+        Parameters:
+            alphabet_list (list):
+                A list of keys to include in the dictionary. color_dict (dict,
+                optional): An existing dictionary. Defaults to None.
+
+        Returns:
+            dict:
+                A dictionary with keys from `alphabet_list`. If `color_dict`
+                is supplied, its values are preserved for matching keys;
+                otherwise, values are set to None.
+
+        Examples:
+            alphabet_list = ['a', 'b', 'c', 'd']
+            existing_dict = {'a': 'red', 'b': 'blue'}
+
+            # Case 1: No color dictionary provided
+            print(
+                update_color_dict(alphabet_list)
+            )  # {'a': None, 'b': None, 'c': None, 'd': None}
+
+            # Case 2: An existing color dictionary is provided
+            print(
+                update_color_dict(alphabet_list, existing_dict)
+            )  # {'a': 'red', 'b': 'blue', 'c': None, 'd': None}
+        """
+
+        # Was the color dictionary not supplied?
+        if color_dict is None:
+
+            # Create it with keys from alphabet_list and values set to None
+            color_dict = {a: None for a in alphabet_list}
+
+        # Otherwise
+        else:
+
+            # Update a new one with alphabet_list keys and color_dict values
+            color_dict = {a: color_dict.get(a) for a in alphabet_list}
+
+        return color_dict
+
 
 # print('\\b(' + '|'.join(dir()) + ')\\b')

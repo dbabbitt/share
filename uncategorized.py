@@ -81,8 +81,6 @@ class Uncategorized(BaseConfig):
         makedirs(name=self.saves_text_folder, exist_ok=True)
         self.saves_wav_folder = osp.join(self.saves_folder, 'wav')
         makedirs(name=self.saves_wav_folder, exist_ok=True)
-        self.saves_png_folder = osp.join(self.saves_folder, 'png')
-        makedirs(name=self.saves_png_folder, exist_ok=True)
         self.txt_folder = osp.join(self.data_folder, 'txt')
         makedirs(self.txt_folder, exist_ok=True)
 
@@ -1102,9 +1100,11 @@ class Uncategorized(BaseConfig):
 
         # Split code into lines to retrieve the indentation
         code_lines = source_code.splitlines()
+        from io import StringIO
         code_io = StringIO(source_code)
 
         # Tokenize the source code
+        import tokenize
         for token in tokenize.generate_tokens(code_io.readline):
 
             # Is the token a comment?
@@ -2327,51 +2327,6 @@ class Uncategorized(BaseConfig):
 
         # Return the Matplotlib figure object containing the generated plots
         return plt
-
-    @staticmethod
-    def update_color_dict(alphabet_list, color_dict=None):
-        """
-        Create or update a dictionary based on the given alphabet list.
-
-        Parameters:
-            alphabet_list (list):
-                A list of keys to include in the dictionary. color_dict (dict,
-                optional): An existing dictionary. Defaults to None.
-
-        Returns:
-            dict:
-                A dictionary with keys from `alphabet_list`. If `color_dict`
-                is supplied, its values are preserved for matching keys;
-                otherwise, values are set to None.
-
-        Examples:
-            alphabet_list = ['a', 'b', 'c', 'd']
-            existing_dict = {'a': 'red', 'b': 'blue'}
-
-            # Case 1: No color dictionary provided
-            print(
-                update_color_dict(alphabet_list)
-            )  # {'a': None, 'b': None, 'c': None, 'd': None}
-
-            # Case 2: An existing color dictionary is provided
-            print(
-                update_color_dict(alphabet_list, existing_dict)
-            )  # {'a': 'red', 'b': 'blue', 'c': None, 'd': None}
-        """
-
-        # Was the color dictionary not supplied?
-        if color_dict is None:
-
-            # Create it with keys from alphabet_list and values set to None
-            color_dict = {a: None for a in alphabet_list}
-
-        # Otherwise
-        else:
-
-            # Update a new one with alphabet_list keys and color_dict values
-            color_dict = {a: color_dict.get(a) for a in alphabet_list}
-
-        return color_dict
 
     def plot_semantic_distances_dendogram(
         self, collection_name="collection", documents_list=[], ids_list=[],
