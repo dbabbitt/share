@@ -145,10 +145,6 @@ class Uncategorized(BaseConfig):
         # Compile a regex pattern to match non-alphanumeric characters
         self.lower_ascii_regex = re.compile('[^a-z0-9]+')
 
-        # Various aspect ratios
-        self.facebook_aspect_ratio = 1.91
-        self.twitter_aspect_ratio = 16/9
-
         # Module lists
         self.object_evaluators = [
             fn for fn in dir(inspect) if fn.startswith('is')

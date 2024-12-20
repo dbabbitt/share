@@ -463,6 +463,21 @@ class NotebookUtilities(object):
         else:
             return f'{minutes} min'
 
+    @staticmethod
+    def outline_chars(text_str, verbose=False):
+        ord_list = []
+        for char in list(text_str):
+            i = ord(char)
+            if i >= ord('a'):
+                i += (ord('𝕒') - ord('a'))
+            elif i >= ord('A'):
+                i += (ord('𝔸') - ord('A'))
+            if verbose:
+                print(f'{char} or {ord(char)}: {i} or {chr(i)}')
+            ord_list.append(i)
+            
+        return ''.join([chr(i) for i in ord_list])
+
     # -------------------
     # List Functions
     # -------------------
@@ -4327,6 +4342,19 @@ class NotebookUtilities(object):
             pandas.DataFrame:
                 The modified DataFrame with the new column representing the
                 modal value.
+        
+            Example:
+                import numpy as np
+                import pandas as pd
+
+                df = pd.DataFrame({
+                    'A': [1, 2, 3], 'B': [1.1, 2.2, 3.3], 'C': ['a', 'b', 'c']
+                })
+                df['D'] = pd.Series([np.nan, 2, np.nan])
+                df['E'] = pd.Series([1, np.nan, 3])
+                df = nu.modalize_columns(df, ['D', 'E'], 'F')
+                display(df)
+                assert all(df['A'] == df['F'])
         """
 
         # Ensure that all columns are in the data frame
@@ -4629,6 +4657,16 @@ class NotebookUtilities(object):
 
         # Display the resulting DataFrame
         display(df)
+
+    @staticmethod
+    def clean_numerics(df, columns_list=None, verbose=False):
+        if columns_list is None:
+            columns_list = df.columns
+        for cn in columns_list:
+            df[cn] = df[cn].map(lambda x: re.sub(r'[^0-9\.]+', '', str(x)))
+            df[cn] = pd.to_numeric(df[cn], errors='coerce', downcast='integer')
+        
+        return df
 
     @staticmethod
     def get_numeric_columns(df, is_na_dropped=True):
@@ -6215,6 +6253,78 @@ class NotebookUtilities(object):
         ax.set_title(
             f'{title_prefix} {inaugruation_verb} Age vs Year'
         )
+
+    @staticmethod
+    def save_fig_as_various(
+        fig,
+        chart_name,
+        dir_names_list=['pgf', 'png', 'svg'],
+        verbose=False
+    ):
+        """
+        Save a matplotlib figure to multiple formats in specified directories.
+
+        Parameters:
+            fig (Figure): The matplotlib figure to save.
+            chart_name (str): The base name for the saved files.
+            dir_names_list (list[str]): A list of directory names (and file extensions) to save the figure in.
+            verbose (bool): If True, prints the file paths of the saved plots.
+
+        Returns:
+            None
+        """
+        import os
+        from matplotlib.figure import Figure  # For type hinting
+        for dir_name in dir_names_list:
+            try:
+                
+                # Create the directory path
+                dir_path = os.path.join(os.pardir, 'saves', dir_name)
+                os.makedirs(dir_path, exist_ok=True)  # Create the directory if it doesn't exist
+
+                # Construct the file path
+                file_path = os.path.join(dir_path, f'{chart_name}.{dir_name}')
+
+                # Remove the file if it already exists
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+
+                # Save the figure to the file
+                if verbose:
+                    print(f'Saving plot to {os.path.abspath(file_path)}')
+                fig.savefig(file_path, bbox_inches='tight')
+            
+            except Exception as e:
+                # Handle exceptions and print a clean error message
+                print(f"Error saving plot to {dir_name}: {str(e).strip()}")
+
+    @staticmethod
+    def ball_and_chain(ax, index, values, c, label=None):
+        """
+        import matplotlib as mpl
+        
+        colormap = r()
+        cmap = mpl.colormaps.get_cmap(colormap)
+        norm = LogNorm(vmin=values.min(), vmax=values.max())
+        ball_and_chain(ax, index, values, c=cmap(norm(values)))
+        """
+        ax.plot(index, values, c='k', zorder=1, alpha=.25)
+        if label is None:
+            ax.scatter(
+                index, values, s=30, lw=.5, c=c, edgecolors='k', zorder=2
+            )
+        else:
+            ax.scatter(
+                index, values, s=30, lw=.5, c=c, edgecolors='k', zorder=2,
+                label=label
+            )
+
+    @staticmethod
+    def get_random_colormap():
+        import random
+        import matplotlib.pyplot as plt
+
+        return random.choice(plt.colormaps())
 
     @staticmethod
     def get_color_cycled_list(alphabet_list, color_dict, verbose=False):
