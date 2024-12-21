@@ -387,7 +387,7 @@ class DataAnalysis(BaseConfig):
         # Create a notnull mask across the X_train and y_train columns
         mask_series = concat(
             [DataFrame(y_train), DataFrame(X_train)], axis='columns'
-        ).applymap(notnull).all(axis='columns')
+        ).map(notnull).all(axis='columns')
 
         # Return the mask indicating not inf or nan
         return mask_series
@@ -617,7 +617,7 @@ class DataAnalysis(BaseConfig):
             print(type(search_regex))
 
         # Apply the regex to each element and count occurrences per column
-        srs = df.applymap(
+        srs = df.map(
             lambda x: bool(search_regex.search(str(x))), na_action='ignore'
         ).sum()
 

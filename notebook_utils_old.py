@@ -4125,7 +4125,7 @@ class NotebookUtilities(object):
         # Create a notnull mask across the X_train and y_train columns
         mask_series = concat(
             [DataFrame(y_train), DataFrame(X_train)], axis='columns'
-        ).applymap(notnull).all(axis='columns')
+        ).map(notnull).all(axis='columns')
 
         # Return the mask indicating not inf or nan
         return mask_series
@@ -4429,7 +4429,7 @@ class NotebookUtilities(object):
             print(type(search_regex))
 
         # Apply the regex to each element and count occurrences per column
-        srs = df.applymap(
+        srs = df.map(
             lambda x: bool(search_regex.search(str(x))), na_action='ignore'
         ).sum()
 
@@ -4647,7 +4647,7 @@ class NotebookUtilities(object):
         df = self.get_statistics(describable_df, columns_list)
 
         # Apply a formatting function to convert milliseconds to timedelta
-        df = df.applymap(lambda x: self.format_timedelta(
+        df = df.map(lambda x: self.format_timedelta(
             timedelta(milliseconds=int(x))
         ), na_action='ignore').T
 

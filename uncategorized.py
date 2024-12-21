@@ -1454,7 +1454,7 @@ class Uncategorized(BaseConfig):
         df = self.get_statistics(describable_df, columns_list)
 
         # Apply a formatting function to convert milliseconds to timedelta
-        df = df.applymap(lambda x: self.format_timedelta(
+        df = df.map(lambda x: self.format_timedelta(
             timedelta(milliseconds=int(x))
         ), na_action='ignore').T
 
