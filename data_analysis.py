@@ -1616,7 +1616,7 @@ class DataAnalysis(BaseConfig):
                 'white', '#404040', '#000000').
 
         Note:
-            This function uses the `color_distance_from` method to compute the
+            This function uses the `get_euclidean_distance` method to compute the
             distance between colors and the `webcolors` library to convert
             color names to hex codes.
         """
@@ -1631,7 +1631,7 @@ class DataAnalysis(BaseConfig):
             for color in ['white', '#404040', 'black']:
 
                 # Calculate distance between current color and background
-                color_distance = self.color_distance_from(
+                color_distance = self.get_euclidean_distance(
                     color, bar_color_rgb
                 )
                 color_tuple = (color_distance, color)
