@@ -1663,14 +1663,14 @@ class DataAnalysis(BaseConfig):
         ax2.scatter(
             spread_points[:, 0], spread_points[:, 1], spread_points[:, 2],
             c=colors, s=100, edgecolors=fixed_point, linewidth=2,
-            label='Spread Points'
+            label='Spread Points', alpha=1.0
         )
 
         # Highlight the fixed point with a black edge
         ax2.scatter(
             fixed_point[0], fixed_point[1], fixed_point[2],
             color=fixed_point, s=100, edgecolors='black', linewidth=2,
-            label='Fixed Point'
+            label='Fixed Point', alpha=1.0
         )
         ax2.set_title("Spread Points in Unit Cube with Colored Edges")
         ax2.set_xlabel('X')
