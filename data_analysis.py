@@ -1686,7 +1686,7 @@ class DataAnalysis(BaseConfig):
         nearest_name_dict = {mcolors.hex2color(hex_code): name[5:] for name, hex_code in mcolors.XKCD_COLORS.items()}
         xkcd_labels = []
         for color in color_order:
-            nearest_neighbor = nu.get_nearest_neighbor(color, values_list)
+            nearest_neighbor = self.get_nearest_neighbor(color, values_list)
             xkcd_labels.append(nearest_name_dict[nearest_neighbor])
 
         # Create a figure with two subplots
