@@ -1724,7 +1724,8 @@ class DataAnalysis(BaseConfig):
                 mean_angle += 180
             ax1.text(
                 label_x, label_y, label,
-                rotation=mean_angle, ha='center', va='center'
+                rotation=mean_angle, ha='center', va='center',
+                color=self.get_text_color(bar_color_rgb=wedge_obj.get_facecolor()[:-1])
             )
 
         # Add title and adjust aspect ratio
