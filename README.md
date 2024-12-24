@@ -149,6 +149,16 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    ```
 3. Use the utility functions as needed:
    ```python
+   import numpy as np
+   spread_points = np.array([
+       [0.2, 0.4, 0.6],  # Fixed point (assumed to be the first)
+       [0.7, 0.2, 0.3],
+       [0.1, 0.8, 0.4],
+       [0.5, 0.5, 0.5]
+   ])
+   nu.inspect_spread_points(spread_points)
+   ```
+   ```python
    # Count the occurrences of a sequence of elements (n-grams) in a list
    actions = ['jump', 'run', 'jump', 'run', 'jump']
    ngrams = ['jump', 'run']

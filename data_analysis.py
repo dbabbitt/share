@@ -1602,7 +1602,7 @@ class DataAnalysis(BaseConfig):
                 [0.1, 0.8, 0.4],
                 [0.5, 0.5, 0.5]
             ])
-            inspect_spread_points(spread_points)
+            nu.inspect_spread_points(spread_points)
         """
 
         # Prepare colors for the pie chart and 3D scatter plot
