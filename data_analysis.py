@@ -1587,6 +1587,80 @@ class DataAnalysis(BaseConfig):
         # Return the label's position and rotation angle
         return (label_x, label_y, mean_angle)
 
+    @staticmethod
+    def color_distance_from(from_color, to_rgb_tuple):
+        """
+        Calculate the Euclidean distance between two colors in RGB space.
+
+        This function computes the color distance between the RGB
+        values of a specified color and another RGB tuple. It supports
+        colors specified as 'white', 'black', or a hexadecimal string.
+
+        Parameters:
+            from_color (str):
+                The starting color, which can be 'white', 'black', or a
+                hexadecimal string.
+            to_rgb_tuple (tuple):
+                The target RGB tuple (length 3) representing the color to
+                compare to.
+
+        Returns:
+            float:
+                The Euclidean distance between the from_color and the
+                to_rgb_tuple in RGB space.
+
+        Raises:
+            ValueError:
+                If the from_color is not 'white', 'black', or a valid
+                hexadecimal color string.
+
+        TODO:
+            Compare color_distance_from with get_euclidean_distance
+
+        Examples:
+            nu.color_distance_from('white', (255, 0, 0))  # 360.62445840513925
+            nu.color_distance_from(
+                '#0000FF', (255, 0, 0)
+            )  # 360.62445840513925
+        """
+        from math import sqrt
+
+        # Is the from_color 'white'?
+        if from_color == 'white':
+
+            # Compute the Euclidean distance from (255, 255, 255)
+            green_diff = 255 - to_rgb_tuple[0]
+            blue_diff = 255 - to_rgb_tuple[1]
+            red_diff = 255 - to_rgb_tuple[2]
+            color_distance = sqrt(green_diff**2 + blue_diff**2 + red_diff**2)
+
+        # Is the from_color 'black'?
+        elif from_color == 'black':
+
+            # Compute the Euclidean distance from (0, 0, 0)
+            color_distance = sqrt(
+                to_rgb_tuple[0]**2 + to_rgb_tuple[1]**2 + to_rgb_tuple[2]**2
+            )
+
+        # Otherwise, treat from_color as a hexadecimal string
+        else:
+            import webcolors
+            try:
+                rgb_tuple = tuple(webcolors.hex_to_rgb(from_color))
+                green_diff = rgb_tuple[0] - to_rgb_tuple[0]
+                blue_diff = rgb_tuple[1] - to_rgb_tuple[1]
+                red_diff = rgb_tuple[2] - to_rgb_tuple[2]
+
+                # And compute the Euclidean distance from its RGB conversion
+                color_distance = sqrt(
+                    green_diff**2 + blue_diff**2 + red_diff**2
+                )
+
+            except ValueError as e:
+                raise ValueError(f'Invalid color value: {from_color}') from e
+
+        return color_distance
+
     def get_text_color(
         self, text_color='white', bar_color_rgb=(0, 0, 0), verbose=False
     ):
@@ -1616,7 +1690,7 @@ class DataAnalysis(BaseConfig):
                 'white', '#404040', '#000000').
 
         Note:
-            This function uses the `get_euclidean_distance` method to compute the
+            This function uses the `color_distance_from` method to compute the
             distance between colors and the `webcolors` library to convert
             color names to hex codes.
         """
@@ -1631,7 +1705,7 @@ class DataAnalysis(BaseConfig):
             for color in ['white', '#404040', 'black']:
 
                 # Calculate distance between current color and background
-                color_distance = self.get_euclidean_distance(
+                color_distance = self.color_distance_from(
                     color, bar_color_rgb
                 )
                 color_tuple = (color_distance, color)
@@ -1807,12 +1881,12 @@ class DataAnalysis(BaseConfig):
             label_x, label_y, mean_angle = self.get_wedge_label_pos(wedge_obj)
             if mean_angle < 270:
                 mean_angle += 180
+            bar_color_rgb = wedge_obj.get_facecolor()[:-1]
+            bar_color_rgb = (255*bar_color_rgb[0], 255*bar_color_rgb[1], 255*bar_color_rgb[2])
             ax1.text(
                 label_x, label_y, label,
                 rotation=mean_angle, ha='center', va='center',
-                color=self.get_text_color(
-                    bar_color_rgb=wedge_obj.get_facecolor()[:-1]
-                )
+                color=self.get_text_color(bar_color_rgb=bar_color_rgb),
             )
 
         # Add title and adjust aspect ratio
