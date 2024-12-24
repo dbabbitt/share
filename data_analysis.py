@@ -1662,7 +1662,8 @@ class DataAnalysis(BaseConfig):
         return color_distance
 
     def get_text_color(
-        self, text_color='white', bar_color_rgb=(0, 0, 0), verbose=False
+        self, text_color='white', bar_color_rgb=(0, 0, 0),
+        readable_colors=['white', '#404040', 'black'], verbose=False
     ):
         """
         Determine an appropriate text color based on the background color
@@ -1702,7 +1703,7 @@ class DataAnalysis(BaseConfig):
             text_colors_list = []
 
             # Iterate through predefined readable colors
-            for color in ['white', '#404040', 'black']:
+            for color in readable_colors:
 
                 # Calculate distance between current color and background
                 color_distance = self.color_distance_from(
@@ -1882,11 +1883,18 @@ class DataAnalysis(BaseConfig):
             if mean_angle < 270:
                 mean_angle += 180
             bar_color_rgb = wedge_obj.get_facecolor()[:-1]
-            bar_color_rgb = (255*bar_color_rgb[0], 255*bar_color_rgb[1], 255*bar_color_rgb[2])
+            bar_color_rgb = (
+                255*bar_color_rgb[0],
+                255*bar_color_rgb[1],
+                255*bar_color_rgb[2]
+            )
             ax1.text(
                 label_x, label_y, label,
-                rotation=mean_angle, ha='center', va='center',
                 color=self.get_text_color(bar_color_rgb=bar_color_rgb),
+                fontweight='bold',
+                ha='center',
+                rotation=mean_angle,
+                va='center',
             )
 
         # Add title and adjust aspect ratio
