@@ -1541,4 +1541,167 @@ class DataAnalysis(BaseConfig):
 
         return random.choice(plt.colormaps())
 
+    def inspect_spread_points(self, spread_points):
+        """
+        Visualize the spread points in color space using a pie chart and a 3D
+        scatter plot.
+
+        This function creates two visualizations to represent the spread
+        points:
+        1. A pie chart showing the colors of the spread points, where the
+           first point (assumed to be the fixed point) is highlighted with an
+           exploded wedge.
+        2. A 3D scatter plot showing the spatial distribution of the spread
+           points in a unit RGB color cube, with the fixed point highlighted
+           by a black edge.
+
+        Assumptions:
+            - The first element in `spread_points` is the fixed point.
+            - The `spread_points` parameter is a 2D array-like object where
+              each row represents a color in RGB format (e.g., `[R, G, B]`
+              values scaled between 0 and 1).
+
+        Parameters:
+            spread_points (array-like):
+                A collection of points in RGB color space. Each point is
+                represented as an array-like structure containing three
+                numerical values (red, green, blue).
+
+        Visualizations:
+            - Pie Chart:
+                - Displays the colors of the spread points.
+                - The fixed point (first element in `spread_points`) is
+                  highlighted with an exploded wedge and annotated as "(fixed
+                  point)".
+            - 3D Scatter Plot:
+                - Plots the spread points in a 3D RGB color cube.
+                - Points are colored according to their RGB values.
+                - The fixed point is highlighted with a black edge for better
+                  visibility.
+                - The corners of the unit cube (representing `[0, 0, 0]` for
+                  black and `[1, 1, 1]` for white) are annotated as "Black
+                  Corner" and "White Corner" respectively.
+
+        Returns:
+            None:
+                The function displays the visualizations but does not return
+                any value.
+
+        Notes:
+            - The function assumes that the nearest neighbors of the fixed
+              point are determined and reordered using a helper method
+              `self.get_nearest_neighbor`.
+            - Ensure that `spread_points` is a NumPy array or can be
+              converted to one for slicing and indexing operations.
+
+        Example:
+            import numpy as np
+            spread_points = np.array([
+                [0.2, 0.4, 0.6],  # Fixed point (assumed to be the first)
+                [0.7, 0.2, 0.3],
+                [0.1, 0.8, 0.4],
+                [0.5, 0.5, 0.5]
+            ])
+            inspect_spread_points(spread_points)
+        """
+
+        # Prepare colors for the pie chart and 3D scatter plot
+        colors = [
+            tuple(color) for color in spread_points
+        ]  # Convert spread points to RGB tuples
+
+        # Get locations list and color order
+        fixed_point = colors[0]
+        locations_list = colors[1:]
+        color_order = [fixed_point]
+
+        # Pop the nearest neighbor off the list and add it to the color order
+        while locations_list:
+            nearest_neighbor = self.get_nearest_neighbor(
+                color_order[-1], locations_list
+            )
+            nearest_neighbor = locations_list.pop(
+                locations_list.index(nearest_neighbor)
+            )
+            color_order.append(nearest_neighbor)
+        num_points = len(color_order)
+
+        # Create a figure with two subplots
+        fig = plt.figure(figsize=(14, 6))
+
+        # Left panel: Pie chart
+        ax1 = fig.add_subplot(121)  # 1 row, 2 columns, 1st subplot
+        ax1.pie(
+            [1 for _ in range(num_points)],
+            colors=color_order,
+            explode=[0.1] + [0.0] * (num_points - 1),
+            startangle=90,
+        )
+
+        # Add a curved arrow annotation pointing to the exploded wedge
+        ax1.annotate(
+            '(fixed point)',  # Text label
+            arrowprops=dict(
+                arrowstyle="->",
+                connectionstyle="arc3,rad=-0.2",
+                facecolor='black',
+            ),  # Arrow style
+            fontsize=12,
+            ha='center',
+            xy=(-0.15, 1),  # Arrow tip location (near the exploded wedge)
+            xytext=(-1, 1.0),  # Text location
+        )
+
+        # Add title and adjust aspect ratio
+        ax1.set_title("Colors of Spread Points")
+        ax1.set_aspect("equal")
+
+        # Right panel: 3D scatter plot
+        ax2 = fig.add_subplot(
+            122, projection="3d"
+        )  # 1 row, 2 columns, 2nd subplot
+        ax2.scatter(
+            spread_points[:, 0], spread_points[:, 1], spread_points[:, 2],
+            c=colors, s=100, edgecolors=fixed_point, linewidth=2,
+            label='Spread Points'
+        )
+
+        # Highlight the fixed point with a black edge
+        ax2.scatter(
+            fixed_point[0], fixed_point[1], fixed_point[2],
+            color=fixed_point, s=100, edgecolors='black', linewidth=2,
+            label='Fixed Point'
+        )
+        ax2.set_title("Spread Points in Unit Cube with Colored Edges")
+        ax2.set_xlabel('X')
+        ax2.set_ylabel('Y')
+        ax2.set_zlabel('Z')
+        ax2.legend()
+
+        # Add annotations for the corners (for a unit cube)
+        black_corner = [0, 0, 0]  # Black corner (origin)
+        white_corner = [1, 1, 1]  # White corner (opposite corner)
+        ax2.text(
+            black_corner[0], black_corner[1], black_corner[2],
+            'Black Corner',  # Text label
+            color='black',  # Text color
+            horizontalalignment='left',  # Text alignment
+            bbox=dict(
+                facecolor='white', edgecolor='none', alpha=0.3
+            ),  # Add contrast background
+        )
+        ax2.text(
+            white_corner[0], white_corner[1], white_corner[2],
+            'White Corner',  # Text label
+            color='white',  # Text color
+            horizontalalignment='right',  # Text alignment
+            bbox=dict(
+                facecolor='black', edgecolor='none', alpha=0.3
+            ),  # Add contrast background
+        )
+
+        # Display the combined plot
+        plt.tight_layout()
+        plt.show()
+
 # print('\\b(' + '|'.join(dir()) + ')\\b')
