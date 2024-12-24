@@ -1861,6 +1861,9 @@ class Uncategorized(BaseConfig):
                 If the from_color is not 'white', 'black', or a valid
                 hexadecimal color string.
 
+        TODO:
+            Compare color_distance_from with get_euclidean_distance
+
         Examples:
             nu.color_distance_from('white', (255, 0, 0))  # 360.62445840513925
             nu.color_distance_from(
@@ -1904,82 +1907,6 @@ class Uncategorized(BaseConfig):
                 raise ValueError(f'Invalid color value: {from_color}') from e
 
         return color_distance
-
-    def get_text_color(
-        self, text_color='white', bar_color_rgb=(0, 0, 0), verbose=False
-    ):
-        """
-        Determine an appropriate text color based on the background color
-        for improved readability.
-
-        This function calculates the most suitable text color to be used
-        on a given background color (`bar_color_rgb`). It compares the
-        distance of the background color to predefined text colors
-        ('white', '#404040', 'black') and selects the most distinct color.
-        The default text color is 'white'.
-
-        Parameters:
-            text_color (str, optional):
-                The default text color to be used if the background color is
-                black. Defaults to 'white'.
-            bar_color_rgb (tuple, optional):
-                A tuple representing the RGB values of the background color.
-                Defaults to (0, 0, 0), which is black.
-            verbose (bool, optional):
-                Whether to print debug or status messages. Defaults to False.
-
-        Returns:
-            str
-                The chosen text color as a valid HTML/CSS color string (e.g.,
-                'white', '#404040', '#000000').
-
-        Note:
-            This function uses the `color_distance_from` method to compute the
-            distance between colors and the `webcolors` library to convert
-            color names to hex codes.
-        """
-
-        # Check if a non-black background color is provided
-        if bar_color_rgb != (0, 0, 0):
-
-            # Initialize the list to store the distances for each color
-            text_colors_list = []
-
-            # Iterate through predefined readable colors
-            for color in ['white', '#404040', 'black']:
-
-                # Calculate distance between current color and background
-                color_distance = self.color_distance_from(
-                    color, bar_color_rgb
-                )
-                color_tuple = (color_distance, color)
-
-                # Append the color and its distance to the list
-                text_colors_list.append(color_tuple)
-
-            # Print the list of color distances if verbose is True
-            if verbose:
-                print(text_colors_list)
-
-            # Select color with maximum distance from background color
-            sorted_list = sorted(text_colors_list, key=lambda x: x[0])
-            text_color = sorted_list[-1][1]
-
-            # Attempt to convert the text color to a valid HTML/CSS hex code
-            try:
-
-                # Import the webcolors module
-                import webcolors
-
-                # Try to convert the color name to hex format
-                text_color = webcolors.name_to_hex(text_color)
-
-            # If the color name is not recognized, pass
-            except Exception:
-                pass
-
-        # Return the selected or default text color
-        return text_color
 
     @staticmethod
     def plot_grouped_box_and_whiskers(

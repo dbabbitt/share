@@ -868,6 +868,9 @@ class DataAnalysis(BaseConfig):
             float
                 The Euclidean distance between the two points, or numpy.nan if
                 the points have mismatched dimensions.
+
+        TODO:
+            Compare color_distance_from with get_euclidean_distance
         """
 
         # Initialize the Euclidean distance to NaN
@@ -1584,6 +1587,82 @@ class DataAnalysis(BaseConfig):
         # Return the label's position and rotation angle
         return (label_x, label_y, mean_angle)
 
+    def get_text_color(
+        self, text_color='white', bar_color_rgb=(0, 0, 0), verbose=False
+    ):
+        """
+        Determine an appropriate text color based on the background color
+        for improved readability.
+
+        This function calculates the most suitable text color to be used
+        on a given background color (`bar_color_rgb`). It compares the
+        distance of the background color to predefined text colors
+        ('white', '#404040', 'black') and selects the most distinct color.
+        The default text color is 'white'.
+
+        Parameters:
+            text_color (str, optional):
+                The default text color to be used if the background color is
+                black. Defaults to 'white'.
+            bar_color_rgb (tuple, optional):
+                A tuple representing the RGB values of the background color.
+                Defaults to (0, 0, 0), which is black.
+            verbose (bool, optional):
+                Whether to print debug or status messages. Defaults to False.
+
+        Returns:
+            str
+                The chosen text color as a valid HTML/CSS color string (e.g.,
+                'white', '#404040', '#000000').
+
+        Note:
+            This function uses the `color_distance_from` method to compute the
+            distance between colors and the `webcolors` library to convert
+            color names to hex codes.
+        """
+
+        # Check if a non-black background color is provided
+        if bar_color_rgb != (0, 0, 0):
+
+            # Initialize the list to store the distances for each color
+            text_colors_list = []
+
+            # Iterate through predefined readable colors
+            for color in ['white', '#404040', 'black']:
+
+                # Calculate distance between current color and background
+                color_distance = self.color_distance_from(
+                    color, bar_color_rgb
+                )
+                color_tuple = (color_distance, color)
+
+                # Append the color and its distance to the list
+                text_colors_list.append(color_tuple)
+
+            # Print the list of color distances if verbose is True
+            if verbose:
+                print(text_colors_list)
+
+            # Select color with maximum distance from background color
+            sorted_list = sorted(text_colors_list, key=lambda x: x[0])
+            text_color = sorted_list[-1][1]
+
+            # Attempt to convert the text color to a valid HTML/CSS hex code
+            try:
+
+                # Import the webcolors module
+                import webcolors
+
+                # Try to convert the color name to hex format
+                text_color = webcolors.name_to_hex(text_color)
+
+            # If the color name is not recognized, pass
+            except Exception:
+                pass
+
+        # Return the selected or default text color
+        return text_color
+
     def inspect_spread_points(self, spread_points):
         """
         Visualize the spread points in color space using a pie chart and a 3D
@@ -1640,7 +1719,7 @@ class DataAnalysis(BaseConfig):
         Example:
             import numpy as np
             spread_points = np.array([
-                [0.529, 0.808, 0.922],  # Fixed point (assumed to be the first)
+                [0.529, 0.808, 0.922],  # Fixed point (assumed to be first)
                 [0., 0.49733728, 1.],
                 [0., 1., 0.46377763],
                 [0., 0., 0.45880771],
@@ -1682,8 +1761,14 @@ class DataAnalysis(BaseConfig):
 
         # Get XKCD labels
         import matplotlib.colors as mcolors
-        values_list = [mcolors.hex2color(hex_code) for hex_code in mcolors.XKCD_COLORS.values()]
-        nearest_name_dict = {mcolors.hex2color(hex_code): name[5:] for name, hex_code in mcolors.XKCD_COLORS.items()}
+        values_list = [
+            mcolors.hex2color(hex_code)
+            for hex_code in mcolors.XKCD_COLORS.values()
+        ]
+        nearest_name_dict = {
+            mcolors.hex2color(hex_code): name[5:]
+            for name, hex_code in mcolors.XKCD_COLORS.items()
+        }
         xkcd_labels = []
         for color in color_order:
             nearest_neighbor = self.get_nearest_neighbor(color, values_list)
@@ -1725,7 +1810,9 @@ class DataAnalysis(BaseConfig):
             ax1.text(
                 label_x, label_y, label,
                 rotation=mean_angle, ha='center', va='center',
-                color=self.get_text_color(bar_color_rgb=wedge_obj.get_facecolor()[:-1])
+                color=self.get_text_color(
+                    bar_color_rgb=wedge_obj.get_facecolor()[:-1]
+                )
             )
 
         # Add title and adjust aspect ratio
