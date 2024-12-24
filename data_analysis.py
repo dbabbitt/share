@@ -1541,6 +1541,49 @@ class DataAnalysis(BaseConfig):
 
         return random.choice(plt.colormaps())
 
+    @staticmethod
+    def get_wedge_label_pos(wedge_obj):
+        """
+        Calculate the position and rotation for a label in the center of a
+        wedge.
+
+        Parameters:
+            wedge_obj (matplotlib.patches.Wedge):
+                A Wedge object from Matplotlib, which is defined by its
+                center (x, y), radius, and the angles theta1 and theta2 (in
+                degrees) that define the start and end of the wedge.
+
+        Returns:
+            tuple:
+                A tuple containing:
+                    - label_x (float):
+                          The x-coordinate of the label's position.
+                    - label_y (float):
+                          The y-coordinate of the label's position.
+                    - rotation_angle (float):
+                          The rotation angle of the label in degrees,
+                          corresponding to the mean angle of the wedge.
+        """
+        center = wedge_obj.center
+        radius = wedge_obj.r
+        theta1 = wedge_obj.theta1
+        theta2 = wedge_obj.theta2
+
+        # Calculate the mean angle of the wedge
+        mean_angle = (theta1 + theta2) / 2
+
+        # Convert the mean angle to radians for trigonometric calculations
+        import math
+        mean_angle_rad = math.radians(mean_angle)
+
+        # Calculate the label's position at the center of the wedge
+        radius_fraction = 5 * radius / 8
+        label_x = center[0] + radius_fraction * math.cos(mean_angle_rad)
+        label_y = center[1] + radius_fraction * math.sin(mean_angle_rad)
+
+        # Return the label's position and rotation angle
+        return (label_x, label_y, mean_angle)
+
     def inspect_spread_points(self, spread_points):
         """
         Visualize the spread points in color space using a pie chart and a 3D
@@ -1637,15 +1680,25 @@ class DataAnalysis(BaseConfig):
             color_order.append(nearest_neighbor)
         num_points = len(color_order)
 
+        # Get XKCD labels
+        import matplotlib.colors as mcolors
+        values_list = [mcolors.hex2color(hex_code) for hex_code in mcolors.XKCD_COLORS.values()]
+        nearest_name_dict = {mcolors.hex2color(hex_code): name[5:] for name, hex_code in mcolors.XKCD_COLORS.items()}
+        xkcd_labels = []
+        for color in color_order:
+            nearest_neighbor = nu.get_nearest_neighbor(color, values_list)
+            xkcd_labels.append(nearest_name_dict[nearest_neighbor])
+
         # Create a figure with two subplots
         fig = plt.figure(figsize=(14, 6))
 
         # Left panel: Pie chart
         ax1 = fig.add_subplot(121)  # 1 row, 2 columns, 1st subplot
-        ax1.pie(
+        pie_tuple = ax1.pie(
             [1 for _ in range(num_points)],
             colors=color_order,
             explode=[0.1] + [0.0] * (num_points - 1),
+            labels=None,
             startangle=90,
         )
 
@@ -1662,6 +1715,17 @@ class DataAnalysis(BaseConfig):
             xy=(-0.15, 1),  # Arrow tip location (near the exploded wedge)
             xytext=(-1, 1.0),  # Text location
         )
+
+        # Label the centers of the wedges with the XKCD color names
+        wedge_objs_list = pie_tuple[0]
+        for wedge_obj, label in zip(wedge_objs_list, xkcd_labels):
+            label_x, label_y, mean_angle = self.get_wedge_label_pos(wedge_obj)
+            if mean_angle < 270:
+                mean_angle += 180
+            ax1.text(
+                label_x, label_y, label,
+                rotation=mean_angle, ha='center', va='center'
+            )
 
         # Add title and adjust aspect ratio
         ax1.set_title("Colors of Spread Points")
