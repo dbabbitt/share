@@ -151,10 +151,21 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    ```python
    import numpy as np
    spread_points = np.array([
-       [0.2, 0.4, 0.6],  # Fixed point (assumed to be the first)
-       [0.7, 0.2, 0.3],
-       [0.1, 0.8, 0.4],
-       [0.5, 0.5, 0.5]
+       [0.529, 0.808, 0.922],  # Fixed point (assumed to be the first)
+       [0., 0.49733728, 1.],
+       [0., 1., 0.46377763],
+       [0., 0., 0.45880771],
+       [1., 1., 0.],
+       [1., 1., 0.49150504],
+       [0., 1., 1.],
+       [0., 0.50193516, 0.],
+       [0.54022156, 0., 1.],
+       [1., 0.5024856, 0.],
+       [1., 0., 0.48294991],
+       [1., 0., 0.],
+       [1., 0., 1.],
+       [0., 0., 1.],
+       [0., 1., 0.]
    ])
    nu.inspect_spread_points(spread_points)
    ```
