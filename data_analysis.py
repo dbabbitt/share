@@ -1890,7 +1890,10 @@ class DataAnalysis(BaseConfig):
             )
             ax1.text(
                 label_x, label_y, label,
-                color=self.get_text_color(bar_color_rgb=bar_color_rgb),
+                color=self.get_text_color(
+                    bar_color_rgb=bar_color_rgb,
+                    readable_colors=['white', '#808080', 'black']
+                ),
                 fontweight='bold',
                 ha='center',
                 rotation=mean_angle,
