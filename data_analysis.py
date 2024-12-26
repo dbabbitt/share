@@ -952,6 +952,95 @@ class DataAnalysis(BaseConfig):
         # Return the nearest neighbor (or None if the list is empty)
         return nearest_neighbor
 
+    @staticmethod
+    def move_point_toward(target_point, destination_point, factor=0.1):
+        """
+        Move a point slightly toward a destination point by a given factor.
+
+        Args:
+            target_point (np.ndarray): The point to move (e.g., black or white point).
+            destination_point (np.ndarray): The fixed point to move toward.
+            factor (float): The proportion of the distance to move.
+
+        Returns:
+            np.ndarray: The new position of the target point.
+        """
+        return target_point + factor * (destination_point - target_point)
+
+    def spread_points_in_cube(self, num_additional_points, fixed_point, cube_size=1.0, iterations=1000, step_size=0.01, contrast_factor=0.1, verbose=False):
+        """
+        Spread points in a unit cube to maximize the minimum distance between them using a repulsion-based method.
+        Moves black (0, 0, 0) and white (1, 1, 1) points slightly toward the fixed point for better contrast.
+
+        Parameters:
+            num_additional_points (int): Total number of points needed in addtion to the fixed point (excluding black and white adjustment points).
+            fixed_point (tuple): The fixed point in the cube (e.g., (0.529, 0.808, 0.922)).
+            cube_size (float): Size of the cube (default is 1.0 for a unit cube).
+            iterations (int): Number of optimization iterations.
+            step_size (float): Step size for moving points based on forces.
+            contrast_factor (float): Factor determining how far black and white points are moved toward the fixed point.
+
+        Returns:
+            np.ndarray: Array of shape (num_additional_points+1, 3) containing the final point positions, excluding the black and white points.
+        """
+        
+        # Ensure the fixed point is not black or white
+        assert fixed_point != (0.0, 0.0, 0.0), "The fixed point cannot be black (0.0, 0.0, 0.0)."
+        assert fixed_point != (1.0, 1.0, 1.0), "The fixed point cannot be white (1.0, 1.0, 1.0)."
+
+        # Add 2 extra points for black and white
+        total_points = num_additional_points + 3
+        
+        # Initialize points randomly within the cube
+        points = np.random.rand(total_points, 3) * cube_size
+        points[0] = np.array(fixed_point)  # Set the fixed point
+        points[-2] = np.array([0.0, 0.0, 0.0])  # Add black point
+        points[-1] = np.array([1.0, 1.0, 1.0])  # Add white point
+        if verbose:
+            print("Initial points:\n", points)
+
+        # Move black and white points slightly toward the fixed point for contrast
+        fixed_point_np = np.array(fixed_point)
+        points[-2] = self.move_point_toward(points[-2], fixed_point_np, contrast_factor)  # Move black point
+        points[-1] = self.move_point_toward(points[-1], fixed_point_np, contrast_factor)  # Move white point
+
+        for _ in range(iterations):
+            forces = np.zeros_like(points)  # Store net forces on each point
+
+            for i in range(total_points):
+                if i == 0:  # Skip the fixed point
+                    continue
+                for j in range(total_points):
+                    if i != j:
+                        
+                        # Compute Euclidean distance
+                        diff = points[i] - points[j]
+                        dist = np.linalg.norm(diff)
+                        if dist > 1e-6:  # Avoid division by zero
+                            
+                            # Compute repulsion force (inverse-square law)
+                            force = diff / (dist**3)
+                            forces[i] += force
+
+            # Update positions of all points except the fixed one
+            points[1:] += step_size * forces[1:]
+
+            # Ensure points remain within the cube
+            points = np.clip(points, 0, cube_size)
+
+        # Remove black and white points from the final result
+        points = points[:-2]
+
+        # Assert that none of the points in the final result are black or white
+        for point in points:
+            assert not np.allclose(point, [0.0, 0.0, 0.0]), f"The point {tuple(point)} is too close to black (0, 0, 0)."
+            assert not np.allclose(point, [1.0, 1.0, 1.0]), f"The point {tuple(point)} is too close to white (1, 1, 1)."
+
+        if verbose:
+            print("Final points:\n", points)
+        
+        return points
+
     # -------------------
     # Sub-sampling Functions
     # -------------------
@@ -1858,7 +1947,7 @@ class DataAnalysis(BaseConfig):
             [1 for _ in range(num_points)],
             colors=color_order,
             explode=[0.1] + [0.0] * (num_points - 1),
-            labels=None,
+            labels=None,  # None for now: add them better, later
             startangle=90,
         )
 
