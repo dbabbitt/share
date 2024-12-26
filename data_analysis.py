@@ -983,14 +983,14 @@ class DataAnalysis(BaseConfig):
         Returns:
             np.ndarray: Array of shape (num_additional_points+1, 3) containing the final point positions, excluding the black and white points.
         """
-        
+
         # Ensure the fixed point is not black or white
         assert fixed_point != (0.0, 0.0, 0.0), "The fixed point cannot be black (0.0, 0.0, 0.0)."
         assert fixed_point != (1.0, 1.0, 1.0), "The fixed point cannot be white (1.0, 1.0, 1.0)."
 
         # Add 2 extra points for black and white
         total_points = num_additional_points + 3
-        
+
         # Initialize points randomly within the cube
         points = np.random.rand(total_points, 3) * cube_size
         points[0] = np.array(fixed_point)  # Set the fixed point
@@ -1012,12 +1012,12 @@ class DataAnalysis(BaseConfig):
                     continue
                 for j in range(total_points):
                     if i != j:
-                        
+
                         # Compute Euclidean distance
                         diff = points[i] - points[j]
                         dist = np.linalg.norm(diff)
                         if dist > 1e-6:  # Avoid division by zero
-                            
+
                             # Compute repulsion force (inverse-square law)
                             force = diff / (dist**3)
                             forces[i] += force
@@ -1038,7 +1038,7 @@ class DataAnalysis(BaseConfig):
 
         if verbose:
             print("Final points:\n", points)
-        
+
         return points
 
     # -------------------
@@ -1827,6 +1827,16 @@ class DataAnalysis(BaseConfig):
         # Return the selected or default text color
         return text_color
 
+    @staticmethod
+    def get_largest_polygon(geometry):
+        """
+        Function to get the largest polygon
+        """
+        from shapely.geometry.multipolygon import MultiPolygon
+        if isinstance(geometry, MultiPolygon):
+            return max(geometry.geoms, key=lambda g: g.area)
+        return geometry
+
     def inspect_spread_points(self, spread_points):
         """
         Visualize the spread points in color space using a pie chart and a 3D
@@ -2040,5 +2050,77 @@ class DataAnalysis(BaseConfig):
         # Display the combined plot
         plt.tight_layout()
         plt.show()
+
+    @staticmethod
+    def plot_adjusted_polygons(adjusted_polygons, iteration, save_to_file=False, output_dir="output", verbose=False):
+        """
+        Plots adjusted polygons and either displays the plot or saves it to a PNG file.
+
+        Parameters:
+            adjusted_polygons (list of dict): A list of dictionaries, each containing:
+                - 'polygon' (Polygon): The Shapely Polygon object.
+                - 'country_name' (str): The name of the country associated with the polygon.
+            iteration (int): The iteration number to include in the title or filename.
+            save_to_file (bool): If True, saves the plot to a PNG file. If False, displays the plot.
+            output_dir (str): Directory where the PNG file will be saved (if save_to_file is True).
+
+        Returns:
+            None
+        """
+        
+        # Create a rectangular cartogram of middle eastern countries by scaled population
+        fig, ax = plt.subplots(figsize=(9, 6))
+        alpha = 1.0
+
+        # Set to keep track of added labels
+        added_labels = set()
+
+        # Plot the adjusted polygons
+        for poly_data in adjusted_polygons:
+            polygon = poly_data['polygon']  # Adjusted polygon
+            country_name = poly_data['country_name']  # Country name
+            xs, ys = polygon.exterior.xy
+
+            # Only add the label if it hasn't been added yet
+            if country_name not in added_labels:
+                ax.fill(xs, ys, alpha=alpha, fc=hex_color_dict[country_name], ec='none', label=country_name)
+                added_labels.add(country_name)
+            else:
+                ax.fill(xs, ys, alpha=alpha, fc=hex_color_dict[country_name], ec='none')
+
+        # Get the handles and labels from the plot
+        handles, labels = ax.get_legend_handles_labels()
+
+        # Sort the labels and handles alphabetically
+        sorted_handles_labels = sorted(zip(labels, handles), key=lambda x: x[0])  # Sort by label (alphabetical order)
+        sorted_labels, sorted_handles = zip(*sorted_handles_labels)  # Unzip into two separate lists
+
+        # Create the legend with sorted labels
+        plt.legend(sorted_handles, sorted_labels, bbox_to_anchor=(1.0, 1.0))
+
+        # Set plot properties
+        ax.set_aspect('equal', 'datalim')
+        plt.title(f"Rectangular Cartogram of Middle Eastern Countries (Iteration {iteration:03})", fontsize=14)
+        plt.axis("off")
+
+        # Save to file or display
+        if save_to_file:
+
+            # Ensure the output directory exists
+            import os
+            os.makedirs(output_dir, exist_ok=True)
+
+            # Save the plot as a PNG file
+            output_path = os.path.join(output_dir, f"cartogram_iteration_{iteration:03}.png")
+            plt.savefig(output_path, bbox_inches="tight")
+            if verbose:
+                print(f"Plot saved to {output_path}")
+
+        # Display the plot
+        else:
+            plt.show()
+
+        # Close the plot to free memory
+        plt.close(fig)
 
 # print('\\b(' + '|'.join(dir()) + ')\\b')
