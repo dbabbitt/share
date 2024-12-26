@@ -957,36 +957,58 @@ class DataAnalysis(BaseConfig):
         """
         Move a point slightly toward a destination point by a given factor.
 
-        Args:
-            target_point (np.ndarray): The point to move (e.g., black or white point).
-            destination_point (np.ndarray): The fixed point to move toward.
-            factor (float): The proportion of the distance to move.
+        Parameters:
+            target_point (np.ndarray):
+                The point to move (e.g., black or white point).
+            destination_point (np.ndarray):
+                The fixed point to move toward.
+            factor (float):
+                The proportion of the distance to move.
 
         Returns:
             np.ndarray: The new position of the target point.
         """
         return target_point + factor * (destination_point - target_point)
 
-    def spread_points_in_cube(self, num_additional_points, fixed_point, cube_size=1.0, iterations=1000, step_size=0.01, contrast_factor=0.1, verbose=False):
+    def spread_points_in_cube(
+        self, num_additional_points, fixed_point, cube_size=1.0,
+        iterations=1000, step_size=0.01, contrast_factor=0.1, verbose=False
+    ):
         """
-        Spread points in a unit cube to maximize the minimum distance between them using a repulsion-based method.
-        Moves black (0, 0, 0) and white (1, 1, 1) points slightly toward the fixed point for better contrast.
+        Spread points in a unit cube to maximize the minimum distance between
+        them using a repulsion-based method.
+        Moves black (0, 0, 0) and white (1, 1, 1) points slightly toward the
+        fixed point for better contrast.
 
         Parameters:
-            num_additional_points (int): Total number of points needed in addtion to the fixed point (excluding black and white adjustment points).
-            fixed_point (tuple): The fixed point in the cube (e.g., (0.529, 0.808, 0.922)).
-            cube_size (float): Size of the cube (default is 1.0 for a unit cube).
-            iterations (int): Number of optimization iterations.
-            step_size (float): Step size for moving points based on forces.
-            contrast_factor (float): Factor determining how far black and white points are moved toward the fixed point.
+            num_additional_points (int):
+                Total number of points needed in addtion to the fixed point
+                (excluding black and white adjustment points).
+            fixed_point (tuple):
+                The fixed point in the cube (e.g., (0.529, 0.808, 0.922)).
+            cube_size (float):
+                Size of the cube (default is 1.0 for a unit cube).
+            iterations (int):
+                Number of optimization iterations.
+            step_size (float):
+                Step size for moving points based on forces.
+            contrast_factor (float):
+                Factor determining how far black and white points are moved
+                toward the fixed point.
 
         Returns:
-            np.ndarray: Array of shape (num_additional_points+1, 3) containing the final point positions, excluding the black and white points.
+            np.ndarray:
+                Array of shape (num_additional_points+1, 3) containing the
+                final point positions, excluding the black and white points.
         """
 
         # Ensure the fixed point is not black or white
-        assert fixed_point != (0.0, 0.0, 0.0), "The fixed point cannot be black (0.0, 0.0, 0.0)."
-        assert fixed_point != (1.0, 1.0, 1.0), "The fixed point cannot be white (1.0, 1.0, 1.0)."
+        assert fixed_point != (0.0, 0.0, 0.0), (
+            "The fixed point cannot be black (0.0, 0.0, 0.0)."
+        )
+        assert fixed_point != (1.0, 1.0, 1.0), (
+            "The fixed point cannot be white (1.0, 1.0, 1.0)."
+        )
 
         # Add 2 extra points for black and white
         total_points = num_additional_points + 3
@@ -999,10 +1021,14 @@ class DataAnalysis(BaseConfig):
         if verbose:
             print("Initial points:\n", points)
 
-        # Move black and white points slightly toward the fixed point for contrast
+        # Move black and white slightly toward the fixed point for contrast
         fixed_point_np = np.array(fixed_point)
-        points[-2] = self.move_point_toward(points[-2], fixed_point_np, contrast_factor)  # Move black point
-        points[-1] = self.move_point_toward(points[-1], fixed_point_np, contrast_factor)  # Move white point
+        points[-2] = self.move_point_toward(
+            points[-2], fixed_point_np, contrast_factor
+        )  # Move black point
+        points[-1] = self.move_point_toward(
+            points[-1], fixed_point_np, contrast_factor
+        )  # Move white point
 
         for _ in range(iterations):
             forces = np.zeros_like(points)  # Store net forces on each point
@@ -1031,10 +1057,14 @@ class DataAnalysis(BaseConfig):
         # Remove black and white points from the final result
         points = points[:-2]
 
-        # Assert that none of the points in the final result are black or white
+        # Assert that no points in the final result are black or white
         for point in points:
-            assert not np.allclose(point, [0.0, 0.0, 0.0]), f"The point {tuple(point)} is too close to black (0, 0, 0)."
-            assert not np.allclose(point, [1.0, 1.0, 1.0]), f"The point {tuple(point)} is too close to white (1, 1, 1)."
+            assert not np.allclose(point, [0.0, 0.0, 0.0]), (
+                f"The point {tuple(point)} is too close to black (0, 0, 0)."
+            )
+            assert not np.allclose(point, [1.0, 1.0, 1.0]), (
+                f"The point {tuple(point)} is too close to white (1, 1, 1)."
+            )
 
         if verbose:
             print("Final points:\n", points)
@@ -2052,24 +2082,36 @@ class DataAnalysis(BaseConfig):
         plt.show()
 
     @staticmethod
-    def plot_adjusted_polygons(adjusted_polygons, iteration, hex_color_dict, save_to_file=False, output_dir="output", verbose=False):
+    def plot_adjusted_polygons(
+        adjusted_polygons, iteration, hex_color_dict, save_to_file=False,
+        output_dir="output", verbose=False
+    ):
         """
-        Plots adjusted polygons and either displays the plot or saves it to a PNG file.
+        Plots adjusted polygons and either displays the plot or saves it to a
+        PNG file.
 
         Parameters:
-            adjusted_polygons (list of dict): A list of dictionaries, each containing:
+            adjusted_polygons (list of dict):
+                A list of dictionaries, each containing:
                 - 'polygon' (Polygon): The Shapely Polygon object.
-                - 'country_name' (str): The name of the country associated with the polygon.
-            iteration (int): The iteration number to include in the title or filename.
-            hex_color_dict (dict): The color dictionary of the polygons.
-            save_to_file (bool): If True, saves the plot to a PNG file. If False, displays the plot.
-            output_dir (str): Directory where the PNG file will be saved (if save_to_file is True).
+                - 'country_name' (str):
+                    The name of the country associated with the polygon.
+            iteration (int):
+                The iteration number to include in the title or filename.
+            hex_color_dict (dict):
+                The color dictionary of the polygons.
+            save_to_file (bool):
+                If True, saves the plot to a PNG file. If False, displays the
+                plot.
+            output_dir (str):
+                Directory where the PNG file will be saved (if save_to_file
+                is True).
 
         Returns:
             None
         """
-        
-        # Create a rectangular cartogram of middle eastern countries by scaled population
+
+        # Plot a rectangular cartogram
         fig, ax = plt.subplots(figsize=(9, 6))
         alpha = 1.0
 
@@ -2084,24 +2126,37 @@ class DataAnalysis(BaseConfig):
 
             # Only add the label if it hasn't been added yet
             if country_name not in added_labels:
-                ax.fill(xs, ys, alpha=alpha, fc=hex_color_dict[country_name], ec='none', label=country_name)
+                ax.fill(
+                    xs, ys, alpha=alpha, fc=hex_color_dict[country_name],
+                    ec='none', label=country_name
+                )
                 added_labels.add(country_name)
             else:
-                ax.fill(xs, ys, alpha=alpha, fc=hex_color_dict[country_name], ec='none')
+                ax.fill(
+                    xs, ys, alpha=alpha, fc=hex_color_dict[country_name],
+                    ec='none'
+                )
 
         # Get the handles and labels from the plot
         handles, labels = ax.get_legend_handles_labels()
 
         # Sort the labels and handles alphabetically
-        sorted_handles_labels = sorted(zip(labels, handles), key=lambda x: x[0])  # Sort by label (alphabetical order)
-        sorted_labels, sorted_handles = zip(*sorted_handles_labels)  # Unzip into two separate lists
+        sorted_handles_labels = sorted(
+            zip(labels, handles), key=lambda x: x[0]
+        )  # Sort by label (alphabetical order)
+        sorted_labels, sorted_handles = zip(
+            *sorted_handles_labels
+        )  # Unzip into two separate lists
 
         # Create the legend with sorted labels
         plt.legend(sorted_handles, sorted_labels, bbox_to_anchor=(1.0, 1.0))
 
         # Set plot properties
         ax.set_aspect('equal', 'datalim')
-        plt.title(f"Rectangular Cartogram of Middle Eastern Countries (Iteration {iteration:03})", fontsize=14)
+        plt.title(
+            f"Rectangular Cartogram (Iteration {iteration:03})",  # noqa E231
+            fontsize=14  # noqa E225
+        )
         plt.axis("off")
 
         # Save to file or display
@@ -2112,7 +2167,10 @@ class DataAnalysis(BaseConfig):
             os.makedirs(output_dir, exist_ok=True)
 
             # Save the plot as a PNG file
-            output_path = os.path.join(output_dir, f"cartogram_iteration_{iteration:03}.png")
+            output_path = os.path.join(
+                output_dir,
+                f"cartogram_iteration_{iteration:03}.png"  # noqa E231
+            )
             plt.savefig(output_path, bbox_inches="tight")
             if verbose:
                 print(f"Plot saved to {output_path}")
@@ -2124,20 +2182,74 @@ class DataAnalysis(BaseConfig):
         # Close the plot to free memory
         plt.close(fig)
 
-    def adjust_polygons(self, polygons, hex_color_dict, max_iterations=100, attraction_factor=1.0, repulsion_factor=0.5, verbose=False):
+    @staticmethod
+    def create_gap_polygon(edge1, edge2):
         """
-        Adjusts the positions of polygons to minimize overlap while being attracted to the centroid of the union of neighbors.
+        Create a gap polygon between two shared edges by connecting their
+        endpoints.
+
+        Parameters:
+            edge1 (LineString or MultiLineString):
+                The shared edge of the first polygon.
+            edge2 (LineString or MultiLineString):
+                The shared edge of the second polygon.
+
+        Returns:
+            Polygon: A polygon connecting the two shared edges.
+        """
+        coords1 = []
+        for line in (
+            edge1.geoms if edge1.geom_type == 'MultiLineString' else [edge1]
+        ):
+            coords1.extend(line.coords)
+
+        coords2 = []
+        for line in (
+            edge2.geoms if edge2.geom_type == 'MultiLineString' else [edge2]
+        ):
+            coords2.extend(line.coords)
+
+        # Connect the two edges by reversing the second set of coordinates
+        combined_coords = coords1 + coords2[::-1]
+
+        # And forming a closed ring
+        if (
+            combined_coords[0] != combined_coords[-1]
+        ):  # Ensure the ring is closed
+            combined_coords.append(combined_coords[0])
+
+        from shapely.geometry import Polygon
+        return Polygon(combined_coords)
+
+    def adjust_polygons(
+        self, polygons, hex_color_dict, max_iterations=100,
+        attraction_factor=1.0, repulsion_factor=0.5, verbose=False
+    ):
+        """
+        Adjusts the positions of polygons to minimize overlap while being
+        attracted to the centroid of the union of neighbors.
 
         Parameters:
             polygons (list of dict): A list of dictionaries, each containing:
-                - 'polygon' (Polygon): The Shapely Polygon object.
-                - 'original_centroid' (tuple): The original centroid of the polygon as (x, y).
-                - 'neighbors' (list): A list of neighboring country names.
-            hex_color_dict (dict): The hex color dictionary, the value that the polygons name as key are filled
-            max_iterations (int): Maximum number of iterations to adjust the polygons.
-            attraction_factor (float): Factor controlling the strength of attraction to the union centroid.
-            repulsion_factor (float): Factor controlling the strength of repulsion from overlapping polygons.
-            verbose (bool): If True, saves intermediate plots during each iteration.
+                - 'polygon' (Polygon):
+                    The Shapely Polygon object.
+                - 'original_centroid' (tuple):
+                    The original centroid of the polygon as (x, y).
+                - 'neighbors' (list):
+                    A list of neighboring country names.
+            hex_color_dict (dict):
+                The hex color dictionary, the value that the polygons name as
+                key are filled
+            max_iterations (int):
+                Maximum number of iterations to adjust the polygons.
+            attraction_factor (float):
+                Factor controlling the strength of attraction to the union
+                centroid.
+            repulsion_factor (float):
+                Factor controlling the strength of repulsion from overlapping
+                polygons.
+            verbose (bool):
+                If True, saves intermediate plots during each iteration.
 
         Returns:
             list of dict: The adjusted polygons with updated positions.
@@ -2145,48 +2257,59 @@ class DataAnalysis(BaseConfig):
         for iteration in range(max_iterations):
             moved = False
 
-            for i, poly_data in enumerate(polygons):
+            for poly_data in polygons:
                 polygon = poly_data['polygon']
-                neighbor_country_names = poly_data['neighbors']
                 current_centroid = polygon.centroid
-                current_area = polygons[i]['polygon'].area
 
-                # Calculate the unary union of all neighbors
-                neighbors = [
-                    other_poly_data['polygon']
-                    for other_poly_data in polygons
-                    if other_poly_data['country_name'] in neighbor_country_names
-                ]
-                if neighbors:
-                    from shapely.ops import unary_union
-                    neighbor_union = unary_union(neighbors)
-                    union_centroid = neighbor_union.centroid
+                # Calculate gap polygons
+                gap_polygons = []
+                for neighbor, shared_edge in poly_data['neighbors'].items():
 
-                    # Calculate attraction vector toward the union centroid
-                    attraction_vector = (
-                        (union_centroid.x - current_centroid.x) * attraction_factor,
-                        (union_centroid.y - current_centroid.y) * attraction_factor
+                    # Find the neighbor's data in the polygons list
+                    neighbor_data = next(
+                        p for p in polygons if p['country_name'] == neighbor
                     )
 
-                # No neighbors, no attraction
-                else:
-                    attraction_vector = (0, 0)
+                    neighbor_edge = neighbor_data['neighbors'][
+                        poly_data['country_name']
+                    ]
+                    gap_polygon = self.create_gap_polygon(
+                        shared_edge, neighbor_edge
+                    )
+                    gap_polygons.append(gap_polygon)
+
+                # Calculate attraction vector toward the gap polygon
+                attraction_vector = (0, 0)
+                for gap_polygon in gap_polygons:
+                    gap_centroid = gap_polygon.centroid
+                    attraction_vector = (
+                        attraction_vector[0] + (
+                            gap_centroid.x - current_centroid.x
+                        ) * attraction_factor,
+                        attraction_vector[1] + (
+                            gap_centroid.y - current_centroid.y
+                        ) * attraction_factor
+                    )
 
                 # Calculate repulsion vector from overlapping polygons
                 repulsion_vector = (0, 0)
-                for j, other_poly_data in enumerate(polygons):
-                    if i == j:
+                for other_poly_data in polygons:
+                    if poly_data == other_poly_data:
                         continue
                     other_polygon = other_poly_data['polygon']
                     if polygon.intersects(other_polygon):
                         overlap = polygon.intersection(other_polygon)
-                        if overlap.area > 0:
-                            
-                            # Calculate repulsion vector based on overlap centroid
+                        if not overlap.is_empty:
+
+                            # Calculate repulsion vector based on overlap
                             overlap_centroid = overlap.centroid
                             repulsion_vector = (
-                                repulsion_vector[0] + (current_centroid.x - overlap_centroid.x) * repulsion_factor,
-                                repulsion_vector[1] + (current_centroid.y - overlap_centroid.y) * repulsion_factor
+                                repulsion_vector[0] + (
+                                    current_centroid.x - overlap_centroid.x
+                                ) * repulsion_factor,
+                                repulsion_vector[1] + (
+                                    current_centroid.y - overlap_centroid.y
+                                ) * repulsion_factor
                             )
 
                 # Combine attraction and repulsion vectors
@@ -2198,18 +2321,26 @@ class DataAnalysis(BaseConfig):
                 # Move the polygon
                 if total_vector != (0, 0):
                     from shapely.affinity import translate
-                    polygons[i]['polygon'] = translate(polygon, xoff=total_vector[0], yoff=total_vector[1])
-                    assert round(current_area, 3) == round(polygons[i]['polygon'].area, 3), (
-                        f"After translate in iteration {iteration}, the area of Polygon {i}"
-                        f" ({polygons[i]['country_name']}), has changed: {current_area}"
-                        f" != {polygons[i]['polygon'].area}"
+                    poly_data['polygon'] = translate(
+                        polygon, xoff=total_vector[0], yoff=total_vector[1]
                     )
+                    for neighbor, shared_edge in (
+                        poly_data['neighbors'].items()
+                    ):
+                        poly_data['neighbors'][neighbor] = translate(
+                            shared_edge, xoff=total_vector[0],
+                            yoff=total_vector[1]
+                        )
                     moved = True
 
             # Save intermediate plots if verbose mode is enabled
             if moved:
                 if verbose:
-                    self.plot_adjusted_polygons(polygons, iteration, hex_color_dict, save_to_file=True, output_dir="../saves/movies", verbose=False)
+                    self.plot_adjusted_polygons(
+                        polygons, iteration, hex_color_dict,
+                        save_to_file=True, output_dir="../saves/movies",
+                        verbose=False
+                    )
 
             # Stop if no polygons were moved
             else:
