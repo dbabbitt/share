@@ -2278,8 +2278,14 @@ class DataAnalysis(BaseConfig):
                     )
                     gap_polygons.append(gap_polygon)
 
+                # Calculate attraction vector towards the original centroid
+                original_centroid = poly_data['original_centroid']
+                attraction_vector = (
+                    (original_centroid[0] - current_centroid.x) * attraction_factor,
+                    (original_centroid[1] - current_centroid.y) * attraction_factor
+                )
+
                 # Calculate attraction vector toward the gap polygon
-                attraction_vector = (0, 0)
                 for gap_polygon in gap_polygons:
                     gap_centroid = gap_polygon.centroid
                     attraction_vector = (
