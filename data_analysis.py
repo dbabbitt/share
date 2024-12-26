@@ -2123,4 +2123,97 @@ class DataAnalysis(BaseConfig):
         # Close the plot to free memory
         plt.close(fig)
 
+    def adjust_polygons(self, polygons, max_iterations=100, attraction_factor=1.0, repulsion_factor=0.5, verbose=False):
+        """
+        Adjusts the positions of polygons to minimize overlap while being attracted to the centroid of the union of neighbors.
+
+        Parameters:
+            polygons (list of dict): A list of dictionaries, each containing:
+                - 'polygon' (Polygon): The Shapely Polygon object.
+                - 'original_centroid' (tuple): The original centroid of the polygon as (x, y).
+                - 'neighbors' (list): A list of neighboring country names.
+            max_iterations (int): Maximum number of iterations to adjust the polygons.
+            attraction_factor (float): Factor controlling the strength of attraction to the union centroid.
+            repulsion_factor (float): Factor controlling the strength of repulsion from overlapping polygons.
+            verbose (bool): If True, saves intermediate plots during each iteration.
+
+        Returns:
+            list of dict: The adjusted polygons with updated positions.
+        """
+        for iteration in range(max_iterations):
+            moved = False
+
+            for i, poly_data in enumerate(polygons):
+                polygon = poly_data['polygon']
+                neighbor_country_names = poly_data['neighbors']
+                current_centroid = polygon.centroid
+                current_area = polygons[i]['polygon'].area
+
+                # Calculate the unary union of all neighbors
+                neighbors = [
+                    other_poly_data['polygon']
+                    for other_poly_data in polygons
+                    if other_poly_data['country_name'] in neighbor_country_names
+                ]
+                if neighbors:
+                    from shapely.ops import unary_union
+                    neighbor_union = unary_union(neighbors)
+                    union_centroid = neighbor_union.centroid
+
+                    # Calculate attraction vector toward the union centroid
+                    attraction_vector = (
+                        (union_centroid.x - current_centroid.x) * attraction_factor,
+                        (union_centroid.y - current_centroid.y) * attraction_factor
+                    )
+
+                # No neighbors, no attraction
+                else:
+                    attraction_vector = (0, 0)
+
+                # Calculate repulsion vector from overlapping polygons
+                repulsion_vector = (0, 0)
+                for j, other_poly_data in enumerate(polygons):
+                    if i == j:
+                        continue
+                    other_polygon = other_poly_data['polygon']
+                    if polygon.intersects(other_polygon):
+                        overlap = polygon.intersection(other_polygon)
+                        if overlap.area > 0:
+                            
+                            # Calculate repulsion vector based on overlap centroid
+                            overlap_centroid = overlap.centroid
+                            repulsion_vector = (
+                                repulsion_vector[0] + (current_centroid.x - overlap_centroid.x) * repulsion_factor,
+                                repulsion_vector[1] + (current_centroid.y - overlap_centroid.y) * repulsion_factor
+                            )
+
+                # Combine attraction and repulsion vectors
+                total_vector = (
+                    attraction_vector[0] + repulsion_vector[0],
+                    attraction_vector[1] + repulsion_vector[1]
+                )
+
+                # Move the polygon
+                if total_vector != (0, 0):
+                    from shapely.affinity import translate
+                    polygons[i]['polygon'] = translate(polygon, xoff=total_vector[0], yoff=total_vector[1])
+                    assert round(current_area, 3) == round(polygons[i]['polygon'].area, 3), (
+                        f"After translate in iteration {iteration}, the area of Polygon {i}"
+                        f" ({polygons[i]['country_name']}), has changed: {current_area}"
+                        f" != {polygons[i]['polygon'].area}"
+                    )
+                    moved = True
+
+            # Save intermediate plots if verbose mode is enabled
+            if moved:
+                if verbose:
+                    self.plot_adjusted_polygons(polygons, iteration, save_to_file=True, output_dir="../saves/movies", verbose=False)
+
+            # Stop if no polygons were moved
+            else:
+                break
+
+        # Return the adjusted polygons
+        return polygons
+
 # print('\\b(' + '|'.join(dir()) + ')\\b')
