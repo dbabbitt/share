@@ -2052,7 +2052,7 @@ class DataAnalysis(BaseConfig):
         plt.show()
 
     @staticmethod
-    def plot_adjusted_polygons(adjusted_polygons, iteration, save_to_file=False, output_dir="output", verbose=False):
+    def plot_adjusted_polygons(adjusted_polygons, iteration, hex_color_dict, save_to_file=False, output_dir="output", verbose=False):
         """
         Plots adjusted polygons and either displays the plot or saves it to a PNG file.
 
@@ -2061,6 +2061,7 @@ class DataAnalysis(BaseConfig):
                 - 'polygon' (Polygon): The Shapely Polygon object.
                 - 'country_name' (str): The name of the country associated with the polygon.
             iteration (int): The iteration number to include in the title or filename.
+            hex_color_dict (dict): The color dictionary of the polygons.
             save_to_file (bool): If True, saves the plot to a PNG file. If False, displays the plot.
             output_dir (str): Directory where the PNG file will be saved (if save_to_file is True).
 
@@ -2123,7 +2124,7 @@ class DataAnalysis(BaseConfig):
         # Close the plot to free memory
         plt.close(fig)
 
-    def adjust_polygons(self, polygons, max_iterations=100, attraction_factor=1.0, repulsion_factor=0.5, verbose=False):
+    def adjust_polygons(self, polygons, hex_color_dict, max_iterations=100, attraction_factor=1.0, repulsion_factor=0.5, verbose=False):
         """
         Adjusts the positions of polygons to minimize overlap while being attracted to the centroid of the union of neighbors.
 
@@ -2132,6 +2133,7 @@ class DataAnalysis(BaseConfig):
                 - 'polygon' (Polygon): The Shapely Polygon object.
                 - 'original_centroid' (tuple): The original centroid of the polygon as (x, y).
                 - 'neighbors' (list): A list of neighboring country names.
+            hex_color_dict (dict): The hex color dictionary, the value that the polygons name as key are filled
             max_iterations (int): Maximum number of iterations to adjust the polygons.
             attraction_factor (float): Factor controlling the strength of attraction to the union centroid.
             repulsion_factor (float): Factor controlling the strength of repulsion from overlapping polygons.
@@ -2207,7 +2209,7 @@ class DataAnalysis(BaseConfig):
             # Save intermediate plots if verbose mode is enabled
             if moved:
                 if verbose:
-                    self.plot_adjusted_polygons(polygons, iteration, save_to_file=True, output_dir="../saves/movies", verbose=False)
+                    self.plot_adjusted_polygons(polygons, iteration, hex_color_dict, save_to_file=True, output_dir="../saves/movies", verbose=False)
 
             # Stop if no polygons were moved
             else:
