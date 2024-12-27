@@ -2088,16 +2088,16 @@ class DataAnalysis(BaseConfig):
             label='Fixed Point', alpha=1.0
         )
 
-        # Add a curved arrow annotation pointing to the exploded wedge
+        # Add a curved arrow annotation pointing to the fixed point
         ax2.annotate(
-            ' ',  # Text label
+            '(fixed point)',  # Text label
             arrowprops=dict(
                 arrowstyle="->",
                 connectionstyle="arc3,rad=-0.2",
                 facecolor='black',
             ),  # Arrow style
-            xy=(-0.15, 1),  # Arrow tip location (near the exploded wedge)
-            xytext=(-1, 1.0),  # Text location
+            xy=(1, 1),  # Arrow tip location (near the fixed point)
+            xytext=(2, 1),  # Text location
         )
 
         # Add annotations for the corners (for a unit cube)
