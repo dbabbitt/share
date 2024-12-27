@@ -2096,7 +2096,7 @@ class DataAnalysis(BaseConfig):
         control_point = [0.5, 1.5, 0.5]  # Control point for the curve
 
         # Add a curved arrow annotation pointing to the fixed point
-        self.plot_curved_arrow(ax2, start_point, end_point, control_point, color='black')
+        # self.plot_curved_arrow(ax2, start_point, end_point, control_point, color='black')
 
         # Add annotations for the corners (for a unit cube)
         black_corner = [0, 0, 0]  # Black corner (origin)
@@ -2119,9 +2119,6 @@ class DataAnalysis(BaseConfig):
                 facecolor='black', edgecolor='none', alpha=0.3
             ),  # Add contrast background
         )
-
-        # Plot a fixed point for reference
-        ax2.scatter(end_point[0], end_point[1], end_point[2], color='red', s=100, label='Fixed Point')
 
         # Add a legend
         ax2.legend()
