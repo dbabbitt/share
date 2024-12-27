@@ -1902,7 +1902,7 @@ class DataAnalysis(BaseConfig):
             direction[0], direction[1], direction[2],  # Direction vector
             color=color,
             linewidth=1,
-            arrow_length_ratio=0.1,
+            arrow_length_ratio=0.2,
             # headaxislength=1,
             # headlength=1,
         )
@@ -2091,8 +2091,8 @@ class DataAnalysis(BaseConfig):
         )
 
         # Define the arrow's starting point (just to the left of the legend label)
-        start_point = [1, 1, 2]  # Starting point of the arrow
-        end_point = [0, 0, 0]  # Ending point of the arrow (fixed point)
+        start_point = [0.6, 1, 3]  # Starting point of the arrow
+        end_point = fixed_point  # Ending point of the arrow (fixed point)
         control_point = [0.5, 1.5, 0.5]  # Control point for the curve
 
         # Add a curved arrow annotation pointing to the fixed point
