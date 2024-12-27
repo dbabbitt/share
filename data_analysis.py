@@ -2071,7 +2071,7 @@ class DataAnalysis(BaseConfig):
                 facecolor='black', edgecolor='none', alpha=0.3
             ),  # Add contrast background
         )
-        
+
         # Add a legend
         legend = ax2.legend()
 
@@ -2087,7 +2087,7 @@ class DataAnalysis(BaseConfig):
         arrow_start = [legend_data_coords[0] - 0.1, legend_data_coords[1], fixed_point[2]]
 
         # Define the arrow's direction (pointing to the fixed point)
-        arrow_direction = fixed_point - arrow_start
+        arrow_direction = tuple(fixed_point) - tuple(arrow_start)
 
         # Plot the arrow using quiver()
         ax2.quiver(
@@ -2152,14 +2152,14 @@ class DataAnalysis(BaseConfig):
         # Plot the adjusted polygons
         for poly_data in adjusted_polygons:
             polygon = poly_data['polygon']  # Adjusted polygon
-            
+
             # Set lims
             bounds_tuple = polygon.bounds
             minx = min(minx, bounds_tuple[0])
             miny = min(miny, bounds_tuple[1])
             maxx = max(maxx, bounds_tuple[2])
             maxy = max(maxy, bounds_tuple[3])
-            
+
             country_name = poly_data['country_name']  # Country name
             xs, ys = polygon.exterior.xy
 
