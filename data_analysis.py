@@ -2049,6 +2049,21 @@ class DataAnalysis(BaseConfig):
             color=fixed_point, s=100, edgecolors='black', linewidth=3,
             label='Fixed Point', alpha=1.0
         )
+
+        # Add a curved arrow annotation pointing to the fixed point with a black edge
+        ax1.annotate(
+            '(fixed point)',  # Text label
+            arrowprops=dict(
+                arrowstyle="->",
+                connectionstyle="arc3,rad=-0.2",
+                facecolor='black',
+            ),  # Arrow style
+            fontsize=12,
+            ha='center',
+            xy=fixed_point,  # Arrow tip location (near the fixed point)
+            xytext=(1, 1.0),  # Text location
+        )
+        
         ax2.set_title("Spread Points in Unit Cube with Colored Edges")
         ax2.set_xlabel('X')
         ax2.set_ylabel('Y')
