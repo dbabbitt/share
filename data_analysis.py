@@ -2050,26 +2050,6 @@ class DataAnalysis(BaseConfig):
             label='Fixed Point', alpha=1.0
         )
 
-        # Add a curved arrow annotation pointing to the fixed point with a black edge
-        ax2.annotate(
-            '(fixed point)',  # Text label
-            arrowprops=dict(
-                arrowstyle="->",
-                connectionstyle="arc3,rad=-0.2",
-                facecolor='black',
-            ),  # Arrow style
-            fontsize=12,
-            ha='center',
-            xy=fixed_point,  # Arrow tip location (near the fixed point)
-            xytext=(1, 1.0),  # Text location
-        )
-        
-        ax2.set_title("Spread Points in Unit Cube with Colored Edges")
-        ax2.set_xlabel('X')
-        ax2.set_ylabel('Y')
-        ax2.set_zlabel('Z')
-        ax2.legend()
-
         # Add annotations for the corners (for a unit cube)
         black_corner = [0, 0, 0]  # Black corner (origin)
         white_corner = [1, 1, 1]  # White corner (opposite corner)
@@ -2091,6 +2071,38 @@ class DataAnalysis(BaseConfig):
                 facecolor='black', edgecolor='none', alpha=0.3
             ),  # Add contrast background
         )
+        
+        # Add a legend
+        legend = ax2.legend()
+
+        # Get the bounding box of the legend
+        legend_bbox = legend.get_window_extent(renderer=fig.canvas.get_renderer())
+        legend_x = legend_bbox.x0  # Left edge of the legend
+        legend_y = legend_bbox.y0  # Bottom edge of the legend
+
+        # Convert legend coordinates to data coordinates
+        legend_data_coords = ax2.transData.inverted().transform((legend_x, legend_y))
+
+        # Define the arrow's starting point (just to the left of the legend label)
+        arrow_start = [legend_data_coords[0] - 0.1, legend_data_coords[1], fixed_point[2]]
+
+        # Define the arrow's direction (pointing to the fixed point)
+        arrow_direction = fixed_point - arrow_start
+
+        # Plot the arrow using quiver()
+        ax2.quiver(
+            arrow_start[0], arrow_start[1], arrow_start[2],  # Arrow starting point (x, y, z)
+            arrow_direction[0], arrow_direction[1], arrow_direction[2],  # Direction vector (dx, dy, dz)
+            color='black',  # Arrow color
+            linewidth=2,  # Arrow line width
+            arrow_length_ratio=0.2  # Ratio of arrowhead size to arrow length
+        )
+
+        # Set labels and title
+        ax2.set_title("Spread Points in Unit Cube with Colored Edges")
+        ax2.set_xlabel('X')
+        ax2.set_ylabel('Y')
+        ax2.set_zlabel('Z')
 
         # Display the combined plot
         plt.tight_layout()
