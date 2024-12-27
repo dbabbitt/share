@@ -2015,7 +2015,7 @@ class DataAnalysis(BaseConfig):
             xkcd_labels.append(nearest_name_dict[nearest_neighbor])
 
         # Create a figure with two subplots
-        fig = plt.figure(figsize=(14, 6))
+        fig = plt.figure(figsize=(14, 6), constrained_layout=True)
 
         # Left panel: Pie chart
         ax1 = fig.add_subplot(121)  # 1 row, 2 columns, 1st subplot
@@ -2129,7 +2129,7 @@ class DataAnalysis(BaseConfig):
         ax2.set_zlabel('Z')
 
         # Display the combined plot
-        plt.tight_layout()
+        # plt.tight_layout()
         plt.show()
 
     @staticmethod
