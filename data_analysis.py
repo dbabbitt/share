@@ -1881,7 +1881,7 @@ class DataAnalysis(BaseConfig):
             arrow_length: The length of the arrowhead.
         """
         # Generate points for the curved line using a quadratic Bézier curve
-        t = np.linspace(0, 1, 100)
+        t = np.linspace(0, 1, 100).reshape(-1, 1)  # Reshape t to (100, 1)
         curve = (1 - t)**2 * np.array(start) + 2 * (1 - t) * t * np.array(control) + t**2 * np.array(end)
     
         # Plot the curved line
