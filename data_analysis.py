@@ -2086,7 +2086,7 @@ class DataAnalysis(BaseConfig):
         # Highlight the fixed point with a black edge
         ax2.scatter(
             fixed_point[0], fixed_point[1], fixed_point[2],
-            color=fixed_point, s=120, edgecolors='black', linewidth=3,
+            color=fixed_point, s=100, edgecolors='black', linewidth=3,
             label='Fixed Point', alpha=1.0
         )
 
@@ -2132,7 +2132,7 @@ class DataAnalysis(BaseConfig):
         ax2.set_title("Spread Points in Unit Cube with Colored Edges")
         ax2.set_xlabel('Red', color='red')
         ax2.set_ylabel('Green', color='green')
-        ax2.set_zlabel('Blue', color='blue', labelpad=-8)  # Decrease labelpad to prevent cutoff
+        ax2.set_zlabel('Blue', color='blue', labelpad=-6)  # Decrease labelpad to prevent cutoff
 
         # Display the combined plot
         plt.tight_layout()
