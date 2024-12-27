@@ -2015,7 +2015,7 @@ class DataAnalysis(BaseConfig):
             xkcd_labels.append(nearest_name_dict[nearest_neighbor])
 
         # Create a figure with two subplots
-        fig = plt.figure(figsize=(14, 6), constrained_layout=True)
+        fig = plt.figure(figsize=(14, 6), constrained_layout=False)
 
         # Left panel: Pie chart
         ax1 = fig.add_subplot(121)  # 1 row, 2 columns, 1st subplot
@@ -2124,9 +2124,9 @@ class DataAnalysis(BaseConfig):
 
         # Set labels and title
         ax2.set_title("Spread Points in Unit Cube with Colored Edges")
-        ax2.set_xlabel('X')
-        ax2.set_ylabel('Y')
-        ax2.set_zlabel('Z', labelpad=20)  # Increase labelpad to prevent cutoff
+        ax2.set_xlabel('Red')
+        ax2.set_ylabel('Green')
+        ax2.set_zlabel('Blue', labelpad=-20)  # Decrease labelpad to prevent cutoff
 
         # Display the combined plot
         # plt.tight_layout()
