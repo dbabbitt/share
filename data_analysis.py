@@ -1061,9 +1061,11 @@ class DataAnalysis(BaseConfig):
         for point in points:
             assert not np.allclose(point, [0.0, 0.0, 0.0]), (
                 f"The point {tuple(point)} is too close to black (0, 0, 0)."
+                " Try running spread_points_in_cube again."
             )
             assert not np.allclose(point, [1.0, 1.0, 1.0]), (
                 f"The point {tuple(point)} is too close to white (1, 1, 1)."
+                " Try running spread_points_in_cube again."
             )
 
         if verbose:
