@@ -1903,8 +1903,8 @@ class DataAnalysis(BaseConfig):
             color=color,
             linewidth=1,
             arrow_length_ratio=0.1,
-            headaxislength=1,
-            headlength=1
+            # headaxislength=1,
+            headlength=1,
         )
 
     def inspect_spread_points(self, spread_points):
