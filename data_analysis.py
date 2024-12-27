@@ -2126,11 +2126,11 @@ class DataAnalysis(BaseConfig):
         ax2.set_title("Spread Points in Unit Cube with Colored Edges")
         ax2.set_xlabel('X')
         ax2.set_ylabel('Y')
-        ax2.set_zlabel('Z')
+        ax2.set_zlabel('Z', labelpad=20)  # Increase labelpad to prevent cutoff
 
         # Display the combined plot
         # plt.tight_layout()
-        plt.subplots_adjust(left=0.01, right=0.99, top=0.9, bottom=0.1)
+        # plt.subplots_adjust(left=0.01, right=0.99, top=0.9, bottom=0.1)
         plt.show()
 
     @staticmethod
