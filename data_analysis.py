@@ -2130,7 +2130,7 @@ class DataAnalysis(BaseConfig):
 
         # Display the combined plot
         # plt.tight_layout()
-        plt.subplots_adjust(right=0.1)
+        plt.subplots_adjust(left=0.01, right=0.1)
         plt.show()
 
     @staticmethod
