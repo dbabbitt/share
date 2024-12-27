@@ -2091,7 +2091,7 @@ class DataAnalysis(BaseConfig):
         )
 
         # Define the arrow's starting point (just to the left of the legend label)
-        start_point = [0.6, 1, 3]  # Starting point of the arrow
+        start_point = [0.5, 1, 3]  # Starting point of the arrow
         end_point = fixed_point  # Ending point of the arrow (fixed point)
         control_point = [0.5, 1.5, 0.5]  # Control point for the curve
 
@@ -2120,11 +2120,11 @@ class DataAnalysis(BaseConfig):
             ),  # Add contrast background
         )
 
-        # Add a legend
-        ax2.legend()
-
         # Plot a fixed point for reference
         ax2.scatter(end_point[0], end_point[1], end_point[2], color='red', s=100, label='Fixed Point')
+
+        # Add a legend
+        ax2.legend()
 
         # Set plot limits
         ax2.set_xlim(0, 1)
