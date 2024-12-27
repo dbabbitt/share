@@ -1867,6 +1867,42 @@ class DataAnalysis(BaseConfig):
             return max(geometry.geoms, key=lambda g: g.area)
         return geometry
 
+    @staticmethod
+    def plot_curved_arrow(ax, start, end, control, color='black', arrow_length=0.2):
+        """
+        Plot a curved arrow in 3D space.
+    
+        Parameters:
+            ax: The 3D axis to plot on.
+            start: The starting point of the curve (x, y, z).
+            end: The ending point of the curve (x, y, z).
+            control: The control point for the curve (x, y, z) (defines the curve's shape).
+            color: The color of the arrow.
+            arrow_length: The length of the arrowhead.
+        """
+        # Generate points for the curved line using a quadratic Bézier curve
+        t = np.linspace(0, 1, 100)
+        curve = (1 - t)**2 * np.array(start) + 2 * (1 - t) * t * np.array(control) + t**2 * np.array(end)
+    
+        # Plot the curved line
+        ax.plot(curve[:, 0], curve[:, 1], curve[:, 2], color=color, linewidth=2)
+    
+        # Calculate the direction vector for the arrowhead
+        direction = np.array(end) - np.array(control)
+        direction = direction / np.linalg.norm(direction)  # Normalize the direction vector
+    
+        # Define the arrowhead's starting point
+        arrow_start = np.array(end) - arrow_length * direction
+    
+        # Plot the arrowhead using quiver
+        ax.quiver(
+            arrow_start[0], arrow_start[1], arrow_start[2],  # Arrow starting point
+            direction[0], direction[1], direction[2],  # Direction vector
+            color=color,
+            linewidth=1,
+            arrow_length_ratio=0.5
+        )
+
     def inspect_spread_points(self, spread_points):
         """
         Visualize the spread points in color space using a pie chart and a 3D
@@ -2073,29 +2109,23 @@ class DataAnalysis(BaseConfig):
         )
 
         # Add a legend
-        legend = ax2.legend()
+        ax2.legend()
 
         # Define the arrow's starting point (just to the left of the legend label)
-        arrow_start = (0.5, 1.5, 2.5)  # Starting point of the arrow
-        arrow_end = fixed_point  # Ending point of the arrow (fixed point)
+        start_point = [0, 0, 0]  # Starting point of the arrow
+        end_point = [1, 1, 1]  # Ending point of the arrow (fixed point)
+        control_point = [0.5, 1.5, 0.5]  # Control point for the curve
 
-        # Add a ConnectionPatch for the curved arrow
-        from matplotlib.patches import ConnectionPatch
-        con = ConnectionPatch(
-            xyA=(arrow_start[0], arrow_start[1]),  # Starting point (2D projection)
-            xyB=(arrow_end[0], arrow_end[1]),  # Ending point (2D projection)
-            coordsA="data",  # Coordinates for the starting point
-            coordsB="data",  # Coordinates for the ending point
-            axesA=ax2,  # Axes for the starting point
-            axesB=ax2,  # Axes for the ending point
-            arrowstyle="->",  # Arrow style
-            connectionstyle="arc3,rad=-0.2",  # Curved connection
-            color="black",  # Arrow color
-            linewidth=1  # Line width
-        )
+        # Plot the curved arrow
+        self.plot_curved_arrow(ax2, start_point, end_point, control_point, color='black')
 
-        # Add the ConnectionPatch to the plot
-        ax2.add_artist(con)
+        # Plot a fixed point for reference
+        ax2.scatter(end_point[0], end_point[1], end_point[2], color='red', s=100, label='Fixed Point')
+
+        # Set plot limits and labels
+        ax2.set_xlim(-1, 2)
+        ax2.set_ylim(-1, 2)
+        ax2.set_zlim(-1, 2)
 
         # Set labels and title
         ax2.set_title("Spread Points in Unit Cube with Colored Edges")
@@ -2104,7 +2134,6 @@ class DataAnalysis(BaseConfig):
         ax2.set_zlabel('Z')
 
         # Display the combined plot
-        plt.tight_layout()
         plt.show()
 
     @staticmethod
