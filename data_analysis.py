@@ -2080,6 +2080,7 @@ class DataAnalysis(BaseConfig):
         arrow_end = fixed_point  # Ending point of the arrow (fixed point)
 
         # Add a ConnectionPatch for the curved arrow
+        from matplotlib.patches import ConnectionPatch
         con = ConnectionPatch(
             xyA=(arrow_start[0], arrow_start[1]),  # Starting point (2D projection)
             xyB=(arrow_end[0], arrow_end[1]),  # Ending point (2D projection)
