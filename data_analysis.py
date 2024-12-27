@@ -2079,7 +2079,7 @@ class DataAnalysis(BaseConfig):
         )  # 1 row, 2 columns, 2nd subplot
         ax2.scatter(
             spread_points[1:, 0], spread_points[1:, 1], spread_points[1:, 2],
-            c=colors, s=100, edgecolors=fixed_point, linewidth=3,
+            c=colors[1:], s=100, edgecolors=fixed_point, linewidth=3,
             label='Spread Points', alpha=1.0
         )
 
