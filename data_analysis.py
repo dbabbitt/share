@@ -2112,8 +2112,8 @@ class DataAnalysis(BaseConfig):
         ax2.legend()
 
         # Define the arrow's starting point (just to the left of the legend label)
-        start_point = [0, 0, 0]  # Starting point of the arrow
-        end_point = [1, 1, 1]  # Ending point of the arrow (fixed point)
+        start_point = [1, 1, 1]  # Starting point of the arrow
+        end_point = fixed_point  # Ending point of the arrow (fixed point)
         control_point = [0.5, 1.5, 0.5]  # Control point for the curve
 
         # Plot the curved arrow
@@ -2121,11 +2121,6 @@ class DataAnalysis(BaseConfig):
 
         # Plot a fixed point for reference
         ax2.scatter(end_point[0], end_point[1], end_point[2], color='red', s=100, label='Fixed Point')
-
-        # Set plot limits and labels
-        ax2.set_xlim(-1, 2)
-        ax2.set_ylim(-1, 2)
-        ax2.set_zlim(-1, 2)
 
         # Set labels and title
         ax2.set_title("Spread Points in Unit Cube with Colored Edges")
