@@ -1902,7 +1902,9 @@ class DataAnalysis(BaseConfig):
             direction[0], direction[1], direction[2],  # Direction vector
             color=color,
             linewidth=1,
-            arrow_length_ratio=0.5
+            arrow_length_ratio=0.1,
+            headaxislength=1,
+            headlength=1
         )
 
     def inspect_spread_points(self, spread_points):
@@ -2088,17 +2090,13 @@ class DataAnalysis(BaseConfig):
             label='Fixed Point', alpha=1.0
         )
 
+        # Define the arrow's starting point (just to the left of the legend label)
+        start_point = [1, 1, 2]  # Starting point of the arrow
+        end_point = [0, 0, 0]  # Ending point of the arrow (fixed point)
+        control_point = [0.5, 1.5, 0.5]  # Control point for the curve
+
         # Add a curved arrow annotation pointing to the fixed point
-        ax2.annotate(
-            '(fixed point)',  # Text label
-            arrowprops=dict(
-                arrowstyle="->",
-                connectionstyle="arc3,rad=-0.2",
-                facecolor='black',
-            ),  # Arrow style
-            xy=(1, 1),  # Arrow tip location (near the fixed point)
-            xytext=(2, 1),  # Text location
-        )
+        self.plot_curved_arrow(ax2, start_point, end_point, control_point, color='black')
 
         # Add annotations for the corners (for a unit cube)
         black_corner = [0, 0, 0]  # Black corner (origin)
@@ -2124,14 +2122,6 @@ class DataAnalysis(BaseConfig):
 
         # Add a legend
         ax2.legend()
-
-        # Define the arrow's starting point (just to the left of the legend label)
-        start_point = [1, 1, 2]  # Starting point of the arrow
-        end_point = fixed_point  # Ending point of the arrow (fixed point)
-        control_point = [0.5, 1.5, 0.5]  # Control point for the curve
-
-        # Plot the curved arrow
-        # self.plot_curved_arrow(ax2, start_point, end_point, control_point, color='black')
 
         # Plot a fixed point for reference
         ax2.scatter(end_point[0], end_point[1], end_point[2], color='red', s=100, label='Fixed Point')
