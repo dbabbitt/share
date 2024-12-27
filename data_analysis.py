@@ -2126,6 +2126,11 @@ class DataAnalysis(BaseConfig):
         # Plot a fixed point for reference
         ax2.scatter(end_point[0], end_point[1], end_point[2], color='red', s=100, label='Fixed Point')
 
+        # Set plot limits
+        ax2.set_xlim(0, 1)
+        ax2.set_ylim(0, 1)
+        ax2.set_zlim(0, 1)
+        
         # Set labels and title
         ax2.set_title("Spread Points in Unit Cube with Colored Edges")
         ax2.set_xlabel('Red', color='red')
