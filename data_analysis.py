@@ -2088,7 +2088,7 @@ class DataAnalysis(BaseConfig):
 
         # Add title and adjust aspect ratio
         ax1.set_title("Colors of Spread Points")
-        ax1.set_aspect("equal")
+        # ax1.set_aspect("equal")
 
         # Right panel: 3D scatter plot
         ax2 = fig.add_subplot(
