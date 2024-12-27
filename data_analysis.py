@@ -2087,7 +2087,7 @@ class DataAnalysis(BaseConfig):
         arrow_start = [legend_data_coords[0] - 0.1, legend_data_coords[1], fixed_point[2]]
 
         # Define the arrow's direction (pointing to the fixed point)
-        arrow_direction = tuple(fixed_point) - tuple(arrow_start)
+        arrow_direction = np.array(fixed_point) - np.array(arrow_start)
 
         # Plot the arrow using quiver()
         ax2.quiver(
