@@ -2093,9 +2093,12 @@ class DataAnalysis(BaseConfig):
         ax2.quiver(
             arrow_start[0], arrow_start[1], arrow_start[2],  # Arrow starting point (x, y, z)
             arrow_direction[0], arrow_direction[1], arrow_direction[2],  # Direction vector (dx, dy, dz)
-            color='black',  # Arrow color
-            linewidth=2,  # Arrow line width
-            arrow_length_ratio=0.2  # Ratio of arrowhead size to arrow length
+            arrowprops=dict(
+                arrowstyle="->",
+                connectionstyle="arc3,rad=-0.2",
+                facecolor='black',
+            ),  # Arrow style
+            arrow_length_ratio=0.2,  # Ratio of arrowhead size to arrow length
         )
 
         # Set labels and title
