@@ -2051,7 +2051,7 @@ class DataAnalysis(BaseConfig):
         )
 
         # Add a curved arrow annotation pointing to the fixed point with a black edge
-        ax1.annotate(
+        ax2.annotate(
             '(fixed point)',  # Text label
             arrowprops=dict(
                 arrowstyle="->",
