@@ -2075,31 +2075,26 @@ class DataAnalysis(BaseConfig):
         # Add a legend
         legend = ax2.legend()
 
-        # Get the bounding box of the legend
-        legend_bbox = legend.get_window_extent(renderer=fig.canvas.get_renderer())
-        legend_x = legend_bbox.x0  # Left edge of the legend
-        legend_y = legend_bbox.y0  # Bottom edge of the legend
-
-        # Convert legend coordinates to data coordinates
-        legend_data_coords = ax2.transData.inverted().transform((legend_x, legend_y))
-
         # Define the arrow's starting point (just to the left of the legend label)
-        arrow_start = [legend_data_coords[0] - 0.1, legend_data_coords[1], fixed_point[2]]
+        arrow_start = (0.5, 1.5, 2.5)  # Starting point of the arrow
+        arrow_end = fixed_point  # Ending point of the arrow (fixed point)
 
-        # Define the arrow's direction (pointing to the fixed point)
-        arrow_direction = np.array(fixed_point) - np.array(arrow_start)
-
-        # Plot the arrow using quiver()
-        ax2.quiver(
-            arrow_start[0], arrow_start[1], arrow_start[2],  # Arrow starting point (x, y, z)
-            arrow_direction[0], arrow_direction[1], arrow_direction[2],  # Direction vector (dx, dy, dz)
-            arrowprops=dict(
-                arrowstyle="->",
-                connectionstyle="arc3,rad=-0.2",
-                facecolor='black',
-            ),  # Arrow style
-            arrow_length_ratio=0.2,  # Ratio of arrowhead size to arrow length
+        # Add a ConnectionPatch for the curved arrow
+        con = ConnectionPatch(
+            xyA=(arrow_start[0], arrow_start[1]),  # Starting point (2D projection)
+            xyB=(arrow_end[0], arrow_end[1]),  # Ending point (2D projection)
+            coordsA="data",  # Coordinates for the starting point
+            coordsB="data",  # Coordinates for the ending point
+            axesA=ax2,  # Axes for the starting point
+            axesB=ax2,  # Axes for the ending point
+            arrowstyle="->",  # Arrow style
+            connectionstyle="arc3,rad=-0.2",  # Curved connection
+            color="black",  # Arrow color
+            linewidth=1  # Line width
         )
+
+        # Add the ConnectionPatch to the plot
+        ax2.add_artist(con)
 
         # Set labels and title
         ax2.set_title("Spread Points in Unit Cube with Colored Edges")
