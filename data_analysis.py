@@ -2088,9 +2088,20 @@ class DataAnalysis(BaseConfig):
             label='Fixed Point', alpha=1.0
         )
 
+        # Add a curved arrow annotation pointing to the exploded wedge
+        ax2.annotate(
+            '',  # Text label
+            arrowprops=dict(
+                arrowstyle="->",
+                connectionstyle="arc3,rad=-0.2",
+                facecolor='black',
+            ),  # Arrow style
+            xy=(-0.15, 1),  # Arrow tip location (near the exploded wedge)
+            xytext=(-1, 1.0),  # Text location
+        )
+
         # Add annotations for the corners (for a unit cube)
         black_corner = [0, 0, 0]  # Black corner (origin)
-        white_corner = [1, 1, 1]  # White corner (opposite corner)
         ax2.text(
             black_corner[0], black_corner[1], black_corner[2],
             'Black Corner',  # Text label
@@ -2100,6 +2111,7 @@ class DataAnalysis(BaseConfig):
                 facecolor='white', edgecolor='none', alpha=0.3
             ),  # Add contrast background
         )
+        white_corner = [1, 1, 1]  # White corner (opposite corner)
         ax2.text(
             white_corner[0], white_corner[1], white_corner[2],
             'White Corner',  # Text label
