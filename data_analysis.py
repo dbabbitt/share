@@ -1870,35 +1870,52 @@ class DataAnalysis(BaseConfig):
         return geometry
 
     @staticmethod
-    def plot_curved_arrow(ax, start, end, control, color='black', arrow_length=0.2):
+    def plot_curved_arrow(
+        ax, start, end, control, color='black', arrow_length=0.2
+    ):
         """
         Plot a curved arrow in 3D space.
-    
+
         Parameters:
-            ax: The 3D axis to plot on.
-            start: The starting point of the curve (x, y, z).
-            end: The ending point of the curve (x, y, z).
-            control: The control point for the curve (x, y, z) (defines the curve's shape).
-            color: The color of the arrow.
-            arrow_length: The length of the arrowhead.
+            ax:
+                The 3D axis to plot on.
+            start:
+                The starting point of the curve (x, y, z).
+            end:
+                The ending point of the curve (x, y, z).
+            control:
+                The control point for the curve (x, y, z) (defines the
+                curve's shape).
+            color:
+                The color of the arrow.
+            arrow_length:
+                The length of the arrowhead.
         """
         # Generate points for the curved line using a quadratic Bézier curve
         t = np.linspace(0, 1, 100).reshape(-1, 1)  # Reshape t to (100, 1)
-        curve = (1 - t)**2 * np.array(start) + 2 * (1 - t) * t * np.array(control) + t**2 * np.array(end)
-    
+        curve = (1 - t)**2 * np.array(start) + 2 * (1 - t) * t * np.array(
+            control
+        ) + t**2 * np.array(end)
+
         # Plot the curved line
-        ax.plot(curve[:, 0], curve[:, 1], curve[:, 2], color=color, linewidth=2)
-    
+        ax.plot(
+            curve[:, 0], curve[:, 1], curve[:, 2], color=color, linewidth=2
+        )
+
         # Calculate the direction vector for the arrowhead
         direction = np.array(end) - np.array(control)
-        direction = direction / np.linalg.norm(direction)  # Normalize the direction vector
-    
+        direction = direction / np.linalg.norm(
+            direction
+        )  # Normalize the direction vector
+
         # Define the arrowhead's starting point
         arrow_start = np.array(end) - arrow_length * direction
-    
+
         # Plot the arrowhead using quiver
         ax.quiver(
-            arrow_start[0], arrow_start[1], arrow_start[2],  # Arrow starting point
+            # Arrow starting point
+            arrow_start[0], arrow_start[1], arrow_start[2],
+
             direction[0], direction[1], direction[2],  # Direction vector
             color=color,
             linewidth=1,
@@ -2086,17 +2103,12 @@ class DataAnalysis(BaseConfig):
         # Highlight the fixed point with a black edge
         ax2.scatter(
             fixed_point[0], fixed_point[1], fixed_point[2],
-            color=fixed_point, s=100, edgecolors='black', linewidth=3,
+            color=fixed_point, s=100, edgecolors=self.get_text_color(
+                bar_color_rgb=fixed_point,
+                readable_colors=['black', '#080808', 'white']
+            ), linewidth=3,
             label='Fixed Point', alpha=1.0
         )
-
-        # Define the arrow's starting point (just to the left of the legend label)
-        start_point = [0.5, 1, 3]  # Starting point of the arrow
-        end_point = fixed_point  # Ending point of the arrow (fixed point)
-        control_point = [0.5, 1.5, 0.5]  # Control point for the curve
-
-        # Add a curved arrow annotation pointing to the fixed point
-        # self.plot_curved_arrow(ax2, start_point, end_point, control_point, color='black')
 
         # Add annotations for the corners (for a unit cube)
         black_corner = [0, 0, 0]  # Black corner (origin)
@@ -2127,12 +2139,14 @@ class DataAnalysis(BaseConfig):
         ax2.set_xlim(0, 1)
         ax2.set_ylim(0, 1)
         ax2.set_zlim(0, 1)
-        
+
         # Set labels and title
         ax2.set_title("Spread Points in Unit Cube with Colored Edges")
         ax2.set_xlabel('Red', color='red')
         ax2.set_ylabel('Green', color='green')
-        ax2.set_zlabel('Blue', color='blue', labelpad=-6)  # Decrease labelpad to prevent cutoff
+        ax2.set_zlabel(
+            'Blue', color='blue', labelpad=-6
+        )  # Decrease labelpad to prevent cutoff
 
         # Display the combined plot
         plt.tight_layout()
