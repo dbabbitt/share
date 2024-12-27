@@ -2090,7 +2090,7 @@ class DataAnalysis(BaseConfig):
 
         # Add a curved arrow annotation pointing to the exploded wedge
         ax2.annotate(
-            '',  # Text label
+            ' ',  # Text label
             arrowprops=dict(
                 arrowstyle="->",
                 connectionstyle="arc3,rad=-0.2",
