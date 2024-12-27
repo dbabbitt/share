@@ -2112,12 +2112,12 @@ class DataAnalysis(BaseConfig):
         ax2.legend()
 
         # Define the arrow's starting point (just to the left of the legend label)
-        start_point = [1, 1, 1]  # Starting point of the arrow
+        start_point = [1, 1, 2]  # Starting point of the arrow
         end_point = fixed_point  # Ending point of the arrow (fixed point)
         control_point = [0.5, 1.5, 0.5]  # Control point for the curve
 
         # Plot the curved arrow
-        self.plot_curved_arrow(ax2, start_point, end_point, control_point, color='black')
+        # self.plot_curved_arrow(ax2, start_point, end_point, control_point, color='black')
 
         # Plot a fixed point for reference
         ax2.scatter(end_point[0], end_point[1], end_point[2], color='red', s=100, label='Fixed Point')
@@ -2129,6 +2129,7 @@ class DataAnalysis(BaseConfig):
         ax2.set_zlabel('Z')
 
         # Display the combined plot
+        plt.tight_layout()
         plt.show()
 
     @staticmethod
