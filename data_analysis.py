@@ -2115,12 +2115,24 @@ class DataAnalysis(BaseConfig):
         fig, ax = plt.subplots(figsize=(9, 6))
         alpha = 1.0
 
-        # Set to keep track of added labels
+        # Set to keep track of added labels and lims
         added_labels = set()
+        minx = 9999
+        miny = 9999
+        maxx = -9999
+        maxy = -9999
 
         # Plot the adjusted polygons
         for poly_data in adjusted_polygons:
             polygon = poly_data['polygon']  # Adjusted polygon
+            
+            # Set lims
+            bounds_tuple = polygon.bounds
+            minx = min(minx, bounds_tuple[0])
+            miny = min(miny, bounds_tuple[1])
+            maxx = max(maxx, bounds_tuple[2])
+            maxy = max(maxy, bounds_tuple[3])
+            
             country_name = poly_data['country_name']  # Country name
             xs, ys = polygon.exterior.xy
 
@@ -2152,7 +2164,9 @@ class DataAnalysis(BaseConfig):
         plt.legend(sorted_handles, sorted_labels, bbox_to_anchor=(1.0, 1.0))
 
         # Set plot properties
-        ax.set_aspect('equal', 'datalim')
+        ax.set_xlim(minx, maxx+1)
+        ax.set_ylim(miny-1, maxy)
+        ax.set_aspect('equal')
         plt.title(
             f"Rectangular Cartogram (Iteration {iteration:03})",  # noqa E231
             fontsize=14  # noqa E225
