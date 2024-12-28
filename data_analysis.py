@@ -2210,7 +2210,7 @@ class DataAnalysis(BaseConfig):
         zorder += 1
 
         # Add a legend
-        ax2.legend(bbox_to_anchor=(1.0, 1.1))
+        ax2.legend(bbox_to_anchor=(1.1, 1.0))
 
         # Set plot limits
         ax2.set_xlim(-0.1, 1.1)
