@@ -2112,7 +2112,7 @@ class DataAnalysis(BaseConfig):
 
         # Highlight the fixed point with a label
         ax2.text(
-            fixed_point[0], fixed_point[1], fixed_point[2]-1,
+            fixed_point[0], fixed_point[1], fixed_point[2]-0.1,
             (
                 f'({fixed_point[0]:01}, {fixed_point[1]:01},'  # noqa E231
                 f' {fixed_point[2]:01})'  # noqa E231
@@ -2150,9 +2150,9 @@ class DataAnalysis(BaseConfig):
         ax2.legend()
 
         # Set plot limits
-        ax2.set_xlim(0, 1)
-        ax2.set_ylim(0, 1)
-        ax2.set_zlim(0, 1)
+        ax2.set_xlim(-0.1, 1.1)
+        ax2.set_ylim(-0.1, 1.1)
+        ax2.set_zlim(-0.1, 1.1)
 
         # Set labels and title
         ax2.set_title("Spread Points in Unit Cube with Colored Edges")
