@@ -2161,7 +2161,8 @@ class DataAnalysis(BaseConfig):
             ax2.scatter(
                 point[0], point[1], point[2],
                 color=point, s=100, edgecolors=fixed_point, linewidth=3,
-                label=xkcd_label_dict[point], alpha=1.0, zorder=zorder,
+                label=xkcd_label_dict[tuple(point)], alpha=1.0,
+                zorder=zorder,
             )
             zorder += 1
             ax2.text(
