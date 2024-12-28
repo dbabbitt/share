@@ -977,9 +977,11 @@ class DataAnalysis(BaseConfig):
         of a set of points to a fixed point.
 
         Parameters:
-            points (np.ndarray): A 2D array of shape (n, 3) representing the coordinates
-                                 of n points in 3D space.
-            fixed_point (tuple): A tuple of length 3 representing the fixed point in 3D space.
+            points (np.ndarray):
+                A 2D array of shape (n, 3) representing the coordinates of n
+                points in 3D space.
+            fixed_point (tuple):
+                A tuple of length 3 representing the fixed point in 3D space.
 
         Returns:
             float: The square root of the sum of the squares of the distances.
