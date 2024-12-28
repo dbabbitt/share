@@ -974,7 +974,9 @@ class DataAnalysis(BaseConfig):
     def calculate_spread(points, fixed_point, verbose=False):
         """
         Calculate the square root of the sum of the squares of the distances
-        of a set of points to a fixed point.
+        of a set of points to a fixed point. This is from a mathematical
+        concept related to the sum of squared distances or similar measures of
+        dispersion.
 
         Parameters:
             points (np.ndarray):
@@ -2116,9 +2118,17 @@ class DataAnalysis(BaseConfig):
         ax2 = fig.add_subplot(
             122, projection="3d"
         )  # 1 row, 2 columns, 2nd subplot
+
+        # Sort the non-fixed points by proximity to magenta
+        magenta = (1, 0, 1)
+        points = sorted(
+            spread_points[1:],
+            key=lambda x: self.get_euclidean_distance(magenta, x)
+        )
+
         ax2.scatter(
-            spread_points[1:, 0], spread_points[1:, 1], spread_points[1:, 2],
-            c=colors[1:], s=100, edgecolors=fixed_point, linewidth=3,
+            points[:, 0], points[:, 1], points[:, 2],
+            c=points, s=100, edgecolors=fixed_point, linewidth=3,
             label='Spread Points', alpha=1.0
         )
 
