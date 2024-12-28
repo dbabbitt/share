@@ -2118,6 +2118,31 @@ class DataAnalysis(BaseConfig):
         ax2 = fig.add_subplot(
             122, projection="3d"
         )  # 1 row, 2 columns, 2nd subplot
+        zorder = 1
+
+        # Add annotations for the corners (for a unit cube)
+        black_corner = [0, 0, 0]  # Black corner (origin)
+        ax2.text(
+            black_corner[0], black_corner[1], black_corner[2],
+            'Black Corner', zorder=zorder,  # Text label
+            color='black',  # Text color
+            ha='left', va='center',  # Text alignment
+            bbox=dict(
+                facecolor='white', edgecolor='none', alpha=0.75
+            ),  # Add contrast background
+        )
+        zorder += 1
+        white_corner = [1, 1, 1]  # White corner (opposite corner)
+        ax2.text(
+            white_corner[0], white_corner[1], white_corner[2],
+            'White Corner', zorder=zorder,  # Text label
+            color='white',  # Text color
+            ha='right', va='center',  # Text alignment
+            bbox=dict(
+                facecolor='black', edgecolor='none', alpha=0.25
+            ),  # Add contrast background
+        )
+        zorder += 1
 
         # Scatter plot: sort non-fixed points by proximity to magenta
         magenta = (1, 0, 1)
@@ -2125,15 +2150,16 @@ class DataAnalysis(BaseConfig):
             spread_points[1:],
             key=lambda x: self.get_euclidean_distance(magenta, x)
         )[::-1]
-        ax2.scatter(
-            nf_points[:, 0], nf_points[:, 1], nf_points[:, 2],
-            c=nf_points, s=100, edgecolors=fixed_point, linewidth=3,
-            label='Spread Points', alpha=1.0
-        )
 
         # Highlight the non-fixed points with a label
         rounding_digit = 2
         for point in nf_points:
+            ax2.scatter(
+                point[0], point[1], point[2],
+                color=point, s=100, edgecolors=fixed_point, linewidth=3,
+                label='Spread Points', alpha=1.0, zorder=zorder,
+            )
+            zorder += 1
             ax2.text(
                 point[0], point[1], point[2]-0.1,
                 (
@@ -2146,8 +2172,9 @@ class DataAnalysis(BaseConfig):
                 bbox=dict(
                     facecolor='white', edgecolor='none', alpha=0.75
                 ),  # Add contrast background
-                fontsize=6,
+                fontsize=6, zorder=zorder,
             )
+            zorder += 1
 
         # Highlight the fixed point with a non-white, readable-color edge
         ax2.scatter(
@@ -2156,8 +2183,9 @@ class DataAnalysis(BaseConfig):
                 bar_color_rgb=fixed_point, verbose=verbose,
                 readable_colors=['black', '#808080']
             ), linewidth=3,
-            label='Fixed Point', alpha=1.0
+            label='Fixed Point', alpha=1.0, zorder=zorder,
         )
+        zorder += 1
 
         # Highlight the fixed point with a label
         ax2.text(
@@ -2172,30 +2200,9 @@ class DataAnalysis(BaseConfig):
             bbox=dict(
                 facecolor='white', edgecolor='none', alpha=0.75
             ),  # Add contrast background
-            fontsize=6,
+            fontsize=6, zorder=zorder,
         )
-
-        # Add annotations for the corners (for a unit cube)
-        black_corner = [0, 0, 0]  # Black corner (origin)
-        ax2.text(
-            black_corner[0], black_corner[1], black_corner[2],
-            'Black Corner',  # Text label
-            color='black',  # Text color
-            ha='left', va='center',  # Text alignment
-            bbox=dict(
-                facecolor='white', edgecolor='none', alpha=0.75
-            ),  # Add contrast background
-        )
-        white_corner = [1, 1, 1]  # White corner (opposite corner)
-        ax2.text(
-            white_corner[0], white_corner[1], white_corner[2],
-            'White Corner',  # Text label
-            color='white',  # Text color
-            ha='right', va='center',  # Text alignment
-            bbox=dict(
-                facecolor='black', edgecolor='none', alpha=0.25
-            ),  # Add contrast background
-        )
+        zorder += 1
 
         # Add a legend
         ax2.legend()
