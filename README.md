@@ -151,14 +151,40 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    ```python
    import random
    
-   # Generate a random fixed point in the color space (RGB values between 0 and 1)
+   # Generate a random fixed point in the RGB color space
    fixed_point = (random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1))
    
-   # Generate a random number of additional points between 1 and 15
+   # Generate a random number of additional points to spread, between 1 and 15
    random_point_count = random.randint(1, 15)
    
-   # Spread the points evenly through a unit cube so that they have maximum space between
-   spread_points = nu.spread_points_in_cube(random_point_count, fixed_point, verbose=False)
+   # Initialize a list to store trial results
+   trials = []
+   
+   # Perform up to 5 trials to find the best spread of points
+   while len(trials) < 5:
+       
+       # Attempt to spread the points evenly within a unit cube
+       try:
+           spread_points = nu.spread_points_in_cube(random_point_count, fixed_point, verbose=False)
+           
+           # Calculate the spread value, which measures how well the points are distributed
+           spread = nu.calculate_spread(spread_points, fixed_point, verbose=False)
+           
+           # Store the result as a tuple of (spread_points, spread_value)
+           trial_tuple = (spread_points, spread)
+           trials.append(trial_tuple)
+       
+       # If an error occurs (e.g., a spread point too close to black or white), skip this trial
+       except Exception:
+           continue
+   
+   # Select the trial with points as evenly distributed as possible
+   trial_tuple = max(trials, key=lambda x: x[1])
+   
+   # Extract the spread points from the best trial
+   spread_points = trial_tuple[0]
+   
+   # Visualize the spread points
    nu.inspect_spread_points(spread_points)
    ```
    ```python
