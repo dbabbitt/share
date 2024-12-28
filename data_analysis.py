@@ -2147,7 +2147,7 @@ class DataAnalysis(BaseConfig):
                 bbox=dict(
                     facecolor='white', edgecolor='none', alpha=0.75
                 ),  # Add contrast background
-                fontsize=8,
+                fontsize=6,
             )
 
         # Add annotations for the corners (for a unit cube)
