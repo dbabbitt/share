@@ -2121,19 +2121,19 @@ class DataAnalysis(BaseConfig):
 
         # Scatter plot: sort non-fixed points by proximity to magenta
         magenta = (1, 0, 1)
-        non_fixed_points = sorted(
+        nf_points = sorted(
             spread_points[1:],
             key=lambda x: self.get_euclidean_distance(magenta, x)
-        )
+        )[::-1]
         ax2.scatter(
-            non_fixed_points[:, 0], non_fixed_points[:, 1], non_fixed_points[:, 2],
-            c=non_fixed_points, s=100, edgecolors=fixed_point, linewidth=3,
+            nf_points[:, 0], nf_points[:, 1], nf_points[:, 2],
+            c=nf_points, s=100, edgecolors=fixed_point, linewidth=3,
             label='Spread Points', alpha=1.0
         )
 
         # Highlight the non-fixed points with a label
         rounding_digit = 2
-        for point in non_fixed_points:
+        for point in nf_points:
             ax2.text(
                 point[0], point[1], point[2]-0.1,
                 (
