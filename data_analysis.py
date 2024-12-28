@@ -2111,11 +2111,13 @@ class DataAnalysis(BaseConfig):
         )
 
         # Highlight the fixed point with a label
+        rounding_digit = 1
         ax2.text(
             fixed_point[0], fixed_point[1], fixed_point[2]-0.1,
             (
-                f'({fixed_point[0]:01}, {fixed_point[1]:01},'  # noqa E231
-                f' {fixed_point[2]:01})'  # noqa E231
+                f'({round(fixed_point[0], rounding_digit)},'  # noqa E231
+                f' {round(fixed_point[0], rounding_digit)},'  # noqa E231
+                f' {round(fixed_point[0], rounding_digit)})'
             ),  # Text label
             color='black',  # Text color
             ha='center', va='center',  # Text alignment
