@@ -167,8 +167,8 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
        try:
            spread_points = nu.spread_points_in_cube(random_point_count, fixed_point, verbose=False)
            
-           # Calculate the spread value, which measures how well the points are distributed
-           spread_value = nu.calculate_spread(spread_points, fixed_point, verbose=False)
+           # Calculate the spread value, which measures how far the points are from the fixed point
+           spread_value = nu.calculate_spread(spread_points[1:], fixed_point, verbose=False)
            
            # Store the result as a tuple of (spread_points, spread_value)
            trial_tuple = (spread_points, spread_value)
@@ -178,7 +178,7 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
        except Exception:
            continue
    
-   # Select the trial with points as evenly distributed as possible
+   # Select the trial with points as far away from the fixed point as possible
    trial_tuple = max(trials, key=lambda x: x[1])
    
    # Extract the spread points from the best trial
