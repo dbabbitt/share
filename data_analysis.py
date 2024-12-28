@@ -2116,8 +2116,8 @@ class DataAnalysis(BaseConfig):
             fixed_point[0], fixed_point[1], fixed_point[2]-0.1,
             (
                 f'({round(fixed_point[0], rounding_digit)},'  # noqa E231
-                f' {round(fixed_point[0], rounding_digit)},'  # noqa E231
-                f' {round(fixed_point[0], rounding_digit)})'
+                f' {round(fixed_point[1], rounding_digit)},'  # noqa E231
+                f' {round(fixed_point[2], rounding_digit)})'
             ),  # Text label
             color='black',  # Text color
             ha='center', va='center',  # Text alignment
