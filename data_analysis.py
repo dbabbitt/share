@@ -2116,9 +2116,9 @@ class DataAnalysis(BaseConfig):
             black_corner[0], black_corner[1], black_corner[2],
             'Black Corner',  # Text label
             color='black',  # Text color
-            horizontalalignment='left',  # Text alignment
+            ha='left', va='center',  # Text alignment
             bbox=dict(
-                facecolor='white', edgecolor='none', alpha=0.9
+                facecolor='white', edgecolor='none', alpha=0.75
             ),  # Add contrast background
         )
         white_corner = [1, 1, 1]  # White corner (opposite corner)
@@ -2126,9 +2126,9 @@ class DataAnalysis(BaseConfig):
             white_corner[0], white_corner[1], white_corner[2],
             'White Corner',  # Text label
             color='white',  # Text color
-            horizontalalignment='right',  # Text alignment
+            ha='right', va='center',  # Text alignment
             bbox=dict(
-                facecolor='black', edgecolor='none', alpha=0.3
+                facecolor='black', edgecolor='none', alpha=0.25
             ),  # Add contrast background
         )
 
