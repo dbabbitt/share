@@ -2088,7 +2088,7 @@ class DataAnalysis(BaseConfig):
 
         # Add title and adjust aspect ratio
         ax1.set_title("Colors of Spread Points")
-        # ax1.set_aspect("equal")
+        ax1.set_aspect("equal")
 
         # Right panel: 3D scatter plot
         ax2 = fig.add_subplot(
@@ -2118,7 +2118,7 @@ class DataAnalysis(BaseConfig):
             color='black',  # Text color
             horizontalalignment='left',  # Text alignment
             bbox=dict(
-                facecolor='white', edgecolor='none', alpha=0.3
+                facecolor='white', edgecolor='none', alpha=0.9
             ),  # Add contrast background
         )
         white_corner = [1, 1, 1]  # White corner (opposite corner)
