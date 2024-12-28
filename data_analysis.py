@@ -2140,22 +2140,23 @@ class DataAnalysis(BaseConfig):
             label='Fixed Point', alpha=1.0
         )
 
-        # Highlight the fixed point with a label
+        # Highlight the spread points with a label
         rounding_digit = 2
-        ax2.text(
-            fixed_point[0], fixed_point[1], fixed_point[2]-0.1,
-            (
-                f'({round(fixed_point[0], rounding_digit)},'  # noqa E231
-                f' {round(fixed_point[1], rounding_digit)},'  # noqa E231
-                f' {round(fixed_point[2], rounding_digit)})'
-            ),  # Text label
-            color='black',  # Text color
-            ha='center', va='center',  # Text alignment
-            bbox=dict(
-                facecolor='white', edgecolor='none', alpha=0.75
-            ),  # Add contrast background
-            fontsize=8,
-        )
+        for point in spread_points:
+            ax2.text(
+                point[0], point[1], point[2]-0.1,
+                (
+                    f'({round(point[0], rounding_digit)},'  # noqa E231
+                    f' {round(point[1], rounding_digit)},'  # noqa E231
+                    f' {round(point[2], rounding_digit)})'
+                ),  # Text label
+                color='black',  # Text color
+                ha='center', va='center',  # Text alignment
+                bbox=dict(
+                    facecolor='white', edgecolor='none', alpha=0.75
+                ),  # Add contrast background
+                fontsize=8,
+            )
 
         # Add annotations for the corners (for a unit cube)
         black_corner = [0, 0, 0]  # Black corner (origin)

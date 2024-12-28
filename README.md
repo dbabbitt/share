@@ -168,10 +168,10 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
            spread_points = nu.spread_points_in_cube(random_point_count, fixed_point, verbose=False)
            
            # Calculate the spread value, which measures how well the points are distributed
-           spread = nu.calculate_spread(spread_points, fixed_point, verbose=False)
+           spread_value = nu.calculate_spread(spread_points, fixed_point, verbose=False)
            
            # Store the result as a tuple of (spread_points, spread_value)
-           trial_tuple = (spread_points, spread)
+           trial_tuple = (spread_points, spread_value)
            trials.append(trial_tuple)
        
        # If an error occurs (e.g., a spread point too close to black or white), skip this trial
