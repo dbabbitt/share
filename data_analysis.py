@@ -1003,57 +1003,79 @@ class DataAnalysis(BaseConfig):
         return np.sqrt(sum_of_squares)
 
     def spread_points_in_cube(
-        self, num_additional_points, fixed_point, cube_size=1.0,
+        self, num_additional_points, fixed_point,
+        x_range, y_range, z_range,
         iterations=1000, step_size=0.01, contrast_factor=0.1, verbose=False
     ):
         """
-        Spread points in a unit cube to maximize the minimum distance between
-        them using a repulsion-based method.
-        Moves black (0, 0, 0) and white (1, 1, 1) points slightly toward the
-        fixed point for better contrast.
+        Spread points in a color space to maximize the minimum distance 
+        between them using a repulsion-based method.
 
         Parameters:
             num_additional_points (int):
-                Total number of points needed in addtion to the fixed point
-                (excluding black and white adjustment points).
+                Total number of points needed in addition to the fixed point.
             fixed_point (tuple):
-                The fixed point in the cube (e.g., (0.529, 0.808, 0.922)).
-            cube_size (float):
-                Size of the cube (default is 1.0 for a unit cube).
+                The fixed point in the color space (e.g., (0.529, 0.808, 
+                0.922) for a point in the normalized RGB space or (50, 0, 0) 
+                for a point in the CIELAB space).
+            x_range (tuple of two integers):
+                Range of the x dimension of the cube (default is (0, 1) for a 
+                unit cube or (0, 100) for the CIELAB color space).
+            y_range (tuple of two integers):
+                Range of the y dimension of the cube (default is (0, 1) for a 
+                unit cube or (-128, 127) for the CIELAB color space).
+            z_range (tuple of two integers):
+                Range of the z dimension of the cube (default is (0, 1) for a 
+                unit cube or (-128, 127) for the CIELAB color space)).
             iterations (int):
                 Number of optimization iterations.
             step_size (float):
                 Step size for moving points based on forces.
             contrast_factor (float):
-                Factor determining how far black and white points are moved
-                toward the fixed point.
+                Factor determining how far extreme points are moved toward the
+                fixed point.
+            verbose (bool):
+                If True, print debug information.
 
         Returns:
             np.ndarray:
                 Array of shape (num_additional_points+1, 3) containing the
-                final point positions, excluding the black and white points.
+                final point positions.
         """
+        ranges = [x_range, y_range, z_range]
 
-        # Add 2 extra points for black and white
+        # Add 2 extra points for extreme colors (dark and light)
         total_points = num_additional_points + 3
 
-        # Initialize points randomly within the cube
-        points = np.random.rand(total_points, 3) * cube_size
-        points[0] = np.array(fixed_point)  # Set the fixed point
-        points[-2] = np.array([0.0, 0.0, 0.0])  # Add black point
-        points[-1] = np.array([1.0, 1.0, 1.0])  # Add white point
+        # Initialize points randomly within the ranges
+        points = np.zeros((total_points, len(ranges)))
+        for i, (low, high) in enumerate(ranges):
+            points[:, i] = np.random.uniform(low, high, total_points)
+
+        # Set the fixed point
+        points[0] = np.array(fixed_point)
+
+        # Add extreme colors for aesthetics when visualizing plot points
+        points[-2] = np.array(
+            [dim[0] for dim in ranges]
+        )  # Very dark color (lower bounds)
+        points[-1] = np.array(
+            [dim[1] for dim in ranges]
+        )  # Very light color (upper bounds)
+
         if verbose:
             print("Initial points:\n", points)
 
-        # Move black and white slightly toward the fixed point for contrast
+        # Move extreme points slightly toward the fixed point for contrast
         fixed_point_np = np.array(fixed_point)
         points[-2] = self.move_point_toward(
             points[-2], fixed_point_np, contrast_factor
-        )  # Move black point
+        )  # Move dark point
         points[-1] = self.move_point_toward(
             points[-1], fixed_point_np, contrast_factor
-        )  # Move white point
+        )  # Move light point
 
+        # Optimization loop
         for _ in range(iterations):
             forces = np.zeros_like(points)  # Store net forces on each point
 
@@ -1075,20 +1097,33 @@ class DataAnalysis(BaseConfig):
             # Update positions of all points except the fixed one
             points[1:] += step_size * forces[1:]
 
-            # Ensure points remain within the cube
-            points = np.clip(points, 0, cube_size)
+            # Ensure points remain within the ranges
+            for i, (low, high) in enumerate(ranges):
+                points[:, i] = np.clip(points[:, i], low, high)
 
-        # Remove black and white points from the final result
+        # Remove extreme points from the final result
         points = points[:-2]
 
-        # Assert that no points in the final result are black or white
+        # Assert that no points in the final result are extreme
         for point in points[1:]:
-            assert not np.allclose(point, [0.0, 0.0, 0.0]), (
-                f"The point {tuple(point)} is too close to black (0, 0, 0)."
+            dimensions = [
+                dim[0] for dim in ranges if dim[0] == 0
+            ]
+            assert not all([
+                np.isclose(coord, dim)
+                for coord, dim in zip(point, dimensions)
+            ]), (
+                f"Point {tuple(point)} is too close to black."
                 " Try running spread_points_in_cube again."
             )
-            assert not np.allclose(point, [1.0, 1.0, 1.0]), (
-                f"The point {tuple(point)} is too close to white (1, 1, 1)."
+            dimensions = [
+                dim[1] for dim in ranges if dim[0] == 0
+            ]
+            assert not all([
+                np.isclose(coord, dim)
+                for coord, dim in zip(point, dimensions)
+            ]), (
+                f"Point {tuple(point)} is too close to white."
                 " Try running spread_points_in_cube again."
             )
 

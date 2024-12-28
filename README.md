@@ -165,7 +165,9 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
        
        # Attempt to spread the points evenly within a unit cube
        try:
-           spread_points = nu.spread_points_in_cube(random_point_count, fixed_point, verbose=False)
+           spread_points = nu.spread_points_in_cube(
+               random_point_count, fixed_point, (0, 1), (0, 1), (0, 1), verbose=False
+           )
            
            # Calculate the spread value, which measures how far the points are from the fixed point
            spread_value = nu.calculate_spread(spread_points[1:], fixed_point, verbose=False)
