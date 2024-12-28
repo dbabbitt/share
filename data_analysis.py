@@ -1032,14 +1032,6 @@ class DataAnalysis(BaseConfig):
                 final point positions, excluding the black and white points.
         """
 
-        # Ensure the fixed point is not black or white
-        # assert fixed_point != (0.0, 0.0, 0.0), (
-            # "The fixed point cannot be black (0.0, 0.0, 0.0)."
-        # )
-        # assert fixed_point != (1.0, 1.0, 1.0), (
-            # "The fixed point cannot be white (1.0, 1.0, 1.0)."
-        # )
-
         # Add 2 extra points for black and white
         total_points = num_additional_points + 3
 
