@@ -2112,7 +2112,7 @@ class DataAnalysis(BaseConfig):
 
         # Highlight the fixed point with a label
         ax2.text(
-            fixed_point[0], fixed_point[1], fixed_point[2],
+            fixed_point[0], fixed_point[1], fixed_point[2]-10,
             (
                 f'({fixed_point[0]:01}, {fixed_point[1]:01},'  # noqa E231
                 f' {fixed_point[2]:01})'  # noqa E231
