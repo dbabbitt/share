@@ -1814,7 +1814,7 @@ class DataAnalysis(BaseConfig):
 
     def get_text_color(
         self, text_color='white', bar_color_rgb=(0, 0, 0),
-        readable_colors=['white', '#404040', 'black'], verbose=False
+        readable_colors=['white', '#808080', 'black'], verbose=False
     ):
         """
         Determine an appropriate text color based on the background color
@@ -2108,7 +2108,7 @@ class DataAnalysis(BaseConfig):
                 label_x, label_y, label,
                 color=self.get_text_color(
                     bar_color_rgb=bar_color_rgb,
-                    readable_colors=['black', '#080808', 'white']
+                    readable_colors=['black', '#808080', 'white']
                 ),
                 fontweight='bold',
                 ha='center',
@@ -2130,12 +2130,12 @@ class DataAnalysis(BaseConfig):
             label='Spread Points', alpha=1.0
         )
 
-        # Highlight the fixed point with a readable-color edge
+        # Highlight the fixed point with a non-white, readable-color edge
         ax2.scatter(
             fixed_point[0], fixed_point[1], fixed_point[2],
             color=fixed_point, s=100, edgecolors=self.get_text_color(
                 bar_color_rgb=fixed_point,
-                readable_colors=['black', '#080808', 'white']
+                readable_colors=['black', '#808080']
             ), linewidth=3,
             label='Fixed Point', alpha=1.0
         )
