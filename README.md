@@ -151,7 +151,7 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    ```python
    import random
    
-   # Generate a random fixed point in the RGB color space
+   # Generate a random fixed point in the normalized RGB color space
    fixed_point = (random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1))
    
    # Generate a random number of additional points to spread, between 1 and 15
@@ -185,7 +185,7 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    spread_points = trial_tuple[0]
    
    # Visualize the spread points
-   nu.inspect_spread_points(spread_points)
+   nu.inspect_spread_points(spread_points, verbose=False)
    ```
    ```python
    # Count the occurrences of a sequence of elements (n-grams) in a list
