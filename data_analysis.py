@@ -2155,12 +2155,14 @@ class DataAnalysis(BaseConfig):
             key=lambda x: self.get_euclidean_distance(magenta, x)
         )[::-1]
 
-        # Scatter plot: highlight the non-fixed points with a label
         rounding_digit = 2
+        line_width = 2
+        
+        # Scatter plot: highlight the non-fixed points with a label
         for point in nf_points:
             ax2.scatter(
                 point[0], point[1], point[2],
-                color=point, s=100, edgecolors=fixed_point, linewidth=3,
+                color=point, s=100, edgecolors=fixed_point, linewidth=line_width,
                 label=xkcd_label_dict[tuple(point)], alpha=1.0,
                 zorder=zorder,
             )
@@ -2192,7 +2194,7 @@ class DataAnalysis(BaseConfig):
             color=fixed_point, s=100, edgecolors=self.get_text_color(
                 bar_color_rgb=bar_color_rgb, verbose=verbose,
                 readable_colors=['black', '#808080']
-            ), linewidth=3,
+            ), linewidth=line_width,
             label=f'Fixed Point\n({xkcd_label_dict[fixed_point]})',
             alpha=1.0, zorder=zorder,
         )
@@ -2233,7 +2235,6 @@ class DataAnalysis(BaseConfig):
 
         # Display the combined plot
         plt.tight_layout()
-        # plt.subplots_adjust(left=0.01, right=0.99)
         plt.show()
 
     @staticmethod
