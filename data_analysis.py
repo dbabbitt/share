@@ -970,6 +970,34 @@ class DataAnalysis(BaseConfig):
         """
         return target_point + factor * (destination_point - target_point)
 
+    @staticmethod
+    def calculate_spread(points, fixed_point, verbose=False):
+        """
+        Calculate the square root of the sum of the squares of the distances
+        of a set of points to a fixed point.
+
+        Parameters:
+            points (np.ndarray): A 2D array of shape (n, 3) representing the coordinates
+                                 of n points in 3D space.
+            fixed_point (tuple): A tuple of length 3 representing the fixed point in 3D space.
+
+        Returns:
+            float: The square root of the sum of the squares of the distances.
+        """
+        # Convert fixed_point to a numpy array for vectorized operations
+        fixed_point = np.array(fixed_point)
+
+        # Calculate the squared distances of each point to the fixed point
+        squared_distances = np.sum((points - fixed_point) ** 2, axis=1)
+        if verbose:
+            print(f'squared_distances: {squared_distances}')
+
+        # Sum the squared distances
+        sum_of_squares = np.sum(squared_distances)
+
+        # Return the square root of the sum of squares
+        return np.sqrt(sum_of_squares)
+
     def spread_points_in_cube(
         self, num_additional_points, fixed_point, cube_size=1.0,
         iterations=1000, step_size=0.01, contrast_factor=0.1, verbose=False
