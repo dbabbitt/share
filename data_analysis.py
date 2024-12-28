@@ -2222,7 +2222,7 @@ class DataAnalysis(BaseConfig):
         ax2.set_xlabel('Red', color='red')
         ax2.set_ylabel('Green', color='green')
         ax2.set_zlabel(
-            'Blue', color='blue', labelpad=-6
+            'Blue', color='blue', labelpad=0
         )  # Decrease labelpad to prevent cutoff
 
         # Display the combined plot
