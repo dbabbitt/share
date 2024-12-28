@@ -149,24 +149,16 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    ```
 3. Use the utility functions as needed:
    ```python
-   import numpy as np
-   spread_points = np.array([
-       [0.529, 0.808, 0.922],  # Fixed point (assumed to be the first)
-       [0., 0.49733728, 1.],
-       [0., 1., 0.46377763],
-       [0., 0., 0.45880771],
-       [1., 1., 0.],
-       [1., 1., 0.49150504],
-       [0., 1., 1.],
-       [0., 0.50193516, 0.],
-       [0.54022156, 0., 1.],
-       [1., 0.5024856, 0.],
-       [1., 0., 0.48294991],
-       [1., 0., 0.],
-       [1., 0., 1.],
-       [0., 0., 1.],
-       [0., 1., 0.]
-   ])
+   import random
+   
+   # Generate a random fixed point in the color space (RGB values between 0 and 1)
+   fixed_point = (random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1))
+   
+   # Generate a random number of additional points between 1 and 15
+   random_point_count = random.randint(1, 15)
+   
+   # Spread the points evenly through a unit cube so that they have maximum space between
+   spread_points = nu.spread_points_in_cube(random_point_count, fixed_point, verbose=False)
    nu.inspect_spread_points(spread_points)
    ```
    ```python
