@@ -2026,23 +2026,32 @@ class DataAnalysis(BaseConfig):
         # Prepare colors for the pie chart and 3D scatter plot
         colors = [
             tuple(color) for color in spread_points
-        ]  # Convert spread points to RGB tuples
+        ]  # Convert spread points to tuples
 
-        # Get locations list and color order
+        # Get variable names for colors that range from 0.0 to 1.0
         fixed_point = colors[0]
-        locations_list = colors[1:]
-        color_order = [fixed_point]
+        nonfixed_points = colors[1:]
+        black_corner = (0, 0, 0)  # Black corner (origin)
+        white_corner = (1, 1, 1)  # White corner (opposite corner)
+        magenta_corner = (1, 0, 1)  # Magenta corner (front-most corner)
 
-        # Pop the nearest neighbor off the list and add it to the color order
+        # Get nearest neighbor color order
+        nearest_neighbor_order = [fixed_point]
+        locations_list = nonfixed_points.copy()
         while locations_list:
             nearest_neighbor = self.get_nearest_neighbor(
-                color_order[-1], locations_list
+                nearest_neighbor_order[-1], locations_list
             )
             nearest_neighbor = locations_list.pop(
                 locations_list.index(nearest_neighbor)
             )
-            color_order.append(nearest_neighbor)
-        num_points = len(color_order)
+            nearest_neighbor_order.append(nearest_neighbor)
+
+        # Get front-most corner color order
+        front_corner_order = sorted(
+            nonfixed_points,
+            key=lambda x: self.get_euclidean_distance(magenta_corner, x)
+        )[::-1]
 
         # Get XKCD labels
         import matplotlib.colors as mcolors
@@ -2055,13 +2064,22 @@ class DataAnalysis(BaseConfig):
             for name, hex_code in mcolors.XKCD_COLORS.items()
         }
         xkcd_labels = []
-        for color in color_order:
+        for color in nearest_neighbor_order:
             nearest_neighbor = self.get_nearest_neighbor(color, values_list)
             xkcd_labels.append(nearest_name_dict[nearest_neighbor])
         xkcd_label_dict = {
             color: xkcd_label
-            for color, xkcd_label in zip(color_order, xkcd_labels)
+            for color, xkcd_label in zip(nearest_neighbor_order, xkcd_labels)
         }
+        
+        # Helper function to convert colors to RGB (1.0 to 255)
+        def color_to_rgb(color):
+            rgb = (
+                255*color[0],
+                255*color[1],
+                255*color[2]
+            )
+            return rgb
 
         # Create a figure with two subplots
         fig = plt.figure(figsize=(14, 6), constrained_layout=False)
@@ -2069,9 +2087,9 @@ class DataAnalysis(BaseConfig):
         # Left panel: Pie chart
         ax1 = fig.add_subplot(121)  # 1 row, 2 columns, 1st subplot
         pie_tuple = ax1.pie(
-            [1 for _ in range(num_points)],
-            colors=color_order,
-            explode=[0.1] + [0.0] * (num_points - 1),
+            [1 for _ in range(len(nearest_neighbor_order))],
+            colors=nearest_neighbor_order,
+            explode=[0.1] + [0.0] * (len(nearest_neighbor_order) - 1),
             labels=None,  # None for now: add them better, later
             startangle=90,
         )
@@ -2096,12 +2114,7 @@ class DataAnalysis(BaseConfig):
             label_x, label_y, mean_angle = self.get_wedge_label_pos(wedge_obj)
             if mean_angle < 270:
                 mean_angle += 180
-            bar_color_rgb = wedge_obj.get_facecolor()[:-1]
-            bar_color_rgb = (
-                255*bar_color_rgb[0],
-                255*bar_color_rgb[1],
-                255*bar_color_rgb[2]
-            )
+            bar_color_rgb = color_to_rgb(wedge_obj.get_facecolor()[:-1])
             ax1.text(
                 label_x, label_y, label,
                 color=self.get_text_color(
@@ -2125,7 +2138,6 @@ class DataAnalysis(BaseConfig):
         zorder = 1
 
         # Add annotations for the corners (for a unit cube)
-        black_corner = [0, 0, 0]  # Black corner (origin)
         ax2.text(
             black_corner[0], black_corner[1], black_corner[2],
             'Black Corner', zorder=zorder,  # Text label
@@ -2136,7 +2148,6 @@ class DataAnalysis(BaseConfig):
             ),  # Add contrast background
         )
         zorder += 1
-        white_corner = [1, 1, 1]  # White corner (opposite corner)
         ax2.text(
             white_corner[0], white_corner[1], white_corner[2],
             'White Corner', zorder=zorder,  # Text label
@@ -2148,18 +2159,11 @@ class DataAnalysis(BaseConfig):
         )
         zorder += 1
 
-        # Sort non-fixed points by proximity to magenta
-        magenta = (1, 0, 1)
-        nf_points = sorted(
-            spread_points[1:],
-            key=lambda x: self.get_euclidean_distance(magenta, x)
-        )[::-1]
-
         rounding_digit = 2
         line_width = 2
         
         # Scatter plot: highlight the non-fixed points with a label
-        for point in nf_points:
+        for point in front_corner_order:
             ax2.scatter(
                 point[0], point[1], point[2],
                 color=point, s=100, edgecolors=fixed_point, linewidth=line_width,
@@ -2184,15 +2188,10 @@ class DataAnalysis(BaseConfig):
             zorder += 1
 
         # Highlight the fixed point with a non-white, readable-color edge
-        bar_color_rgb = (
-            255*fixed_point[0],
-            255*fixed_point[1],
-            255*fixed_point[2]
-        )
         ax2.scatter(
             fixed_point[0], fixed_point[1], fixed_point[2],
             color=fixed_point, s=100, edgecolors=self.get_text_color(
-                bar_color_rgb=bar_color_rgb, verbose=verbose,
+                bar_color_rgb=color_to_rgb(fixed_point), verbose=verbose,
                 readable_colors=['black', '#808080']
             ), linewidth=line_width,
             label=f'Fixed Point\n({xkcd_label_dict[fixed_point]})',
