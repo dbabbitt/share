@@ -2182,10 +2182,15 @@ class DataAnalysis(BaseConfig):
             zorder += 1
 
         # Highlight the fixed point with a non-white, readable-color edge
+        bar_color_rgb = (
+            255*fixed_point[0],
+            255*fixed_point[1],
+            255*fixed_point[2]
+        )
         ax2.scatter(
             fixed_point[0], fixed_point[1], fixed_point[2],
             color=fixed_point, s=100, edgecolors=self.get_text_color(
-                bar_color_rgb=fixed_point, verbose=verbose,
+                bar_color_rgb=bar_color_rgb, verbose=verbose,
                 readable_colors=['black', '#808080']
             ), linewidth=3,
             label='Fixed Point', alpha=1.0, zorder=zorder,
@@ -2222,8 +2227,8 @@ class DataAnalysis(BaseConfig):
         ax2.set_xlabel('Red', color='red')
         ax2.set_ylabel('Green', color='green')
         ax2.set_zlabel(
-            'Blue', color='blue', labelpad=0
-        )  # Decrease labelpad to prevent cutoff
+            'Blue', color='blue', labelpad=4
+        )  # Increase labelpad to prevent occlusion
 
         # Display the combined plot
         plt.tight_layout()
