@@ -2058,6 +2058,10 @@ class DataAnalysis(BaseConfig):
         for color in color_order:
             nearest_neighbor = self.get_nearest_neighbor(color, values_list)
             xkcd_labels.append(nearest_name_dict[nearest_neighbor])
+        xkcd_label_dict = {
+            color: xkcd_label
+            for color, xkcd_label in zip(color_order, xkcd_labels)
+        }
 
         # Create a figure with two subplots
         fig = plt.figure(figsize=(14, 6), constrained_layout=False)
@@ -2149,7 +2153,7 @@ class DataAnalysis(BaseConfig):
         nf_points = sorted(
             spread_points[1:],
             key=lambda x: self.get_euclidean_distance(magenta, x)
-        )
+        )[::-1]
 
         # Scatter plot: highlight the non-fixed points with a label
         rounding_digit = 2
@@ -2157,7 +2161,7 @@ class DataAnalysis(BaseConfig):
             ax2.scatter(
                 point[0], point[1], point[2],
                 color=point, s=100, edgecolors=fixed_point, linewidth=3,
-                label='Spread Points', alpha=1.0, zorder=zorder,
+                label=xkcd_label_dict[point], alpha=1.0, zorder=zorder,
             )
             zorder += 1
             ax2.text(
@@ -2205,7 +2209,7 @@ class DataAnalysis(BaseConfig):
         zorder += 1
 
         # Add a legend
-        ax2.legend()
+        ax2.legend(bbox_to_anchor=(1.0, 1.1))
 
         # Set plot limits
         ax2.set_xlim(-0.1, 1.1)
