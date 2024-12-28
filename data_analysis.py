@@ -2144,14 +2144,14 @@ class DataAnalysis(BaseConfig):
         )
         zorder += 1
 
-        # Scatter plot: sort non-fixed points by proximity to magenta
+        # Sort non-fixed points by proximity to magenta
         magenta = (1, 0, 1)
         nf_points = sorted(
             spread_points[1:],
             key=lambda x: self.get_euclidean_distance(magenta, x)
-        )[::-1]
+        )
 
-        # Highlight the non-fixed points with a label
+        # Scatter plot: highlight the non-fixed points with a label
         rounding_digit = 2
         for point in nf_points:
             ax2.scatter(
