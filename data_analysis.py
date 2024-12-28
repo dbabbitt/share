@@ -1859,9 +1859,9 @@ class DataAnalysis(BaseConfig):
                 # Append the color and its distance to the list
                 text_colors_list.append(color_tuple)
 
-            # Print the list of color distances if verbose is True
+            # Print the list of color distances if verbose
             if verbose:
-                print(text_colors_list)
+                print(f'In get_text_color, text_colors_list = {text_colors_list}')
 
             # Select color with maximum distance from background color
             sorted_list = sorted(text_colors_list, key=lambda x: x[0])
@@ -1948,7 +1948,7 @@ class DataAnalysis(BaseConfig):
             # headlength=1,
         )
 
-    def inspect_spread_points(self, spread_points):
+    def inspect_spread_points(self, spread_points, verbose=False):
         """
         Visualize the spread points in color space using a pie chart and a 3D
         scatter plot.
@@ -2119,32 +2119,21 @@ class DataAnalysis(BaseConfig):
             122, projection="3d"
         )  # 1 row, 2 columns, 2nd subplot
 
-        # Sort the non-fixed points by proximity to magenta
+        # Scatter plot: sort non-fixed points by proximity to magenta
         magenta = (1, 0, 1)
-        points = sorted(
+        non_fixed_points = sorted(
             spread_points[1:],
             key=lambda x: self.get_euclidean_distance(magenta, x)
         )
-
         ax2.scatter(
-            points[:, 0], points[:, 1], points[:, 2],
-            c=points, s=100, edgecolors=fixed_point, linewidth=3,
+            non_fixed_points[:, 0], non_fixed_points[:, 1], non_fixed_points[:, 2],
+            c=non_fixed_points, s=100, edgecolors=fixed_point, linewidth=3,
             label='Spread Points', alpha=1.0
         )
 
-        # Highlight the fixed point with a non-white, readable-color edge
-        ax2.scatter(
-            fixed_point[0], fixed_point[1], fixed_point[2],
-            color=fixed_point, s=100, edgecolors=self.get_text_color(
-                bar_color_rgb=fixed_point,
-                readable_colors=['black', '#808080']
-            ), linewidth=3,
-            label='Fixed Point', alpha=1.0
-        )
-
-        # Highlight the spread points with a label
+        # Highlight the non-fixed points with a label
         rounding_digit = 2
-        for point in spread_points:
+        for point in non_fixed_points:
             ax2.text(
                 point[0], point[1], point[2]-0.1,
                 (
@@ -2159,6 +2148,32 @@ class DataAnalysis(BaseConfig):
                 ),  # Add contrast background
                 fontsize=6,
             )
+
+        # Highlight the fixed point with a non-white, readable-color edge
+        ax2.scatter(
+            fixed_point[0], fixed_point[1], fixed_point[2],
+            color=fixed_point, s=100, edgecolors=self.get_text_color(
+                bar_color_rgb=fixed_point, verbose=verbose,
+                readable_colors=['black', '#808080']
+            ), linewidth=3,
+            label='Fixed Point', alpha=1.0
+        )
+
+        # Highlight the fixed point with a label
+        ax2.text(
+            fixed_point[0], fixed_point[1], fixed_point[2]-0.1,
+            (
+                f'({round(fixed_point[0], rounding_digit)},'  # noqa E231
+                f' {round(fixed_point[1], rounding_digit)},'  # noqa E231
+                f' {round(fixed_point[2], rounding_digit)})'
+            ),  # Text label
+            color='black',  # Text color
+            ha='center', va='center',  # Text alignment
+            bbox=dict(
+                facecolor='white', edgecolor='none', alpha=0.75
+            ),  # Add contrast background
+            fontsize=6,
+        )
 
         # Add annotations for the corners (for a unit cube)
         black_corner = [0, 0, 0]  # Black corner (origin)
