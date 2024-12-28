@@ -2111,7 +2111,7 @@ class DataAnalysis(BaseConfig):
         )
 
         # Highlight the fixed point with a label
-        rounding_digit = 1
+        rounding_digit = 2
         ax2.text(
             fixed_point[0], fixed_point[1], fixed_point[2]-0.1,
             (
