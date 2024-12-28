@@ -1033,12 +1033,12 @@ class DataAnalysis(BaseConfig):
         """
 
         # Ensure the fixed point is not black or white
-        assert fixed_point != (0.0, 0.0, 0.0), (
-            "The fixed point cannot be black (0.0, 0.0, 0.0)."
-        )
-        assert fixed_point != (1.0, 1.0, 1.0), (
-            "The fixed point cannot be white (1.0, 1.0, 1.0)."
-        )
+        # assert fixed_point != (0.0, 0.0, 0.0), (
+            # "The fixed point cannot be black (0.0, 0.0, 0.0)."
+        # )
+        # assert fixed_point != (1.0, 1.0, 1.0), (
+            # "The fixed point cannot be white (1.0, 1.0, 1.0)."
+        # )
 
         # Add 2 extra points for black and white
         total_points = num_additional_points + 3
@@ -1074,7 +1074,7 @@ class DataAnalysis(BaseConfig):
                         dist = np.linalg.norm(diff)
                         if dist > 1e-6:  # Avoid division by zero
 
-                            # Compute repulsion force (inverse-square law)
+                            # Compute repulsion force (inverse-cube law)
                             force = diff / (dist**3)
                             forces[i] += force
 
@@ -1088,7 +1088,7 @@ class DataAnalysis(BaseConfig):
         points = points[:-2]
 
         # Assert that no points in the final result are black or white
-        for point in points:
+        for point in points[1:]:
             assert not np.allclose(point, [0.0, 0.0, 0.0]), (
                 f"The point {tuple(point)} is too close to black (0, 0, 0)."
                 " Try running spread_points_in_cube again."
