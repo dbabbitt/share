@@ -2100,7 +2100,7 @@ class DataAnalysis(BaseConfig):
             label='Spread Points', alpha=1.0
         )
 
-        # Highlight the fixed point with a black edge
+        # Highlight the fixed point with a readable-color edge
         ax2.scatter(
             fixed_point[0], fixed_point[1], fixed_point[2],
             color=fixed_point, s=100, edgecolors=self.get_text_color(
@@ -2108,6 +2108,17 @@ class DataAnalysis(BaseConfig):
                 readable_colors=['black', '#080808', 'white']
             ), linewidth=3,
             label='Fixed Point', alpha=1.0
+        )
+
+        # Highlight the fixed point with a label
+        ax2.text(
+            fixed_point[0], fixed_point[1], fixed_point[2],
+            fixed_point,  # Text label
+            color='black',  # Text color
+            ha='center', va='center',  # Text alignment
+            bbox=dict(
+                facecolor='white', edgecolor='none', alpha=0.75
+            ),  # Add contrast background
         )
 
         # Add annotations for the corners (for a unit cube)
