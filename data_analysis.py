@@ -2193,7 +2193,8 @@ class DataAnalysis(BaseConfig):
                 bar_color_rgb=bar_color_rgb, verbose=verbose,
                 readable_colors=['black', '#808080']
             ), linewidth=3,
-            label='Fixed Point', alpha=1.0, zorder=zorder,
+            label=f'Fixed Point\n({xkcd_label_dict[fixed_point]})',
+            alpha=1.0, zorder=zorder,
         )
         zorder += 1
 
