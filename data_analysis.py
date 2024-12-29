@@ -1002,6 +1002,19 @@ class DataAnalysis(BaseConfig):
         # Return the square root of the sum of squares
         return np.sqrt(sum_of_squares)
 
+    @staticmethod
+    def rgb_to_lab(rgb):
+        """
+        Convert an RGB color to CIELAB.
+        """
+        from colormath.color_objects import sRGBColor
+        rgb_color = sRGBColor(*rgb, is_upscaled=False)  # RGB values are in [0, 1]
+        from colormath.color_conversions import convert_color
+        from colormath.color_objects import LabColor
+        lab_color = convert_color(rgb_color, LabColor)
+        
+        return lab_color
+
     def spread_points_in_cube(
         self, num_additional_points, fixed_point,
         x_range, y_range, z_range,
