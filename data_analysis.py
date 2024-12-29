@@ -114,6 +114,16 @@ class DataAnalysis(BaseConfig):
             self.saves_folder = saves_folder_path
 
         super().__init__()  # Inherit shared attributes
+        
+        import matplotlib.colors as mcolors
+        self.xkcd_colors = [
+            mcolors.hex2color(hex_code)
+            for hex_code in mcolors.XKCD_COLORS.values()
+        ]
+        self.nearest_xkcd_name_dict = {
+            mcolors.hex2color(hex_code): name[5:]
+            for name, hex_code in mcolors.XKCD_COLORS.items()
+        }
 
     # -------------------
     # Numeric Functions
@@ -2113,19 +2123,10 @@ class DataAnalysis(BaseConfig):
         )[::-1]
 
         # Get XKCD labels
-        import matplotlib.colors as mcolors
-        values_list = [
-            mcolors.hex2color(hex_code)
-            for hex_code in mcolors.XKCD_COLORS.values()
-        ]
-        nearest_name_dict = {
-            mcolors.hex2color(hex_code): name[5:]
-            for name, hex_code in mcolors.XKCD_COLORS.items()
-        }
         xkcd_labels = []
         for color in nearest_neighbor_order:
-            nearest_neighbor = self.get_nearest_neighbor(color, values_list)
-            xkcd_labels.append(nearest_name_dict[nearest_neighbor])
+            nearest_neighbor = self.get_nearest_neighbor(color, self.xkcd_colors)
+            xkcd_labels.append(self.nearest_xkcd_name_dict[nearest_neighbor])
         xkcd_label_dict = {
             color: xkcd_label
             for color, xkcd_label in zip(nearest_neighbor_order, xkcd_labels)

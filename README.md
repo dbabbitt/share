@@ -175,8 +175,8 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
            xkcd_set = set()
            for lab_color in spread_points:
                rgb_color = nu.lab_to_rgb(LabColor(*lab_color))
-               nearest_neighbor = nu.get_nearest_neighbor(rgb_color, XKCD_COLORS)
-               xkcd_set.add(NEAREST_NAME_DICT[nearest_neighbor])
+               nearest_neighbor = nu.get_nearest_neighbor(rgb_color, self.xkcd_colors)
+               xkcd_set.add(self.nearest_xkcd_name_dict[nearest_neighbor])
            if len(xkcd_set) == len(spread_points):
                
                # Calculate the spread value, which measures how far the points are from the fixed point
