@@ -1015,6 +1015,17 @@ class DataAnalysis(BaseConfig):
         
         return lab_color
 
+    @staticmethod
+    def lab_to_rgb(lab):
+        """
+        Convert a CIELAB color to RGB.
+        """
+        from colormath.color_conversions import convert_color
+        from colormath.color_objects import sRGBColor
+        rgb_color = convert_color(lab, sRGBColor)
+        
+        return rgb_color.clamped_rgb_r, rgb_color.clamped_rgb_g, rgb_color.clamped_rgb_b
+
     def spread_points_in_cube(
         self, num_additional_points, fixed_point,
         x_range, y_range, z_range,
