@@ -2163,7 +2163,7 @@ class DataAnalysis(BaseConfig):
             )
 
         # Add title and adjust aspect ratio
-        ax1.set_title("Colors of Spread Points")
+        ax1.set_title("Color Wheel of Spread Points")
         ax1.set_aspect("equal")
 
         # Right panel: 3D scatter plot
@@ -2260,7 +2260,7 @@ class DataAnalysis(BaseConfig):
         ax2.set_zlim(-0.1, 1.1)
 
         # Set labels and title
-        ax2.set_title("Spread Points in Unit Cube with Colored Edges")
+        ax2.set_title("Color Cube of Spread Points")
         ax2.set_xlabel('Red', color='red')
         ax2.set_ylabel('Green', color='green')
         ax2.set_zlabel(
