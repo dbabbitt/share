@@ -148,11 +148,12 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    )
    ```
 3. Use the utility functions as needed:
-   ```python
+   ```python   
    import random
    
-   # Generate a random fixed point in the normalized RGB color space
-   fixed_point = (random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1))
+   # Generate a random fixed point in the CIELAB color space
+   ranges = [(0, 100), (-128, 127), (-128, 127)]
+   fixed_point = tuple([random.uniform(a, b) for a, b in ranges])
    
    # Generate a random number of additional points to spread, between 1 and 15
    random_point_count = random.randint(1, 15)
@@ -161,20 +162,29 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    trials = []
    
    # Perform up to 5 trials to find the best spread of points
+   from colormath.color_objects import LabColor
    while len(trials) < 5:
        
        # Attempt to spread the points evenly within a unit cube
        try:
            spread_points = nu.spread_points_in_cube(
-               random_point_count, fixed_point, (0, 1), (0, 1), (0, 1), verbose=False
+            random_point_count, fixed_point, *ranges, verbose=False
            )
-           
-           # Calculate the spread value, which measures how far the points are from the fixed point
-           spread_value = nu.calculate_spread(spread_points[1:], fixed_point, verbose=False)
-           
-           # Store the result as a tuple of (spread_points, spread_value)
-           trial_tuple = (spread_points, spread_value)
-           trials.append(trial_tuple)
+   
+           # Ensure spread points have all unique XKCD names
+           xkcd_set = set()
+           for lab_color in spread_points:
+               rgb_color = nu.lab_to_rgb(LabColor(*lab_color))
+               nearest_neighbor = nu.get_nearest_neighbor(rgb_color, XKCD_COLORS)
+               xkcd_set.add(NEAREST_NAME_DICT[nearest_neighbor])
+           if len(xkcd_set) == len(spread_points):
+               
+               # Calculate the spread value, which measures how far the points are from the fixed point
+               spread_value = nu.calculate_spread(spread_points[1:], fixed_point, verbose=False)
+               
+               # Store the result as a tuple of (spread_points, spread_value)
+               trial_tuple = (spread_points, spread_value)
+               trials.append(trial_tuple)
        
        # If an error occurs (e.g., a spread point too close to black or white), skip this trial
        except Exception:
@@ -184,7 +194,10 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    trial_tuple = max(trials, key=lambda x: x[1])
    
    # Extract the spread points from the best trial
-   spread_points = trial_tuple[0]
+   spread_points = []
+   for lab_color in trial_tuple[0]:
+       rgb_color = nu.lab_to_rgb(LabColor(*lab_color))
+       spread_points.append(rgb_color)
    
    # Visualize the spread points
    nu.inspect_spread_points(spread_points, verbose=False)
