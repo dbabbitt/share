@@ -168,7 +168,7 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
        # Attempt to spread the points evenly within a unit cube
        try:
            spread_points = nu.spread_points_in_cube(
-            random_point_count, fixed_point, *ranges, verbose=False
+               random_point_count, fixed_point, *ranges, verbose=False
            )
    
            # Ensure spread points have all unique XKCD names
@@ -199,7 +199,7 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
        rgb_color = nu.lab_to_rgb(LabColor(*lab_color))
        spread_points.append(rgb_color)
    
-   # Visualize the spread points
+   # Notice the colors are well-spaced in the pie chart but not in the 3D scatter plot
    nu.inspect_spread_points(spread_points, verbose=False)
    ```
    ```python
