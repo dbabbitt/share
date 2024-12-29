@@ -179,7 +179,7 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
                xkcd_set.add(self.nearest_xkcd_name_dict[nearest_neighbor])
            if len(xkcd_set) == len(spread_points):
                
-               # Calculate the spread value, which measures how far the points are from the fixed point
+               # Measure how far the points are from the fixed point
                spread_value = nu.calculate_spread(spread_points[1:], fixed_point, verbose=False)
                
                # Store the result as a tuple of (spread_points, spread_value)
