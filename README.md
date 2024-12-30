@@ -150,54 +150,57 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
 3. Use the utility functions as needed:
    ```python   
    import random
+   from tqdm import tqdm
+   from colormath.color_objects import LabColor
    
    # Generate a random fixed point in the CIELAB color space
    ranges = [(0, 100), (-128, 127), (-128, 127)]
    fixed_point = tuple([random.uniform(a, b) for a, b in ranges])
    
    # Generate a random number of additional points to spread, between 1 and 15
-   random_point_count = random.randint(1, 15)
+   point_count = random.randint(1, 15)
    
    # Initialize a list to store trial results
    trials = []
+   total_trials = 5  # You can adjust this based on your patience
    
-   # Perform up to 5 trials to find the best spread of points
-   from colormath.color_objects import LabColor
-   while len(trials) < 5:
-       
-       # Attempt to spread the points evenly within a unit cube
-       try:
-           spread_points = nu.spread_points_in_cube(
-               random_point_count, fixed_point, *ranges, verbose=False
-           )
+   # Perform trials to find the best spread of points
+   with tqdm(total=total_trials) as pbar:
+       while len(trials) < total_trials:
+           
+           # Attempt to spread the points evenly within a unit cube
+           try:
+               spread_points = nu.spread_points_in_cube(
+                   point_count, fixed_point, *ranges, verbose=False
+               )
    
-           # Ensure spread points have all unique XKCD names
-           xkcd_set = set()
-           for lab_color in spread_points:
-               rgb_color = nu.lab_to_rgb(LabColor(*lab_color))
-               nearest_neighbor = nu.get_nearest_neighbor(rgb_color, self.xkcd_colors)
-               xkcd_set.add(self.nearest_xkcd_name_dict[nearest_neighbor])
-           if len(xkcd_set) == len(spread_points):
-               
-               # Measure how far the points are from the fixed point
-               spread_value = nu.calculate_spread(spread_points[1:], fixed_point, verbose=False)
-               
-               # Store the result as a tuple of (spread_points, spread_value)
-               trial_tuple = (spread_points, spread_value)
-               trials.append(trial_tuple)
-       
-       # If an error occurs (e.g., a spread point too close to black or white), skip this trial
-       except Exception:
-           continue
+               # Ensure spread points have all unique XKCD names
+               xkcd_set = set()
+               for lab_color in spread_points:
+                   rgb_color = nu.lab_to_rgb(LabColor(*lab_color))
+                   nearest_neighbor = nu.get_nearest_neighbor(rgb_color, nu.xkcd_colors)
+                   xkcd_set.add(nu.nearest_xkcd_name_dict[nearest_neighbor])
+               if len(xkcd_set) == len(spread_points):
+                   
+                   # Measure how far the points are from the fixed point
+                   spread_value = nu.calculate_spread(spread_points[1:], fixed_point, verbose=False)
+                   
+                   # Store the result as a tuple of (spread_points, spread_value)
+                   trial_tuple = (spread_points, spread_value)
+                   trials.append(trial_tuple)  # Add a new trial
+                   
+                   # Update the progress bar
+                   pbar.update(1)  # Increment the progress bar by 1
+           
+           # If an error occurs (e.g., a spread point too close to black or white), skip this trial
+           except Exception:
+               continue
    
    # Select the trial with points as far away from the fixed point as possible
    trial_tuple = max(trials, key=lambda x: x[1])
    
    # Extract the spread points from the best trial
-   spread_points = []
-   for lab_color in trial_tuple[0]:
-       rgb_color = nu.lab_to_rgb(LabColor(*lab_color))
-       spread_points.append(rgb_color)
+   spread_points = [nu.lab_to_rgb(LabColor(*lab_color)) for lab_color in trial_tuple[0]]
    
    # Notice the colors are well-spaced in the pie chart but not in the 3D scatter plot
    nu.inspect_spread_points(spread_points, verbose=False)
