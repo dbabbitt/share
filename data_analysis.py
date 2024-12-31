@@ -115,6 +115,7 @@ class DataAnalysis(BaseConfig):
 
         super().__init__()  # Inherit shared attributes
         
+        # Color variables
         import matplotlib.colors as mcolors
         self.xkcd_colors = [
             mcolors.hex2color(hex_code)
@@ -124,6 +125,9 @@ class DataAnalysis(BaseConfig):
             mcolors.hex2color(hex_code): name[5:]
             for name, hex_code in mcolors.XKCD_COLORS.items()
         }
+        self.lab_white = (99.99998453333127, -0.0004593894083471106, -0.008561457924405325)
+        self.lab_gray = (53.38895548925112, -0.0002747978918860028, -0.005121299155619319)
+        self.lab_black = (0.0, 0.0, 0.0)
 
     # -------------------
     # Numeric Functions
@@ -1018,10 +1022,10 @@ class DataAnalysis(BaseConfig):
         Convert an RGB color to CIELAB.
         """
         from colormath.color_objects import sRGBColor
-        rgb_color = sRGBColor(*rgb, is_upscaled=False)  # RGB values are in [0, 1]
+        rgb_percent = sRGBColor(*rgb, is_upscaled=False)  # RGB values are in [0, 1]
         from colormath.color_conversions import convert_color
         from colormath.color_objects import LabColor
-        lab_color = convert_color(rgb_color, LabColor)
+        lab_color = convert_color(rgb_percent, LabColor)
         
         return lab_color
 
