@@ -1934,7 +1934,10 @@ class DataAnalysis(BaseConfig):
 
             # Print the list of color distances if verbose
             if verbose:
-                print(f'In get_text_color, text_colors_list = {text_colors_list}')
+                print(
+                    'In get_contrastive_text_color, text_colors_list'
+                    f' = {text_colors_list}'
+                )
 
             # Select color with maximum distance from background color
             sorted_list = sorted(text_colors_list, key=lambda x: x[0])
@@ -1954,6 +1957,36 @@ class DataAnalysis(BaseConfig):
                 pass
 
         # Return the selected or default text color
+        return text_color
+
+    @staticmethod
+    def get_contrastive_text_color(rgb):
+        if any(map(lambda x: x > 1.0, [*rgb])):
+            rgb_percent = downscale_rgb(rgb)
+        else:
+            rgb_percent = rgb
+        distance_tuples_list = []
+        for lab_tuple in [nu.lab_white, nu.lab_gray, nu.lab_black]:
+            lab_l1, lab_a1, lab_b1 = lab_tuple
+            lab_l2, lab_a2, lab_b2 = nu.rgb_to_lab(
+                rgb_percent
+            ).get_value_tuple()
+            color_distance = math.sqrt(
+                (lab_l1 - lab_l2)**2
+                + (lab_a1 - lab_a2)**2
+                + (lab_b1 - lab_b2)**2
+            )
+            distance_tuple = (color_distance, lab_tuple)
+            distance_tuples_list.append(distance_tuple)
+        lab_tuple = max(distance_tuples_list, key=lambda x: x[0])[1]
+        from colormath.color_objects import LabColor
+        rgb_percent = nu.lab_to_rgb(LabColor(
+            lab_tuple[0], lab_tuple[1], lab_tuple[2]
+        ))
+        rgb_triplet = nu.upscale_rgb(rgb_percent)
+        import webcolors
+        text_color = webcolors.rgb_to_hex(rgb_triplet)
+
         return text_color
 
     @staticmethod
@@ -2020,6 +2053,32 @@ class DataAnalysis(BaseConfig):
             # headaxislength=1,
             # headlength=1,
         )
+
+    @staticmethod
+    def upscale_rgb(rgb_percent):
+        """
+        Helper function to convert percentaged colors to RGB (1.0 to 255).
+        """
+        rgb_triplet = (
+            int(255*rgb_percent[0]),
+            int(255*rgb_percent[1]),
+            int(255*rgb_percent[2])
+        )
+        
+        return rgb_triplet
+
+    @staticmethod
+    def downscale_rgb(rgb_triplet):
+        """
+        Helper function to convert RGB to percentaged colors (255 to 1.0).
+        """
+        rgb_percent = (
+            rgb_triplet[0]/255,
+            rgb_triplet[1]/255,
+            rgb_triplet[2]/255
+        )
+        
+        return rgb_percent
 
     def inspect_spread_points(self, spread_points, verbose=False):
         """
@@ -2135,15 +2194,6 @@ class DataAnalysis(BaseConfig):
             color: xkcd_label
             for color, xkcd_label in zip(nearest_neighbor_order, xkcd_labels)
         }
-        
-        # Helper function to convert colors to RGB (1.0 to 255)
-        def color_to_rgb(color):
-            rgb = (
-                255*color[0],
-                255*color[1],
-                255*color[2]
-            )
-            return rgb
 
         # Create a figure with two subplots
         fig = plt.figure(figsize=(14, 6), constrained_layout=False)
@@ -2178,12 +2228,10 @@ class DataAnalysis(BaseConfig):
             label_x, label_y, mean_angle = self.get_wedge_label_pos(wedge_obj)
             if mean_angle < 270:
                 mean_angle += 180
-            bar_color_rgb = color_to_rgb(wedge_obj.get_facecolor()[:-1])
             ax1.text(
                 label_x, label_y, label,
-                color=self.get_text_color(
-                    bar_color_rgb=bar_color_rgb,
-                    readable_colors=['black', '#808080', 'white']
+                color=self.get_contrastive_text_color(
+                    wedge_obj.get_facecolor()[:-1]
                 ),
                 fontweight='bold',
                 ha='center',
@@ -2254,10 +2302,9 @@ class DataAnalysis(BaseConfig):
         # Highlight the fixed point with a non-white, readable-color edge
         ax2.scatter(
             fixed_point[0], fixed_point[1], fixed_point[2],
-            color=fixed_point, s=100, edgecolors=self.get_text_color(
-                bar_color_rgb=color_to_rgb(fixed_point), verbose=verbose,
-                readable_colors=['black', '#808080']
-            ), linewidth=line_width,
+            color=fixed_point, s=100,
+            edgecolors=self.get_contrastive_text_color(fixed_point),
+            linewidth=line_width,
             label=f'Fixed Point\n({xkcd_label_dict[fixed_point]})',
             alpha=1.0, zorder=zorder,
         )
