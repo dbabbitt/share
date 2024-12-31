@@ -8,7 +8,7 @@ The core functionality is implemented in the `NotebookUtilities` class, which ac
 
 ## 📂 Project Structure
 
-The project is structured into modular components. Each component focuses on a specific aspect of notebook utilities. 
+The project is structured into modular components. Each component focuses on a specific aspect of notebook utilities.
 
 To discover a natural structure, I performed a market basket analysis of all the instantiated functions in the notebooks containing them. I then used this to make a a directed graph, the edges representing the maximum confidence in each direction between pairs of functions (so that each node has one "in" edge and one "out" edge). I applied three generations of the Girvan-Newman algorithm to this graph. This analysis helped detect communities, which I used to organize the modules. (You can see some of this work in the [Breaking Up notebook_utils](https://github.com/dbabbitt/notebooks/blob/master/visualizations/Breaking%20Up%20notebook_utils.ipynb) notebook.)
 
@@ -99,20 +99,20 @@ To remove the `share` submodule from your repository:
    repo="path/to/your/repository"
    if [ -d "$repo/.git" ]; then
        cd "$repo"
-       
+
        # Check if the submodule exists
        if [ -d "share" ]; then
            repo_name=$(basename "$repo")
            echo "Removing submodule in repository: $repo_name..."
            git config -f .gitmodules --remove-section submodule.share
            git rm --cached share
-           
+
            # Fully remove the share folder
            rm -rf share
-           
+
            git commit -m "Removed submodule share"
        fi
-       
+
    fi
    ```
 
@@ -127,53 +127,53 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    import os.path as osp
    import os
    import sys
-   
+
    # Assuming here you're running this in a Jupyter notebook cell in a subfolder
    shared_folder = osp.abspath(osp.join(os.pardir, 'share'))
    assert osp.exists(shared_folder), f"The share submodule is not at {shared_folder}"
    if shared_folder not in sys.path: sys.path.insert(1, shared_folder)
-   
+
    from notebook_utils import NotebookUtilities
    ```
 2. Initialize the class:
    ```python
    nu = NotebookUtilities(
-       
+
        # This will create a data folder if there isn't one already
        data_folder_path=osp.abspath(osp.join(os.pardir, 'data')),
-       
+
        # This will create a saves folder if there isn't one already
        saves_folder_path=osp.abspath(osp.join(os.pardir, 'saves'))
-       
+
    )
    ```
 3. Use the utility functions as needed:
-   ```python   
+   ```python
    import random
    from tqdm import tqdm
    from colormath.color_objects import LabColor
-   
+
    # Generate a random fixed point in the CIELAB color space
    ranges = [(0, 100), (-128, 127), (-128, 127)]
    fixed_point = tuple([random.uniform(a, b) for a, b in ranges])
-   
+
    # Generate a random number of additional points to spread, between 1 and 15
    point_count = random.randint(1, 15)
-   
+
    # Initialize a list to store trial results
    trials = []
    total_trials = 5  # You can adjust this based on your patience
-   
+
    # Perform trials to find the best spread of points
    with tqdm(total=total_trials) as pbar:
        while len(trials) < total_trials:
-           
+
            # Attempt to spread the points evenly within a unit cube
            try:
                spread_points = nu.spread_points_in_cube(
                    point_count, fixed_point, *ranges, verbose=False
                )
-   
+
                # Ensure spread points have all unique XKCD names
                xkcd_set = set()
                for lab_color in spread_points:
@@ -181,27 +181,27 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
                    nearest_neighbor = nu.get_nearest_neighbor(rgb_color, nu.xkcd_colors)
                    xkcd_set.add(nu.nearest_xkcd_name_dict[nearest_neighbor])
                if len(xkcd_set) == len(spread_points):
-                   
+
                    # Measure how far the points are from the fixed point
                    spread_value = nu.calculate_spread(spread_points[1:], fixed_point, verbose=False)
-                   
+
                    # Store the result as a tuple of (spread_points, spread_value)
                    trial_tuple = (spread_points, spread_value)
                    trials.append(trial_tuple)  # Add a new trial
-                   
+
                    # Update the progress bar
                    pbar.update(1)  # Increment the progress bar by 1
-           
+
            # If an error occurs (e.g., a spread point too close to black or white), skip this trial
            except Exception:
                continue
-   
+
    # Select the trial with points as far away from the fixed point as possible
    trial_tuple = max(trials, key=lambda x: x[1])
-   
+
    # Extract the spread points from the best trial
    spread_points = [nu.lab_to_rgb(LabColor(*lab_color)) for lab_color in trial_tuple[0]]
-   
+
    # Notice the colors are well-spaced in the pie chart but not in the 3D scatter plot
    nu.inspect_spread_points(spread_points, verbose=False)
    ```
@@ -287,7 +287,7 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    ```python
    import numpy as np
    import pandas as pd
-   
+
    # Create a new column in a DataFrame representing
    # the modal value of the D and E columns
    df = pd.DataFrame({
@@ -327,23 +327,23 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
    # Create a standard sequence plot where each element corresponds to a position on the y-axis
    import matplotlib.pyplot as plt
    import random
-   
+
    # Define the sequence of user actions
    sequence = ["SESSION_START", "LOGIN", "VIEW_PRODUCT"]
-   
+
    # Generate more shopping elements
    for _ in range(19):
        if sequence[-1] != 'ADD_TO_CART':
            sequence.append(random.choice(['VIEW_PRODUCT', 'ADD_TO_CART']))
        else:
            sequence.append('VIEW_PRODUCT')
-   
+
    # Finish up the shopping
    sequence += ["LOGOUT", "SESSION_END"]
-   
+
    # Define n-grams to highlight
    highlighted_ngrams = [["VIEW_PRODUCT", "ADD_TO_CART"]]
-   
+
    # Define a custom color dictionary for the actions
    color_dict = {
        "SESSION_START": "green",
@@ -353,7 +353,7 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
        "LOGOUT": "red",
        "SESSION_END": "black"
    }
-   
+
    # Plot the sequence
    fig, ax = nu.plot_sequence(
        sequence=sequence,
@@ -362,7 +362,7 @@ Here’s how you can use the `NotebookUtilities` class in your Jupyter notebook:
        suptitle="User Session Sequence",
        verbose=False
    )
-   
+
    # Show the plot
    plt.show()
    ```
