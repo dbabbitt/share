@@ -1959,8 +1959,7 @@ class DataAnalysis(BaseConfig):
         # Return the selected or default text color
         return text_color
 
-    @staticmethod
-    def get_contrastive_text_color(rgb):
+    def get_contrastive_text_color(self, rgb):
         if any(map(lambda x: x > 1.0, [*rgb])):
             rgb_percent = downscale_rgb(rgb)
         else:
