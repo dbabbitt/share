@@ -1966,9 +1966,9 @@ class DataAnalysis(BaseConfig):
         else:
             rgb_percent = rgb
         distance_tuples_list = []
-        for lab_tuple in [nu.lab_white, nu.lab_gray, nu.lab_black]:
+        for lab_tuple in [self.lab_white, self.lab_gray, self.lab_black]:
             lab_l1, lab_a1, lab_b1 = lab_tuple
-            lab_l2, lab_a2, lab_b2 = nu.rgb_to_lab(
+            lab_l2, lab_a2, lab_b2 = self.rgb_to_lab(
                 rgb_percent
             ).get_value_tuple()
             color_distance = math.sqrt(
@@ -1980,10 +1980,10 @@ class DataAnalysis(BaseConfig):
             distance_tuples_list.append(distance_tuple)
         lab_tuple = max(distance_tuples_list, key=lambda x: x[0])[1]
         from colormath.color_objects import LabColor
-        rgb_percent = nu.lab_to_rgb(LabColor(
+        rgb_percent = self.lab_to_rgb(LabColor(
             lab_tuple[0], lab_tuple[1], lab_tuple[2]
         ))
-        rgb_triplet = nu.upscale_rgb(rgb_percent)
+        rgb_triplet = self.upscale_rgb(rgb_percent)
         import webcolors
         text_color = webcolors.rgb_to_hex(rgb_triplet)
 
