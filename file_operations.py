@@ -633,6 +633,7 @@ class FileOperations(BaseConfig):
                 If the object cannot be loaded from any source (pickle, CSV,
                 or download).
         """
+        object = None
 
         # If no pickle path provided, construct default path with object name
         if pickle_path is None:

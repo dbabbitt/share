@@ -1979,9 +1979,7 @@ class DataAnalysis(BaseConfig):
             distance_tuples_list.append(distance_tuple)
         lab_tuple = max(distance_tuples_list, key=lambda x: x[0])[1]
         from colormath.color_objects import LabColor
-        rgb_percent = self.lab_to_rgb(LabColor(
-            lab_tuple[0], lab_tuple[1], lab_tuple[2]
-        ))
+        rgb_percent = self.lab_to_rgb(LabColor(*lab_tuple))
         rgb_triplet = self.upscale_rgb(rgb_percent)
         import webcolors
         text_color = webcolors.rgb_to_hex(rgb_triplet)
