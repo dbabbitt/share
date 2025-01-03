@@ -668,10 +668,11 @@ class FileOperations(BaseConfig):
                     )
 
                 # Download object as CSV if URL provided and no CSV exists
-                object = read_csv(
-                    download_url, low_memory=False,
-                    encoding=self.encoding_type
-                )
+                if download_url:
+                    object = read_csv(
+                        download_url, low_memory=False,
+                        encoding=self.encoding_type
+                    )
 
             # If the CSV file exists, read the object from the CSV file
             else:
