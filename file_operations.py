@@ -606,58 +606,59 @@ class FileOperations(BaseConfig):
         self, obj_name, pickle_path=None, download_url=None, verbose=False
     ):
         """
-        Load an object from a pickle file, CSV file, or download it from a
-        URL.
+        Retrieve an object from a pickle file, a CSV file, or a specified URL.
 
         Parameters:
             obj_name (str):
-                The name of the object to load.
+                The identifier of the object to be retrieved.
             pickle_path (str, optional):
-                The path to the pickle file containing the object. Defaults
-                to None. If None, the function attempts to construct the path
-                based on the object name and the `saves_pickle_folder`
-                attribute.
+                The location of the pickle file that contains the object. If
+                not provided, the function will attempt to generate the path
+                using the object name and the `saves_pickle_folder` attribute.
             download_url (str, optional):
-                The URL to download the object from. Defaults to None. If no
-                pickle file is found and a download URL is provided, the
-                object will be downloaded and saved as a CSV file.
+                The URL from which the object can be downloaded. If a pickle
+                file is not found and a URL is provided, the object will be
+                downloaded and stored as a CSV file.
             verbose (bool, optional):
-                Whether to print debug or status messages. Defaults to False.
+                If set to True, the function will display debug or status
+                messages. Defaults to False.
 
         Returns:
-            object
-                The loaded object.
+            object:
+                The retrieved object.
 
         Raises:
-            Exception
-                If the object cannot be loaded from any source (pickle, CSV,
-                or download).
+            Exception:
+                If the object cannot be retrieved from any of the sources
+                (pickle, CSV, or URL).
         """
         object = None
 
-        # If no pickle path provided, construct default path with object name
+        # Is pickle path not provided?
         if pickle_path is None:
+
+            # Generate default path using object name
             pickle_path = osp.join(
                 self.saves_pickle_folder, '{}.pkl'.format(obj_name)
             )
 
-        # Check if the pickle file exists at the specified path
+        # Verify if the pickle file is present at the given path
         if not osp.isfile(pickle_path):
 
-            # If the pickle file doesn't exist and verbose, print a message
+            # Display a message if the pickle file is not found and verbose
             if verbose:
                 pp = osp.abspath(pickle_path)
                 print(
-                    f'No pickle exists at {pp}',
+                    f'Pickle file not found at {pp}',
                     end=''
                 )
 
-            # If pickle doesn't exist, try loading from CSV
+            # Attempt to load from CSV if pickle is not found
             csv_path = osp.join(
                 self.saves_csv_folder, '{}.csv'.format(obj_name)
             )
 
-            # Check if the CSV file exists at the specified path
+            # Verify if the CSV file is present at the given path
             if not osp.isfile(csv_path):
                 if verbose:
                     print(
@@ -666,17 +667,19 @@ class FileOperations(BaseConfig):
                     )
                     cp = osp.abspath(csv_path)
                     print(
-                        f'No csv exists at {cp}',
+                        f'CSV file not found at {cp}',
                         end=''
                     )
 
-                # Download object as CSV if URL provided and no CSV exists
+                # Is URL provided?
                 if download_url:
                     if verbose:
                         print(
                             f' - attempting to download from URL.',
                             flush=True
                         )
+
+                    # Download and save object as CSV if CSV file is not found
                     object = read_csv(
                         download_url, low_memory=False,
                         encoding=self.encoding_type
@@ -685,38 +688,38 @@ class FileOperations(BaseConfig):
                     if verbose:
                         print(f'.', flush=True)
 
-            # If the CSV file exists, read the object from the CSV file
+            # If the CSV file is found, load the object from the CSV file
             else:
                 if verbose:
                     print(
-                        f' - attempting to load as csv.',
+                        f' - attempting to load from CSV file.',
                         flush=True
                     )
 
-                # Load object from existing CSV file
+                # Retrieve object from existing CSV file
                 object = read_csv(
                     csv_path, low_memory=False, encoding=self.encoding_type
                 )
 
         else:
 
-            # If the pickle file exists, try to load the object
+            # Attempt to load the object if the pickle file is found
             try:
                 object = read_pickle(pickle_path)
 
-            # If reading the pickle file fails, fall back to pickle module
+            # Use pickle module to load the object if pandas fails
             except Exception:
                 with open(pickle_path, 'rb') as handle:
                     object = pickle.load(handle)
 
-        # If verbose, print a message indicating the object was loaded
+        # Display a message indicating successful object loading if verbose
         if verbose and object:
             print(
-                'Loaded object {} from {}'.format(obj_name, pickle_path),
+                f'Successfully loaded object {obj_name} from {pickle_path}',
                 flush=True
             )
 
-        # Return the loaded object
+        # Return the retrieved object
         return object
 
     def load_data_frames(self, verbose=True, **kwargs):
