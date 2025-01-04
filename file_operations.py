@@ -648,8 +648,8 @@ class FileOperations(BaseConfig):
             if verbose:
                 pp = osp.abspath(pickle_path)
                 print(
-                    f'No pickle exists at {pp} - attempting to load as csv.',
-                    flush=True
+                    f'No pickle exists at {pp}',
+                    end=''
                 )
 
             # If pickle doesn't exist, try loading from CSV
@@ -660,41 +660,43 @@ class FileOperations(BaseConfig):
             # Check if the CSV file exists at the specified path
             if not osp.isfile(csv_path):
                 if verbose:
+                    print(
+                        f'.',
+                        flush=True
+                    )
                     cp = osp.abspath(csv_path)
                     print(
-                        f'No csv exists at {cp} - attempting to download from'
-                        ' URL.',
-                        flush=True
+                        f'No csv exists at {cp}',
+                        end=''
                     )
 
                 # Download object as CSV if URL provided and no CSV exists
                 if download_url:
+                    if verbose:
+                        print(
+                            f' - attempting to download from URL.',
+                            flush=True
+                        )
                     object = read_csv(
                         download_url, low_memory=False,
                         encoding=self.encoding_type
                     )
+                else:
+                    if verbose:
+                        print(f'.', flush=True)
 
             # If the CSV file exists, read the object from the CSV file
             else:
+                if verbose:
+                    print(
+                        f' - attempting to load as csv.',
+                        flush=True
+                    )
 
                 # Load object from existing CSV file
                 object = read_csv(
                     csv_path, low_memory=False, encoding=self.encoding_type
                 )
-
-            # If loaded object is a df, attempt to save it as a pickle
-            if isinstance(object, DataFrame):
-                self.attempt_to_pickle(
-                    object, pickle_path, raise_exception=False
-                )
-
-            # Otherwise, pickle the object using the appropriate protocol
-            else:
-                with open(pickle_path, 'wb') as handle:
-                    if sys.version_info.major == 2:
-                        pickle.dump(object, handle, 2)
-                    elif sys.version_info.major == 3:
-                        pickle.dump(object, handle, pickle.HIGHEST_PROTOCOL)
 
         else:
 
@@ -708,7 +710,7 @@ class FileOperations(BaseConfig):
                     object = pickle.load(handle)
 
         # If verbose, print a message indicating the object was loaded
-        if verbose:
+        if verbose and object:
             print(
                 'Loaded object {} from {}'.format(obj_name, pickle_path),
                 flush=True
