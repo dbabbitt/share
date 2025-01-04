@@ -625,12 +625,11 @@ class FileOperations(BaseConfig):
 
         Returns:
             object:
-                The retrieved object.
+                The retrieved object, or None if not found.
 
         Raises:
             Exception:
-                If the object cannot be retrieved from any of the sources
-                (pickle, CSV, or URL).
+                If the object cannot be retrieved from the pickle path.
         """
         object = None
 
@@ -687,6 +686,7 @@ class FileOperations(BaseConfig):
                 else:
                     if verbose:
                         print(f'.', flush=True)
+                        print(f'No URL provided.', flush=True)
 
             # If the CSV file is found, load the object from the CSV file
             else:
