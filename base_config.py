@@ -21,10 +21,19 @@ from re import (
 import matplotlib.pyplot as plt
 import numpy as np
 import re
+import os
 
 
 class BaseConfig:
-    def __init__(self):
+    def __init__(self, data_folder_path=None, saves_folder_path=None):
+        self.data_folder_path = data_folder_path
+        self.saves_folder_path = saves_folder_path
+        
+        if data_folder_path and not os.path.exists(data_folder_path):
+            os.makedirs(data_folder_path)
+            
+        if saves_folder_path and not os.path.exists(saves_folder_path):
+            os.makedirs(saves_folder_path)
 
         # Assume this is instantiated in a subfolder one below the main
         self.github_folder = osp.dirname(osp.abspath(osp.curdir))
