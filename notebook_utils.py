@@ -12,59 +12,22 @@ Run this in a Git Bash terminal if you push anything:
     ./update_share_submodules.sh
 """
 
-from data_analysis import DataAnalysis
-from data_preparation import DataPreparation
-from data_validation import DataValidation
-from file_operations import FileOperations
-from sequence_analysis import SequenceAnalysis
-from uncategorized import Uncategorized
 from os import (
     makedirs as makedirs, path as osp
 )
 import os
 
 
-class NotebookUtilities(object):
-    """
-    This class implements the core of the utility
-    functions needed to install and run GPTs and
-    also what is common to running Jupyter notebooks.
-
-    Example:
-
-        # Add the path to the shared utilities directory
-        import os.path as osp, os as os
-
-        # Define the shared folder path using join for better compatibility
-        shared_folder = osp.abspath(osp.join(
-            osp.dirname(__file__), os.pardir, os.pardir, os.pardir, 'share'
-        ))
-
-        # Add the shared folder to system path if it's not already included
-        import sys
-        if shared_folder not in sys.path:
-            sys.path.insert(1, shared_folder)
-
-        # Attempt to import the Storage object
-        try:
-            from notebook_utils import NotebookUtilities
-        except ImportError as e:
-            print(f"Error importing NotebookUtilities: {e}")
-
-        # Initialize with data and saves folder paths
-        nu = NotebookUtilities(
-            data_folder_path=osp.abspath(osp.join(
-                osp.dirname(__file__), os.pardir, 'data'
-            )),
-            saves_folder_path=osp.abspath(osp.join(
-                osp.dirname(__file__), os.pardir, 'saves'
-            ))
-        )
-    """
-
-    def __init__(
-        self, data_folder_path=None, saves_folder_path=None, verbose=False
-    ):
+# Create classes lazily to avoid circular imports
+class NotebookUtilities:
+    def __init__(self, data_folder_path=None, saves_folder_path=None, verbose=False):
+        # Load dependencies on demand
+        from data_analysis import DataAnalysis
+        from data_preparation import DataPreparation 
+        from data_validation import DataValidation
+        from file_operations import FileOperations
+        from sequence_analysis import SequenceAnalysis
+        from uncategorized import Uncategorized
 
         # Create the data folder if it doesn't exist
         if data_folder_path is None:
@@ -113,18 +76,20 @@ class NotebookUtilities(object):
         )
 
     def __getattr__(self, name):
-
-        # Check if the method exists in one of the smaller classes
-        for component in [
-            self.data_analysis, self.data_preparation, self.data_validation,
-            self.file_operations, self.sequence_analysis, self.uncategorized
-        ]:
-            if hasattr(component, name):
-                return getattr(component, name)
-
-        raise AttributeError(
-            f"'{self.__class__.__name__}' object has no attribute '{name}'"
-        )
+        # Delegate attribute access to the appropriate component
+        if hasattr(self.data_analysis, name):
+            return getattr(self.data_analysis, name)
+        elif hasattr(self.data_preparation, name):
+            return getattr(self.data_preparation, name)
+        elif hasattr(self.data_validation, name):
+            return getattr(self.data_validation, name)
+        elif hasattr(self.file_operations, name):
+            return getattr(self.file_operations, name)
+        elif hasattr(self.sequence_analysis, name):
+            return getattr(self.sequence_analysis, name)
+        elif hasattr(self.uncategorized, name):
+            return getattr(self.uncategorized, name)
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 
     def __dir__(self):
         """
