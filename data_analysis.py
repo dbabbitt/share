@@ -12,27 +12,29 @@ Run this in a Git Bash terminal if you push anything:
     ./update_share_submodules.sh
 """
 
-from base_config import BaseConfig
-from bs4 import BeautifulSoup as bs
+# Import non-pandas dependencies first
 from numpy import nan
-from os import (
-    path as osp
-)
-from pandas import (
-    DataFrame, Series, concat, get_dummies, notnull,
-    to_datetime
-)
-from re import (
-    Pattern, sub
-)
-import humanize
+from os import path as osp
 import math
-import matplotlib.pyplot as plt
 import numpy as np
 import os
+
+# Import pandas components carefully
 import pandas as pd
+from pandas.core.frame import DataFrame 
+from pandas.core.series import Series
+from pandas.core.reshape.concat import concat
+from pandas.core.reshape.encoding import get_dummies
+from pandas.core.dtypes.missing import notnull
+from pandas.core.tools.datetimes import to_datetime
+
+# Rest of the imports
+from re import Pattern, sub
+import humanize
+import matplotlib.pyplot as plt
 import seaborn as sns
 import subprocess
+from base_config import BaseConfig
 
 # Check if pandas is installed and import relevant functions
 try:
@@ -299,6 +301,7 @@ class DataAnalysis(BaseConfig):
             page_titles_list = tqdm(page_titles_list)
 
         # Iterate over each page title in the list
+
         for page_title in page_titles_list:
 
             # Initialize a dictionary to store the data for the current page
@@ -771,6 +774,7 @@ class DataAnalysis(BaseConfig):
                 )
 
         # Check if the value is a list
+
         elif isinstance(value_obj, list):
 
             # Get the minimum number of digits in the list length
