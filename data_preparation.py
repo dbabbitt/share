@@ -448,6 +448,82 @@ class DataPreparation(BaseConfig):
         # Return a sorted list of unique function calls
         return sorted(set(function_calls))
 
+    @staticmethod
+    def find_method(
+        obj, target_method_name, path="", visited=None, max_depth=20, verbose=False
+    ):
+        """
+        Recursively searches for a method within an object's attributes while avoiding 
+        infinite loops and limiting recursion depth.
+
+        Args:
+            obj: The object to search.
+            target_method_name (str): The name of the method to find.
+            path (str): The current path of attributes being explored.
+            visited (set): Tracks visited objects to prevent infinite recursion.
+            max_depth (int): Maximum recursion depth.
+            verbose (bool): Whether to print debug messages.
+
+        Returns:
+            method or None: The method if found, otherwise None.
+        """
+        if visited is None:
+            visited = set()
+
+        # Prevent cycles with hashable objects
+        try:
+            if obj in visited:
+                return None
+            visited.add(obj)
+        except TypeError:
+            pass  # If the object is unhashable, continue without tracking
+
+        # Base case: Check if obj has the target method
+        if hasattr(obj, target_method_name) and callable(getattr(obj, target_method_name)):
+            return getattr(obj, target_method_name)
+
+        # Stop recursion if depth limit is reached
+        if max_depth <= 0:
+            if verbose:
+                print(f"Max depth reached at {path}")
+            return None
+
+        # Skip common primitive types
+        if isinstance(obj, (str, int, float, bool, type(None))):
+            return None
+
+        # Explore attributes (use __dict__ for instance attributes if available)
+        attributes = obj.__dict__ if hasattr(obj, "__dict__") else dir(obj)
+        
+        for attr_name in attributes:
+            if attr_name.startswith("_"):  # Skip dunder/private attributes
+                continue
+            try:
+                attr = getattr(obj, attr_name)
+            except Exception:
+                continue  # Handle potential attribute access errors
+
+            # Skip callable attributes unless they're the target method
+            if callable(attr):
+                continue
+            if isinstance(attr, type):  # Skip class definitions
+                continue
+            if isinstance(attr, (list, tuple, set, dict)):  # Skip common containers
+                continue
+
+            new_path = f"{path}.{attr_name}" if path else attr_name
+            if verbose:
+                print(f"Searching in: {new_path}")
+
+            result = find_method(attr, target_method_name, new_path, visited, max_depth - 1, verbose)
+            if result:
+                if verbose:
+                    print(f"Found {target_method_name} at {new_path}")
+                return result
+
+        return None
+
+
     # -------------------
     # URL and Soup Functions
     # -------------------
