@@ -1760,6 +1760,105 @@ class DataAnalysis(BaseConfig):
             )
 
     @staticmethod
+    def display_population_pyramid(
+        pop_df, year=2019, county_col='County_Name',
+        state_col='State_Name', show=True, size_inches=None,
+        male_xticks=None, fem_xticks=None, verbose=False
+    ):
+        """
+        Generate a population pyramid visualization for a given year and region.
+
+        Parameters:
+        - pop_df (pandas.DataFrame):
+            DataFrame containing population data by age and sex in 5-year bands.
+        - year (int): Year for which the population pyramid is generated. Default is 2019.
+        - county_col (str): Column name for the county. Default is 'County_Name'.
+        - state_col (str): Column name for the state. Default is 'State_Name'.
+        - show (bool): Whether to display the plot. Default is True.
+        - size_inches (tuple):
+            Tuple specifying the figure size (width, height). Default is None.
+        - male_xticks (list): Custom x-ticks for the male axis. Default is None.
+        - fem_xticks (list): Custom x-ticks for the female axis. Default is None.
+        - verbose (bool): Whether to display the DataFrame. Default is False.
+
+        Returns:
+        - fig (matplotlib.figure.Figure): The generated population pyramid figure.
+        """
+        if size_inches is None:
+            height = 6
+            width = height * nu.twitter_aspect_ratio
+            size_inches = (width, height)
+
+        # Define column names dynamically
+        def get_column_name(sex, age_group):
+            col_name = f'AGE{age_group}_{sex}_{year}PE'
+            if col_name not in pop_df.columns:
+                col_name = f'AGE{age_group}_{sex}'
+            return col_name
+
+        age_groups = [
+            '04', '59', '1014', '1519', '2024', '2529', '3034', '3539',
+            '4044', '4549', '5054', '5559', '6064', '6569', '7074',
+            '7579', '8084', '85PLUS'
+        ]
+        
+        # Create DataFrame for plotting
+        import pandas as pd
+        df = pd.DataFrame({
+            'Age':
+                [
+                '0 to 4', '5 to 9', '10 to 14', '15 to 19', '20 to 24', '25 to 29',
+                '30 to 34', '35 to 39', '40 to 44', '45 to 49', '50 to 54', '55 to 59',
+                '60 to 64', '65 to 69', '70 to 74', '75 to 79', '80 to 84',
+                '85 years and over'
+                ],
+            'Male': [pop_df[get_column_name('MALE', age)].squeeze() for age in age_groups],
+            'Female': [pop_df[get_column_name('FEM', age)].squeeze() for age in age_groups]
+        })
+
+        # View dataframe 
+        if verbose:
+            display(df)
+
+        # Plotting
+        import matplotlib.pyplot as plt
+        y = range(len(df))
+        fig, (male_ax, fem_ax) = plt.subplots(ncols=2, sharey=True, figsize=size_inches)
+        plt.subplots_adjust(wspace=0, hspace=0)
+
+        # Plot title
+        plot_title = f'Population Pyramid, '
+        county_name = pop_df[county_col].squeeze()
+        if county_name:
+            plot_title += f'{county_name}, '
+        plot_title += f'{pop_df[state_col].squeeze()}, {year}'
+        fig.patch.set_facecolor('xkcd:light grey')
+        plt.figtext(.5, .925, plot_title, fontsize=15, ha='center')
+
+        # Male and Female bars
+        male_ax.barh(y, df.Male, align='center', color='xkcd:baby blue')
+        male_ax.set(title='Males')
+        fem_ax.barh(y, df.Female, align='center', color='xkcd:baby pink')
+        fem_ax.set(title='Females')
+
+        # Male and Female gGrid and labels
+        male_ax.set(yticks=y, yticklabels=df['Age'])
+        male_ax.invert_xaxis()
+        male_ax.grid()
+        if male_xticks is not None:
+            male_ax.set_xticks(male_xticks)
+        
+        fem_ax.set(yticks=y, yticklabels=df['Age'])
+        fem_ax.grid()
+        if fem_xticks is not None:
+            fem_ax.set_xticks(fem_xticks)
+        
+        if not show:
+            plt.close(fig)
+        
+        return fig
+
+    @staticmethod
     def get_random_colormap():
         import random
         import matplotlib.pyplot as plt
