@@ -1759,9 +1759,8 @@ class DataAnalysis(BaseConfig):
                 zorder=2, label=label
             )
 
-    @staticmethod
     def display_population_pyramid(
-        pop_df, year=2019, county_col='County_Name',
+        self, pop_df, year=2019, county_col='County_Name',
         state_col='State_Name', show=True, size_inches=None,
         male_xticks=None, fem_xticks=None, verbose=False
     ):
