@@ -1786,7 +1786,7 @@ class DataAnalysis(BaseConfig):
         """
         if size_inches is None:
             height = 6
-            width = height * nu.twitter_aspect_ratio
+            width = height * self.twitter_aspect_ratio
             size_inches = (width, height)
 
         # Define column names dynamically
