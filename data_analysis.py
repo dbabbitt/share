@@ -1857,7 +1857,7 @@ class DataAnalysis(BaseConfig):
         county_name = pop_df[county_col].squeeze()
         if county_name:
             plot_title += f'{county_name}, '
-        plot_title += f'{pop_df[state_col].squeeze()}, {year} ({tfr:.2f})'
+        plot_title += f'{pop_df[state_col].squeeze()}, {year} ({tfr:.2f} TFR)'
         fig.patch.set_facecolor('xkcd:light grey')
         plt.figtext(.5, .925, plot_title, fontsize=15, ha='center')
 
