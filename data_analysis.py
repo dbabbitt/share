@@ -1822,7 +1822,7 @@ class DataAnalysis(BaseConfig):
             
             # Calculate the total population of children (0–4 years)
             mask_series = (df['Age'] == '0 to 4')
-            sex_groups = ['male_population', 'female_population']
+            sex_groups = ['Male', 'Female']
             children_population = df.loc[mask_series, sex_groups].sum().sum()
             
             # Calculate the total female population in reproductive age (15–49 years)
@@ -1831,7 +1831,7 @@ class DataAnalysis(BaseConfig):
                 '35 to 39', '40 to 44', '45 to 49'
             ]
             mask_series = df['age_group'].isin(reproductive_age_groups)
-            female_reproductive_population = df.loc[mask_series, 'female_population'].sum()
+            female_reproductive_population = df.loc[mask_series, 'Female'].sum()
             
             # Calculate TFR
             tfr = (children_population / female_reproductive_population) * 5
