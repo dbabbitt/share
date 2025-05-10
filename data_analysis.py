@@ -1871,13 +1871,19 @@ class DataAnalysis(BaseConfig):
         male_ax.set(yticks=y, yticklabels=df['Age'])
         male_ax.invert_xaxis()
         male_ax.grid()
-        if male_xticks is not None:
-            male_ax.set_xticks(male_xticks)
+        if male_xticks is None:
+           male_xticks =  male_ax.get_xticks()
+        if verbose:
+            print(f"male_xticks = {male_xticks}")
+        male_ax.set_xticks(male_xticks)
         
         fem_ax.set(yticks=y, yticklabels=df['Age'])
         fem_ax.grid()
-        if fem_xticks is not None:
-            fem_ax.set_xticks(fem_xticks)
+        if fem_xticks is None:
+           fem_xticks =  fem_ax.get_xticks()
+        if verbose:
+            print(f"fem_xticks = {fem_xticks}")
+        fem_ax.set_xticks(fem_xticks)
         
         # Format x-tick labels with commas
         def format_ticks(x, _):
