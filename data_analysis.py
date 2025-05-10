@@ -1872,7 +1872,7 @@ class DataAnalysis(BaseConfig):
         male_ax.invert_xaxis()
         male_ax.grid()
         if male_xticks is None:
-           male_xticks =  male_ax.get_xticks()
+            male_xticks = [tick for tick in male_ax.get_xticks() if tick != 0]
         if verbose:
             print(f"male_xticks = {male_xticks}")
         male_ax.set_xticks(male_xticks)
@@ -1880,7 +1880,7 @@ class DataAnalysis(BaseConfig):
         fem_ax.set(yticks=y, yticklabels=df['Age'])
         fem_ax.grid()
         if fem_xticks is None:
-           fem_xticks =  fem_ax.get_xticks()
+            fem_xticks = [tick for tick in fem_ax.get_xticks() if tick != 0]
         if verbose:
             print(f"fem_xticks = {fem_xticks}")
         fem_ax.set_xticks(fem_xticks)
