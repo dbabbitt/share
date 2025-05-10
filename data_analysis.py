@@ -1886,6 +1886,10 @@ class DataAnalysis(BaseConfig):
         male_ax.xaxis.set_major_formatter(FuncFormatter(format_ticks))
         fem_ax.xaxis.set_major_formatter(FuncFormatter(format_ticks))
 
+        # Rotate x-tick labels slightly
+        male_ax.tick_params(axis='x', rotation=45)
+        fem_ax.tick_params(axis='x', rotation=-45)
+
         if not show:
             plt.close(fig)
         
