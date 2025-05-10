@@ -1830,7 +1830,7 @@ class DataAnalysis(BaseConfig):
                 '15 to 19', '20 to 24', '25 to 29', '30 to 34',
                 '35 to 39', '40 to 44', '45 to 49'
             ]
-            mask_series = df['age_group'].isin(reproductive_age_groups)
+            mask_series = df['Age'].isin(reproductive_age_groups)
             female_reproductive_population = df.loc[mask_series, 'Female'].sum()
             
             # Calculate TFR
