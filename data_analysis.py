@@ -1802,25 +1802,50 @@ class DataAnalysis(BaseConfig):
         ]
         
         # Create DataFrame for plotting
-        import pandas as pd
-        df = pd.DataFrame({
-            'Age':
-                [
+        df = DataFrame({
+            'Age': [
                 '0 to 4', '5 to 9', '10 to 14', '15 to 19', '20 to 24', '25 to 29',
                 '30 to 34', '35 to 39', '40 to 44', '45 to 49', '50 to 54', '55 to 59',
                 '60 to 64', '65 to 69', '70 to 74', '75 to 79', '80 to 84',
                 '85 years and over'
-                ],
+            ],
             'Male': [pop_df[get_column_name('MALE', age)].squeeze() for age in age_groups],
             'Female': [pop_df[get_column_name('FEM', age)].squeeze() for age in age_groups]
         })
+        
+        # Calculate TRF
+        def calculate_tfr(df):
+            
+            # Convert population columns to numeric, coercing errors to NaN
+            for col in ['Male', 'Female']:
+                df[col] = pd.to_numeric(df[col], errors='coerce')
+            
+            # Calculate the total population of children (0–4 years)
+            mask_series = (df['Age'] == '0 to 4')
+            sex_groups = ['male_population', 'female_population']
+            children_population = df.loc[mask_series, sex_groups].sum().sum()
+            
+            # Calculate the total female population in reproductive age (15–49 years)
+            reproductive_age_groups = [
+                '15 to 19', '20 to 24', '25 to 29', '30 to 34',
+                '35 to 39', '40 to 44', '45 to 49'
+            ]
+            mask_series = df['age_group'].isin(reproductive_age_groups)
+            female_reproductive_population = df.loc[mask_series, 'female_population'].sum()
+            
+            # Calculate TFR
+            tfr = (children_population / female_reproductive_population) * 5
+            
+            return tfr
+        tfr = calculate_tfr(df)
+        if verbose:
+            print(f"Total Fertility Rate (TFR): {tfr:.2f}")
 
         # View dataframe 
         if verbose:
             display(df)
 
         # Plotting
-        import matplotlib.pyplot as plt
         y = range(len(df))
         fig, (male_ax, fem_ax) = plt.subplots(ncols=2, sharey=True, figsize=size_inches)
         plt.subplots_adjust(wspace=0, hspace=0)
@@ -1830,7 +1855,7 @@ class DataAnalysis(BaseConfig):
         county_name = pop_df[county_col].squeeze()
         if county_name:
             plot_title += f'{county_name}, '
-        plot_title += f'{pop_df[state_col].squeeze()}, {year}'
+        plot_title += f'{pop_df[state_col].squeeze()}, {year} ({tfr:.2f})'
         fig.patch.set_facecolor('xkcd:light grey')
         plt.figtext(.5, .925, plot_title, fontsize=15, ha='center')
 
