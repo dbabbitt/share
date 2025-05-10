@@ -29,12 +29,13 @@ from pandas.core.dtypes.missing import notnull
 from pandas.core.tools.datetimes import to_datetime
 
 # Rest of the imports
+from base_config import BaseConfig
+from matplotlib.ticker import FuncFormatter
 from re import Pattern, sub
 import humanize
 import matplotlib.pyplot as plt
 import seaborn as sns
 import subprocess
-from base_config import BaseConfig
 
 # Check if pandas is installed and import relevant functions
 try:
@@ -1813,7 +1814,7 @@ class DataAnalysis(BaseConfig):
             'Female': [pop_df[get_column_name('FEM', age)].squeeze() for age in age_groups]
         })
         
-        # Calculate TRF
+        # Calculate TFR
         def calculate_tfr(df):
             
             # Convert population columns to numeric, coercing errors to NaN
@@ -1837,6 +1838,7 @@ class DataAnalysis(BaseConfig):
             tfr = (children_population / female_reproductive_population) * 5
             
             return tfr
+        
         tfr = calculate_tfr(df)
         if verbose:
             print(f"Total Fertility Rate (TFR): {tfr:.2f}")
@@ -1865,7 +1867,7 @@ class DataAnalysis(BaseConfig):
         fem_ax.barh(y, df.Female, align='center', color='xkcd:baby pink')
         fem_ax.set(title='Females')
 
-        # Male and Female gGrid and labels
+        # Male and Female grid and labels
         male_ax.set(yticks=y, yticklabels=df['Age'])
         male_ax.invert_xaxis()
         male_ax.grid()
@@ -1877,6 +1879,13 @@ class DataAnalysis(BaseConfig):
         if fem_xticks is not None:
             fem_ax.set_xticks(fem_xticks)
         
+        # Format x-tick labels with commas
+        def format_ticks(x, _):
+            return f'{int(x):,}'  # Format with commas
+
+        male_ax.xaxis.set_major_formatter(FuncFormatter(format_ticks))
+        fem_ax.xaxis.set_major_formatter(FuncFormatter(format_ticks))
+
         if not show:
             plt.close(fig)
         
