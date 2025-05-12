@@ -2201,7 +2201,7 @@ class Uncategorized(BaseConfig):
         plt.tight_layout()
         plt.show()
 
-        return (collection, fig, ax)
+        return (collection, distance_matrix, fig, ax)
 
     def show_subgraph(
         self, sub_graph, suptitle='Within-function Function Calls',
